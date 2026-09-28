@@ -1,0 +1,61 @@
+/* Aquí está el aviso para girar el dispositivo. El juego es SIEMPRE horizontal.
+   Lo muestro por JavaScript (para pausar el juego) y además por CSS como
+   respaldo inmediato en celulares y tabletas en vertical. */
+
+.aviso-orientacion {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px;
+  background: #000;
+  color: var(--color-texto);
+  text-align: center;
+  pointer-events: auto;
+}
+
+.aviso-orientacion--visible {
+  display: flex;
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+  .aviso-orientacion {
+    display: flex;
+  }
+}
+
+.aviso-orientacion svg {
+  width: 72px;
+  height: 72px;
+  animation: girar-telefono 2.4s ease-in-out infinite;
+}
+
+.aviso-orientacion p {
+  margin: 0;
+  max-width: 18em;
+  font-family: var(--fuente-titulo);
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.aviso-orientacion small {
+  color: var(--color-texto-tenue);
+  font-size: 13px;
+}
+
+@keyframes girar-telefono {
+  0%, 20% { transform: rotate(0deg); }
+  50%, 70% { transform: rotate(-90deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aviso-orientacion svg {
+    animation: none;
+    transform: rotate(-90deg);
+  }
+}

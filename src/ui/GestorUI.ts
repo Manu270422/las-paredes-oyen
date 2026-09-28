@@ -1,0 +1,209 @@
+// Aquí coordino toda la interfaz: una PILA de pantallas (la de arriba es la
+// visible), el HUD, el aviso de orientación y la navegación con mando.
+// El juego principal me pide cosas ("abre la pausa") y yo le aviso las
+// decisiones del jugador ("quiere continuar") mediante AccionesUI.
+import type { BusEventos } from '../nucleo/BusEventos';
+import type { MapaEventos } from '../nucleo/Eventos';
+import type { GestorAjustes } from '../config/Ajustes';
+import type { GestorEntrada } from '../entrada/GestorEntrada';
+import type { BotonMenu } from '../entrada/Mando';
+import { HUD, type DireccionRelativa } from './hud/HUD';
+import { Pantalla } from './pantallas/Pantalla';
+import { PantallaCarga } from './pantallas/PantallaCarga';
+import { PantallaInicio } from './pantallas/PantallaInicio';
+import { MenuPrincipal } from './pantallas/MenuPrincipal';
+import { MenuPausa } from './pantallas/MenuPausa';
+import { PantallaAjustes } from './pantallas/PantallaAjustes';
+import { PantallaDocumentos } from './pantallas/PantallaDocumentos';
+import { LectorDocumento } from './pantallas/LectorDocumento';
+import { PantallaMuerte, type DatosMuerte } from './pantallas/PantallaMuerte';
+import type { PuenteTelemetria } from './PuenteTelemetria';
+import { PantallaFin, type EstadisticasFin } from './pantallas/PantallaFin';
+import { PantallaCreditos } from './pantallas/PantallaCreditos';
+import { AvisoOrientacion } from './pantallas/AvisoOrientacion';
+import { confirmar } from './componentes/Dialogo';
+import { conectarSonidoUI, type TipoSonidoUI } from './componentes/SonidoUI';
+import { navegar } from './NavegacionMando';
+
+export interface AccionesUI {
+  hayPartida(): boolean;
+  continuar(): void;
+  nuevaPartida(): void;
+  reanudar(): void;
+  reiniciarPunto(): void;
+  salirAlMenu(): void;
+  objetivo(): string | null;
+  documentosLeidos(): readonly string[];
+  sonar(tipo: TipoSonidoUI): void;
+  telemetria: PuenteTelemetria;
+}
+
+export class GestorUI {
+  readonly hud: HUD;
+  readonly carga = new PantallaCarga();
+  readonly inicio = new PantallaInicio();
+  readonly aviso = new AvisoOrientacion();
+  private readonly menu: MenuPrincipal;
+  private readonly pausa: MenuPausa;
+  private readonly ajustesPantalla: PantallaAjustes;
+  private readonly documentos: PantallaDocumentos;
+  private readonly lector = new LectorDocumento();
+  private readonly muerte: PantallaMuerte;
+  private readonly fin: PantallaFin;
+  private readonly creditos: PantallaCreditos;
+  private pila: Pantalla[] = [];
+
+  constructor(
+    private readonly raiz: HTMLElement,
+    bus: BusEventos<MapaEventos>,
+    ajustes: GestorAjustes,
+    entrada: GestorEntrada,
+    private readonly acciones: AccionesUI,
+    direccion: DireccionRelativa,
+  ) {
+    conectarSonidoUI((tipo) => acciones.sonar(tipo));
+    this.hud = new HUD(bus, ajustes, () => entrada.modo, direccion);
+
+    this.menu = new MenuPrincipal({
+      hayPartida: () => acciones.hayPartida(),
+      continuar: () => acciones.continuar(),
+      nuevaPartida: () => void this.confirmarNuevaPartida(),
+      ajustes: () => this.abrir(this.ajustesPantalla),
+      creditos: () => this.abrir(this.creditos),
+    });
+    this.pausa = new MenuPausa({
+      objetivo: () => acciones.objetivo(),
+      reanudar: () => acciones.reanudar(),
+      documentos: () => this.abrir(this.documentos),
+      ajustes: () => this.abrir(this.ajustesPantalla),
+      reiniciarPunto: () => acciones.reiniciarPunto(),
+      salirAlMenu: () => void this.confirmarSalir(),
+    });
+    this.ajustesPantalla = new PantallaAjustes(ajustes, raiz, () => this.cerrarActual(), acciones.telemetria);
+    this.documentos = new PantallaDocumentos(
+      () => acciones.documentosLeidos(),
+      (id) => {
+        this.pila.push(this.lector);
+        this.lector.abrir(id, () => this.cerrarActual());
+      },
+      () => this.cerrarActual(),
+    );
+    this.muerte = new PantallaMuerte(
+      () => acciones.reiniciarPunto(),
+      () => acciones.salirAlMenu(),
+    );
+    this.fin = new PantallaFin(() => acciones.salirAlMenu(), acciones.telemetria);
+    this.creditos = new PantallaCreditos(() => this.cerrarActual());
+
+    for (const p of [this.carga, this.inicio, this.menu, this.pausa, this.ajustesPantalla, this.documentos, this.lector, this.muerte, this.fin, this.creditos]) {
+      raiz.appendChild(p.elemento);
+    }
+    raiz.append(this.hud.elemento, this.hud.fundido, this.aviso.elemento);
+
+    // Escape en menús = volver.
+    window.addEventListener('keydown', (e) => {
+      if (e.code !== 'Escape' || e.repeat) return;
+      const dialogo = raiz.querySelector<HTMLElement & { alVolver?: () => void }>('.dialogo');
+      if (dialogo?.alVolver) {
+        dialogo.alVolver();
+        return;
+      }
+      const arriba = this.pila[this.pila.length - 1];
+      if (arriba?.visible && arriba.alVolver) {
+        e.preventDefault();
+        arriba.alVolver();
+      }
+    });
+  }
+
+  get hayPantallaAbierta(): boolean {
+    return this.pila.length > 0;
+  }
+
+  /** Reemplazo toda la pila por una pantalla. */
+  private reemplazar(pantalla: Pantalla | null): void {
+    for (const p of this.pila) p.ocultar();
+    this.pila = pantalla ? [pantalla] : [];
+    pantalla?.mostrar();
+  }
+
+  /** Abro una pantalla encima de la actual (la de abajo se oculta). */
+  abrir(pantalla: Pantalla): void {
+    this.pila[this.pila.length - 1]?.ocultar();
+    this.pila.push(pantalla);
+    pantalla.mostrar();
+  }
+
+  cerrarActual(): void {
+    const actual = this.pila.pop();
+    actual?.ocultar();
+    this.pila[this.pila.length - 1]?.mostrar();
+  }
+
+  mostrarCarga(): void {
+    this.reemplazar(this.carga);
+  }
+
+  mostrarInicio(): void {
+    this.reemplazar(this.inicio);
+  }
+
+  mostrarMenu(): void {
+    this.hud.fijarVisible(false);
+    this.reemplazar(this.menu);
+  }
+
+  mostrarPausa(): void {
+    this.reemplazar(this.pausa);
+  }
+
+  mostrarDocumento(id: string, alCerrar: () => void): void {
+    this.pila = [this.lector];
+    this.lector.abrir(id, () => {
+      this.pila = [];
+      alCerrar();
+    });
+  }
+
+  mostrarMuerte(datos: DatosMuerte): void {
+    this.hud.fijarVisible(false);
+    this.muerte.fijarDatos(datos);
+    this.reemplazar(this.muerte);
+  }
+
+  mostrarFin(estadisticas: EstadisticasFin): void {
+    this.hud.fijarVisible(false);
+    this.fin.fijarEstadisticas(estadisticas);
+    this.reemplazar(this.fin);
+  }
+
+  /** Cierro todas las pantallas y muestro el HUD (volver al juego). */
+  cerrarTodo(): void {
+    this.reemplazar(null);
+    this.hud.fijarVisible(true);
+  }
+
+  /** Navegación con mando dentro de la pantalla visible. */
+  navegar(boton: BotonMenu): void {
+    const arriba = this.pila[this.pila.length - 1];
+    if (!arriba) return;
+    if (boton === 'start' && arriba === this.pausa) {
+      this.acciones.reanudar();
+      return;
+    }
+    navegar(this.raiz, boton, () => arriba.alVolver?.());
+  }
+
+  private async confirmarNuevaPartida(): Promise<void> {
+    if (this.acciones.hayPartida()) {
+      const ok = await confirmar(this.raiz, 'Empezar de nuevo borrará tu partida guardada.', 'Empezar de nuevo');
+      if (!ok) return;
+    }
+    this.acciones.nuevaPartida();
+  }
+
+  private async confirmarSalir(): Promise<void> {
+    const ok = await confirmar(this.raiz, 'Volverás al menú. Tu progreso queda guardado en el último punto de control.', 'Salir al menú');
+    if (ok) this.acciones.salirAlMenu();
+  }
+}

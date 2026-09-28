@@ -1,0 +1,361 @@
+/* Aquí está el HUD. Mi regla: lo mínimo posible. Nada de barras permanentes.
+   Cada indicador aparece solo cuando importa y desaparece después.
+   El miedo necesita que la pantalla sea el mundo, no una interfaz. */
+
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.hud--oculto {
+  display: none;
+}
+
+/* --- Punto de mira --- */
+.mira {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: rgba(230, 222, 205, 0.35);
+  transition: transform var(--transicion), background var(--transicion), box-shadow var(--transicion);
+}
+
+.mira--activa {
+  transform: scale(1.6);
+  background: rgba(240, 232, 215, 0.85);
+  box-shadow: 0 0 0 6px rgba(240, 232, 215, 0.12);
+}
+
+/* --- Indicación de interacción --- */
+.interaccion {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + clamp(26px, 5vmin, 48px));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-s);
+  max-width: 80vw;
+  font-size: var(--texto-s);
+  letter-spacing: 0.06em;
+  color: var(--color-texto);
+  text-shadow: 0 1px 6px #000, 0 0 2px #000;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  white-space: nowrap;
+}
+
+.interaccion--visible {
+  opacity: 1;
+}
+
+.interaccion__glifo {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.9em;
+  height: 1.9em;
+  padding: 0 0.4em;
+  border: 1px solid rgba(230, 222, 205, 0.55);
+  border-radius: 3px;
+  font-size: var(--texto-xs);
+  font-weight: 600;
+}
+
+[data-modo-entrada="tactil"] .interaccion__glifo {
+  display: none;
+}
+
+/* --- Subtítulos --- */
+.subtitulos {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--seguro-abajo) + clamp(56px, 13vh, 140px));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: min(86vw, 52em);
+  text-align: center;
+}
+
+.subtitulo {
+  padding: 0.25em 0.7em;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: var(--texto-m);
+  line-height: 1.4;
+  color: #eee6d4;
+  animation: aparecer 250ms ease;
+  transition: opacity 400ms ease;
+}
+
+.subtitulo--efecto {
+  font-style: italic;
+  color: #b9b1a1;
+}
+
+.subtitulo--saliendo {
+  opacity: 0;
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Objetivo --- */
+.objetivo {
+  position: absolute;
+  top: var(--seguro-arriba);
+  left: var(--seguro-izq);
+  max-width: min(46vw, 30em);
+  padding-left: var(--espacio-s);
+  border-left: 2px solid var(--color-acento);
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 600ms ease, transform 600ms ease;
+}
+
+.objetivo--visible {
+  opacity: 1;
+  transform: none;
+}
+
+.objetivo small {
+  display: block;
+  font-size: var(--texto-xs);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+}
+
+.objetivo p {
+  margin: 2px 0 0;
+  font-size: var(--texto-s);
+  line-height: 1.4;
+  text-shadow: 0 1px 6px #000;
+}
+
+/* --- Tarjeta de lugar (estilo cine) --- */
+.tarjeta {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 1.6s ease;
+}
+
+.tarjeta--visible {
+  opacity: 1;
+}
+
+.tarjeta h2 {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: clamp(24px, 1rem + 4vmin, 64px);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: #e9e2d2;
+  text-shadow: 0 0 20px #000;
+}
+
+.tarjeta p {
+  margin: var(--espacio-s) 0 0;
+  font-size: var(--texto-s);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+}
+
+/* --- Pista de tutorial --- */
+.pista {
+  position: absolute;
+  top: var(--seguro-arriba);
+  left: 50%;
+  transform: translate(-50%, -6px);
+  max-width: min(60vw, 34em);
+  padding: 0.55em 0.9em;
+  border: 1px solid var(--color-borde);
+  background: rgba(8, 7, 6, 0.8);
+  font-size: var(--texto-s);
+  line-height: 1.45;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 500ms ease, transform 500ms ease;
+}
+
+.pista--visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.pista b {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* --- Estado del jugador (arriba a la izquierda, bajo el objetivo) --- */
+.estado-jugador {
+  position: absolute;
+  left: var(--seguro-izq);
+  top: calc(var(--seguro-arriba) + clamp(60px, 11vh, 96px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-s);
+}
+
+.indicador {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-s);
+  font-size: var(--texto-xs);
+  letter-spacing: 0.1em;
+  color: var(--color-texto-tenue);
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+
+.indicador--visible {
+  opacity: 1;
+}
+
+.indicador svg {
+  width: 1.6em;
+  height: 1.6em;
+}
+
+.indicador__barra {
+  width: clamp(60px, 10vw, 140px);
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.indicador__relleno {
+  height: 100%;
+  width: 100%;
+  background: var(--color-texto);
+  transform-origin: left;
+}
+
+.indicador--critico .indicador__relleno {
+  background: var(--color-acento-claro);
+}
+
+/* --- Grabadora (REC) --- */
+.medidor {
+  position: absolute;
+  top: var(--seguro-arriba);
+  right: calc(var(--seguro-der) + var(--alto-boton) + 8px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  font-family: var(--fuente-maquina);
+  font-size: var(--texto-s);
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+
+.medidor--visible {
+  opacity: 1;
+}
+
+.medidor__rec {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ff5a4a;
+  letter-spacing: 0.15em;
+}
+
+.medidor__rec::before {
+  content: "";
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+  background: #ff3322;
+  animation: rec 1s steps(2) infinite;
+}
+
+@keyframes rec {
+  50% { opacity: 0; }
+}
+
+.medidor__barra {
+  width: clamp(90px, 14vw, 200px);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.medidor__relleno {
+  height: 100%;
+  background: #ff5a4a;
+  transform-origin: left;
+}
+
+.medidor__ayuda {
+  font-family: var(--fuente-ui);
+  font-size: var(--texto-xs);
+  color: var(--color-texto-tenue);
+}
+
+/* --- FPS --- */
+.fps {
+  position: absolute;
+  right: var(--seguro-der);
+  bottom: var(--seguro-abajo);
+  font-family: var(--fuente-maquina);
+  font-size: var(--texto-xs);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+[data-modo-entrada="tactil"] .fps {
+  bottom: auto;
+  top: calc(var(--seguro-arriba) + var(--alto-boton) + 8px);
+}
+
+/* --- Aviso de ratón libre (PC) --- */
+.aviso-raton {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translateX(-50%);
+  padding: 0.5em 1em;
+  border: 1px solid var(--color-borde);
+  background: rgba(0, 0, 0, 0.6);
+  font-size: var(--texto-s);
+  letter-spacing: 0.08em;
+  display: none;
+}
+
+.aviso-raton--visible {
+  display: block;
+}
+
+/* --- Fundido a negro --- */
+.fundido {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 30;
+}
+
+@media (max-height: 480px) {
+  .subtitulos {
+    bottom: calc(var(--seguro-abajo) + 8px);
+    width: min(56vw, 40em);
+  }
+  .estado-jugador {
+    top: calc(var(--seguro-arriba) + 52px);
+  }
+}

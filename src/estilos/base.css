@@ -1,0 +1,97 @@
+/* Aquí están los estilos base: el lienzo a pantalla completa, sin scroll,
+   sin selección de texto accidental y sin gestos del navegador (zoom, rebote). */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--fuente-ui);
+  font-size: var(--texto-m);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+#juego {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+#lienzo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  outline: none;
+}
+
+#ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Grano CSS de respaldo cuando la GPU no permite el postprocesado HDR. */
+#capa-grano {
+  position: absolute;
+  inset: -50%;
+  z-index: 1;
+  pointer-events: none;
+  display: none;
+  opacity: 0.09;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation: grano 0.35s steps(3) infinite;
+}
+
+body.sin-postproceso #capa-grano {
+  display: block;
+}
+
+body.sin-postproceso #juego::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+@keyframes grano {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(-6%, 4%); }
+  66% { transform: translate(5%, -5%); }
+  100% { transform: translate(0, 0); }
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #capa-grano {
+    animation: none;
+  }
+}

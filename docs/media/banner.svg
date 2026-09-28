@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 440" width="1280" height="440" role="img" aria-labelledby="titulo-banner desc-banner">
+  <title id="titulo-banner">Las paredes oyen</title>
+  <desc id="desc-banner">Un pasillo oscuro del Edificio Almendros iluminado por una linterna que parpadea. Por un instante, algo aparece de pie al fondo.</desc>
+  <defs>
+    <linearGradient id="paredIzq" x1="380" y1="0" x2="820" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#17130f"/>
+      <stop offset="1" stop-color="#0a0807"/>
+    </linearGradient>
+    <linearGradient id="paredDer" x1="1340" y1="0" x2="900" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3b3226"/>
+      <stop offset="1" stop-color="#0d0b09"/>
+    </linearGradient>
+    <linearGradient id="zocaloIzq" x1="380" y1="0" x2="820" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f1a14"/>
+      <stop offset="1" stop-color="#070a08"/>
+    </linearGradient>
+    <linearGradient id="zocaloDer" x1="1340" y1="0" x2="900" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1b2c22"/>
+      <stop offset="1" stop-color="#080b09"/>
+    </linearGradient>
+    <linearGradient id="techo" x1="0" y1="-60" x2="0" y2="165" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1a1611"/>
+      <stop offset="1" stop-color="#090706"/>
+    </linearGradient>
+    <linearGradient id="piso" x1="0" y1="500" x2="0" y2="275" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#15120f"/>
+      <stop offset="1" stop-color="#080706"/>
+    </linearGradient>
+    <radialGradient id="fondoLuz" cx="866" cy="228" r="70" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2e2922"/>
+      <stop offset="1" stop-color="#0a0807"/>
+    </radialGradient>
+    <radialGradient id="haz" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f6e6c4" stop-opacity="0.55"/>
+      <stop offset="0.45" stop-color="#e8d2a4" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#e8d2a4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sombraTitulo" x1="0" y1="0" x2="760" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#050404" stop-opacity="1"/>
+      <stop offset="0.55" stop-color="#050404" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#050404" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="vineta" cx="0.62" cy="0.5" r="0.75">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.85"/>
+    </radialGradient>
+    <filter id="grano" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+  </defs>
+
+  <style>
+    .linterna { animation: linterna 11s infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes linterna {
+      0%, 100% { opacity: 1; transform: translate(0, 0); }
+      22% { opacity: 0.95; transform: translate(-10px, 4px); }
+      23% { opacity: 0.35; }
+      23.6% { opacity: 1; }
+      48% { transform: translate(8px, -3px); }
+      69% { opacity: 1; }
+      69.5% { opacity: 0.05; }
+      70% { opacity: 0.8; }
+      70.6% { opacity: 0.1; }
+      71.2% { opacity: 1; }
+      73.2% { opacity: 0.2; }
+      74% { opacity: 1; }
+    }
+    .figura { opacity: 0; animation: figura 11s infinite; }
+    @keyframes figura {
+      0%, 70% { opacity: 0; }
+      70.2%, 73.4% { opacity: 1; }
+      73.6%, 100% { opacity: 0; }
+    }
+    .oyen { animation: oyen 7s infinite; }
+    @keyframes oyen {
+      0%, 100% { opacity: 1; }
+      31% { opacity: 1; }
+      31.5% { opacity: 0.25; }
+      32% { opacity: 1; }
+      32.6% { opacity: 0.55; }
+      33.2% { opacity: 1; }
+      78% { opacity: 1; }
+      78.4% { opacity: 0.4; }
+      78.9% { opacity: 1; }
+    }
+    .rec { animation: rec 1.2s steps(1) infinite; }
+    @keyframes rec { 0%, 55% { opacity: 1; } 56%, 100% { opacity: 0.15; } }
+    .cabezal { animation: cabezal 6s linear infinite; }
+    @keyframes cabezal { from { transform: translateX(0); } to { transform: translateX(418px); } }
+    .grano { animation: grano 0.5s steps(4) infinite; }
+    @keyframes grano {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-40px, 25px); }
+      50% { transform: translate(30px, -35px); }
+      75% { transform: translate(-20px, -15px); }
+      100% { transform: translate(0, 0); }
+    }
+    .aparece { animation: aparece 2.4s ease-out both; }
+    @keyframes aparece { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) {
+      .linterna, .figura, .oyen, .rec, .cabezal, .grano, .aparece { animation: none; }
+    }
+  </style>
+
+  <rect width="1280" height="440" fill="#050404"/>
+
+  <!-- El pasillo del piso 4: techo, piso, paredes con pintura descascarada y zócalo verde. -->
+  <polygon points="380,-60 1340,-60 900,165 820,165" fill="url(#techo)"/>
+  <polygon points="380,500 820,275 900,275 1340,500" fill="url(#piso)"/>
+  <polygon points="380,-60 820,165 820,275 380,500" fill="url(#paredIzq)"/>
+  <polygon points="1340,-60 900,165 900,275 1340,500" fill="url(#paredDer)"/>
+  <polygon points="380,332 820,242 820,275 380,500" fill="url(#zocaloIzq)"/>
+  <polygon points="1340,332 900,242 900,275 1340,500" fill="url(#zocaloDer)"/>
+  <rect x="820" y="165" width="80" height="110" fill="url(#fondoLuz)"/>
+  <rect x="893" y="188" width="4" height="84" fill="#9c8762" opacity="0.35"/>
+  <!-- Aristas: techo, guardaescoba y borde del zócalo. Le dan profundidad al pasillo. -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M380 -60 L820 165 M1340 -60 L900 165" stroke="#000" stroke-opacity="0.55" stroke-width="2"/>
+    <path d="M380 500 L820 275 M1340 500 L900 275" stroke="#000" stroke-opacity="0.7" stroke-width="3"/>
+    <path d="M380 332 L820 242 M1340 332 L900 242" stroke="#3d4a3f" stroke-opacity="0.45" stroke-width="1.5"/>
+    <path d="M820 165 H900 V275 H820 Z" stroke="#000" stroke-opacity="0.5" stroke-width="1.5"/>
+  </g>
+  <!-- Pintura descascarada: parches pequeños e irregulares, no manchones. -->
+  <g fill="#8a7a60" fill-opacity="0.16" stroke="#000" stroke-opacity="0.35" stroke-width="1">
+    <path d="M1046 128l9-5 7 3 5-2 4 6-3 6 6 5-2 8-8 2-3 6-7-2-4-7-6-2 1-8-4-5z"/>
+    <path d="M1182 268l6-4 5 3 6-1 1 6 5 4-3 6-6 1-2 5-6-3-3-6-5-3z"/>
+    <path d="M1112 52l5-3 4 2 3-1 2 4-2 3 3 3-2 4-5 0-2 3-4-2-2-4-3-2 1-4z"/>
+    <path d="M958 214l4-2 3 2 3 0 1 4-2 3 1 3-4 1-2 2-3-2-1-4-2-2z"/>
+  </g>
+
+  <!-- Algo de pie al fondo. Aparece un tercio de segundo, cuando la linterna falla. -->
+  <g class="figura" fill="#000" stroke="#000" stroke-linecap="round">
+    <ellipse cx="858" cy="199" rx="4.8" ry="8.5" transform="rotate(-22 858 199)"/>
+    <path d="M848 211 L874 206 L869 240 L856 242 Z"/>
+    <path d="M849 212 L843 238 L841 262 L838 266" fill="none" stroke-width="2.8"/>
+    <path d="M873 208 L878 232 L882 258 L885 262" fill="none" stroke-width="2.4"/>
+    <path d="M857 240 L855 275" fill="none" stroke-width="4"/>
+    <path d="M866 240 L869 275" fill="none" stroke-width="4"/>
+  </g>
+
+  <!-- El haz de la linterna: sostenida abajo a la derecha, tiembla y falla. -->
+  <ellipse class="linterna" cx="1075" cy="252" rx="190" ry="150" fill="url(#haz)"/>
+
+  <!-- Oscuridad a la izquierda para que el título respire. -->
+  <rect width="1280" height="440" fill="url(#sombraTitulo)"/>
+  <rect width="1280" height="440" fill="url(#vineta)"/>
+  <rect class="grano" x="-60" y="-60" width="1400" height="560" filter="url(#grano)" opacity="0.07"/>
+
+  <!-- Título. -->
+  <g class="aparece" font-family="Georgia, 'Times New Roman', Times, serif">
+    <text x="60" y="172" font-size="94" fill="#e8e0d0">Las paredes</text>
+    <text class="oyen" x="60" y="264" font-size="94" fill="#d24a3c">oyen</text>
+    <text x="63" y="314" font-size="15" letter-spacing="6" fill="#8d877b" font-family="system-ui, 'Segoe UI', Roboto, Arial, sans-serif">EDIFICIO ALMENDROS · PISO 4 · 11:48 P. M.</text>
+    <text x="62" y="360" font-size="21" font-style="italic" fill="#b9b1a2">Todo lo que haces se escucha.</text>
+  </g>
+
+  <!-- La grabadora: el cabezal recorre el tono de sala. -->
+  <g transform="translate(62 398)">
+    <path d="M0 0 L20 -1 L34 2 L52 -2 L70 1 L88 -1 L104 2 L118 -3 L130 6 L136 -9 L142 4 L160 -1 L178 1 L196 -2 L214 1 L232 -1 L250 2 L262 -2 L270 7 L276 -11 L282 5 L300 -1 L318 1 L336 -1 L354 2 L372 -1 L390 1 L418 0" fill="none" stroke="#5b534a" stroke-width="1.4"/>
+    <line class="cabezal" x1="0" y1="-14" x2="0" y2="14" stroke="#d24a3c" stroke-width="1.5"/>
+  </g>
+  <g font-family="'Courier New', Courier, monospace" font-size="14" letter-spacing="3" fill="#d24a3c">
+    <circle class="rec" cx="1166" cy="42" r="5" fill="#d24a3c"/>
+    <text x="1180" y="47">REC</text>
+  </g>
+</svg>

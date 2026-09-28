@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Aquí bloqueo el zoom y uso viewport-fit=cover para aprovechar pantallas con notch. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#050505" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Las Paredes Oyen — terror psicológico. Todo lo que haces se escucha." />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icono.svg" type="image/svg+xml" />
+    <title>Las Paredes Oyen</title>
+  </head>
+  <body>
+    <!-- Este es mi contenedor principal: el lienzo 3D abajo y la interfaz encima. -->
+    <div id="juego">
+      <canvas id="lienzo" aria-label="Vista del juego"></canvas>
+      <div id="capa-grano" aria-hidden="true"></div>
+      <div id="ui"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

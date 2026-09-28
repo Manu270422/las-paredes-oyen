@@ -1,0 +1,30 @@
+{
+  "name": "las-paredes-oyen",
+  "version": "0.1.0",
+  "description": "Las Paredes Oyen — videojuego de terror psicológico construido sin motor comercial (TypeScript + WebGL2 + Web Audio).",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "terror",
+    "horror",
+    "webgl",
+    "webaudio",
+    "juego"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1"
+  }
+}

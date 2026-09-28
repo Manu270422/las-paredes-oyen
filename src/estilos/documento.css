@@ -1,0 +1,125 @@
+/* Aquí está el lector de documentos: una hoja de papel real sobre la
+   oscuridad. Cada tipo de documento tiene su propia letra: la orden de
+   trabajo a máquina, el diario a mano, la carta con tinta. */
+
+.lector {
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.82);
+  z-index: 20;
+}
+
+.lector__hoja {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 44em);
+  max-height: 100%;
+  padding: clamp(18px, 4vmin, 48px) clamp(20px, 5vmin, 60px) var(--espacio-m);
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(120, 90, 40, 0.18), transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(80, 60, 30, 0.22), transparent 55%),
+    var(--color-papel);
+  color: var(--color-tinta);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), inset 0 0 60px rgba(90, 70, 40, 0.25);
+  transform: rotate(-0.6deg);
+  animation: aparecer-hoja 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@keyframes aparecer-hoja {
+  from { opacity: 0; transform: translateY(12px) rotate(-1.4deg); }
+  to { opacity: 1; transform: translateY(0) rotate(-0.6deg); }
+}
+
+.lector__titulo {
+  margin: 0 0 var(--espacio-m);
+  padding-right: calc(var(--alto-boton) + 8px);
+  font-family: var(--fuente-titulo);
+  font-size: var(--texto-s);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(29, 26, 22, 0.6);
+}
+
+.lector__texto {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: var(--texto-l);
+  line-height: 1.55;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.lector--orden .lector__texto,
+.lector--cinta .lector__texto {
+  font-family: var(--fuente-maquina);
+  font-size: var(--texto-m);
+}
+
+.lector--diario .lector__texto,
+.lector--nota .lector__texto {
+  font-family: var(--fuente-mano);
+  color: #1c2a4a;
+}
+
+.lector--carta .lector__texto {
+  font-family: var(--fuente-titulo);
+  font-style: italic;
+}
+
+.lector__cerrar {
+  position: absolute;
+  top: var(--espacio-xs);
+  right: var(--espacio-xs);
+  color: var(--color-tinta);
+}
+
+.lector__navegacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-s);
+  margin-top: var(--espacio-m);
+  padding-top: var(--espacio-s);
+  border-top: 1px solid rgba(29, 26, 22, 0.2);
+  color: var(--color-tinta);
+}
+
+.lector__pagina {
+  font-size: var(--texto-s);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.lector__navegacion .boton {
+  color: var(--color-tinta);
+}
+
+.lector__navegacion .boton:hover,
+.lector__navegacion .boton:focus-visible {
+  color: #000;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.lector__ayuda {
+  margin-top: var(--espacio-xs);
+  font-size: var(--texto-xs);
+  color: rgba(29, 26, 22, 0.55);
+  text-align: center;
+}
+
+@media (max-height: 480px) {
+  .lector {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .lector__hoja {
+    height: 100%;
+    transform: none;
+    animation: none;
+  }
+}

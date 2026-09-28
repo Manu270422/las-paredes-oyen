@@ -1,0 +1,19 @@
+{
+  "name": "Las Paredes Oyen",
+  "short_name": "Paredes Oyen",
+  "description": "Terror psicológico. Todo lo que haces se escucha.",
+  "lang": "es",
+  "start_url": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "icons": [
+    {
+      "src": "icono.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

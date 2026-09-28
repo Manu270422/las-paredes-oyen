@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 320" width="960" height="320" role="img" aria-labelledby="t-med d-med">
+  <title id="t-med">La medición: seis segundos quieto y en silencio</title>
+  <desc id="d-med">La grabadora registra el tono de sala de un apartamento. A mitad de la medición aparecen tres golpes en la pared, justo al lado del jugador.</desc>
+  <defs>
+    <clipPath id="zonaOnda"><rect x="40" y="70" width="880" height="160"/></clipPath>
+  </defs>
+  <style>
+    .contenido { animation: contenido 9.5s infinite; }
+    @keyframes contenido { 0% { opacity: 0; } 3.16%, 92.63% { opacity: 1; } 97.89%, 100% { opacity: 0; } }
+    .cabezal { animation: cabezal 9.5s linear infinite; }
+    @keyframes cabezal { 0%, 3.16% { transform: translateX(0); } 66.32%, 100% { transform: translateX(880px); } }
+    .progreso { transform-box: fill-box; transform-origin: 0 50%; animation: progreso 9.5s linear infinite; }
+    @keyframes progreso { 0%, 3.16% { transform: scaleX(0); } 66.32%, 100% { transform: scaleX(1); } }
+    .golpes { animation: golpes 9.5s infinite; }
+    @keyframes golpes { 0%, 30.4% { opacity: 0; } 31.6%, 92.63% { opacity: 1; } 97.89%, 100% { opacity: 0; } }
+    .msj1 { animation: msj1 9.5s infinite; }
+    @keyframes msj1 { 0%, 3% { opacity: 0; } 5%, 29.5% { opacity: 1; } 30.5%, 100% { opacity: 0; } }
+    .msj2 { animation: msj2 9.5s infinite; }
+    @keyframes msj2 { 0%, 30.5% { opacity: 0; } 31.6%, 65.5% { opacity: 1; } 66.5%, 100% { opacity: 0; } }
+    .completa { animation: completa 9.5s infinite; }
+    @keyframes completa { 0%, 66.3% { opacity: 0; } 68.5%, 92.63% { opacity: 1; } 97.89%, 100% { opacity: 0; } }
+    .rec { animation: rec 1.2s steps(1) infinite; }
+    @keyframes rec { 0%, 55% { opacity: 1; } 56%, 100% { opacity: 0.15; } }
+    @media (prefers-reduced-motion: reduce) {
+      .contenido, .golpes, .completa, .msj1 { animation: none; opacity: 1; }
+      .msj2 { animation: none; opacity: 0; }
+      .cabezal { animation: none; transform: translateX(880px); }
+      .progreso { animation: none; }
+      .rec { animation: none; }
+    }
+  </style>
+
+  <rect x="0.5" y="0.5" width="959" height="319" rx="14" fill="#0b0908" stroke="#2a2420"/>
+
+  <g font-family="'Courier New', Courier, monospace" font-size="14" letter-spacing="3">
+    <circle class="rec" cx="48" cy="40" r="6" fill="#d24a3c"/>
+    <text x="62" y="45" fill="#d24a3c">REC</text>
+    <text x="126" y="45" fill="#8d877b">SALA 401 · TONO DE SALA</text>
+    <text x="920" y="45" fill="#5b534a" text-anchor="end">EDIFICIO ALMENDROS</text>
+  </g>
+
+  <g class="contenido">
+    <line x1="40" y1="150" x2="920" y2="150" stroke="#1d1914" stroke-width="1"/>
+    <g clip-path="url(#zonaOnda)">
+      <path d="M40 150.0 L42 149.6 L44 151.3 L46 152.2 L48 152.7 L50 151.1 L52 152.9 L54 150.2 L56 151.5 L58 151.7 L60 149.5 L62 151.9 L64 152.0 L66 149.1 L68 150.7 L70 151.3 L72 150.9 L74 148.2 L76 149.7 L78 152.1 L80 153.2 L82 151.0 L84 151.4 L86 149.2 L88 149.6 L90 148.5 L92 149.2 L94 147.9 L96 148.6 L98 148.6 L100 148.1 L102 150.6 L104 152.4 L106 151.9 L108 152.5 L110 152.1 L112 152.5 L114 150.3 L116 149.1 L118 148.5 L120 149.2 L122 149.6 L124 151.7 L126 152.5 L128 150.7 L130 149.8 L132 150.9 L134 151.7 L136 148.8 L138 148.9 L140 147.0 L142 149.1 L144 151.8 L146 149.5 L148 150.1 L150 152.2 L152 150.4 L154 148.1 L156 149.2 L158 150.0 L160 150.8 L162 152.2 L164 150.8 L166 151.0 L168 152.7 L170 150.1 L172 147.9 L174 149.1 L176 147.9 L178 150.2 L180 152.0 L182 151.9 L184 151.9 L186 152.0 L188 148.8 L190 147.0 L192 146.1 L194 148.7 L196 151.0 L198 149.6 L200 148.3 L202 148.9 L204 150.7 L206 151.3 L208 148.5 L210 147.3 L212 146.5 L214 150.2 L216 152.5 L218 149.3 L220 151.1 L222 153.0 L224 154.0 L226 151.2 L228 152.7 L230 150.1 L232 147.7 L234 146.6 L236 145.7 L238 149.6 L240 149.7 L242 151.0 L244 149.8 L246 150.2 L248 151.6 L250 149.8 L252 152.1 L254 148.9 L256 150.8 L258 148.7 L260 149.6 L262 148.7 L264 150.7 L266 148.9 L268 148.8 L270 150.3 L272 150.8 L274 149.7 L276 148.3 L278 150.8 L280 151.3 L282 148.5 L284 148.3 L286 148.2 L288 151.1 L290 148.7 L292 150.7 L294 149.2 L296 148.9 L298 147.9 L300 150.7 L302 152.4 L304 151.0 L306 149.5 L308 149.4 L310 151.7 L312 149.1 L314 148.0 L316 147.2 L318 150.1 L320 148.4 L322 149.1 L324 151.0 L326 152.7 L328 151.2 L330 153.1 L332 154.1 L334 154.7 L336 151.8 L338 149.6 L340 150.8 L342 149.8 L344 152.1 L346 150.5 L348 151.6 L350 152.1 L352 153.3 L354 153.8 L356 153.1 L358 152.1 L360 152.4 L362 151.4 L364 151.7 L366 153.1 L368 151.7 L370 152.2 L372 150.8 L374 152.2 L376 152.1 L378 149.6 L380 149.3 L382 149.9 L384 149.2 L386 150.6 L388 150.3 L390 152.5 L392 152.3 L394 149.8 L396 152.0 L398 151.2 L400 150.9 L402 152.1 L404 150.6 L406 149.8 L408 152.1 L410 150.3 L412 152.2 L414 151.4 L416 150.6 L418 148.4 L420 146.7 L422 177.8 L424 184.8 L426 123.6 L428 130.5 L430 170.3 L432 157.8 L434 136.5 L436 145.6 L438 157.3 L440 150.5 L442 142.5 L444 149.1 L446 152.7 L448 148.4 L450 146.3 L452 148.4 L454 148.3 L456 148.0 L458 149.7 L460 151.1 L462 149.1 L464 149.3 L466 151.0 L468 149.0 L470 148.8 L472 151.5 L474 151.8 L476 200.4 L478 144.9 L480 118.4 L482 158.0 L484 168.6 L486 140.3 L488 140.3 L490 156.1 L492 155.6 L494 143.5 L496 147.0 L498 152.8 L500 148.7 L502 146.1 L504 147.4 L506 151.8 L508 152.1 L510 148.9 L512 150.1 L514 150.4 L516 149.6 L518 151.8 L520 149.6 L522 148.2 L524 151.1 L526 152.6 L528 192.8 L530 173.1 L532 119.2 L534 142.8 L536 171.3 L538 151.4 L540 136.5 L542 150.7 L544 158.7 L546 150.0 L548 147.2 L550 152.3 L552 153.7 L554 148.6 L556 147.2 L558 150.9 L560 148.7 L562 148.8 L564 150.3 L566 150.3 L568 149.0 L570 150.9 L572 150.6 L574 149.3 L576 151.0 L578 148.6 L580 150.2 L582 150.4 L584 152.0 L586 150.7 L588 152.1 L590 152.9 L592 151.8 L594 151.9 L596 150.6 L598 150.1 L600 151.4 L602 150.1 L604 151.9 L606 153.3 L608 153.8 L610 149.9 L612 150.1 L614 151.3 L616 151.8 L618 151.8 L620 152.1 L622 149.6 L624 147.9 L626 150.6 L628 148.2 L630 147.7 L632 148.0 L634 147.3 L636 150.6 L638 152.1 L640 150.9 L642 150.5 L644 149.2 L646 147.9 L648 149.7 L650 148.2 L652 149.2 L654 149.2 L656 149.9 L658 148.1 L660 150.3 L662 148.7 L664 147.7 L666 146.8 L668 146.7 L670 149.0 L672 150.6 L674 148.8 L676 148.0 L678 147.7 L680 150.7 L682 150.0 L684 151.4 L686 153.1 L688 151.0 L690 151.0 L692 152.8 L694 152.1 L696 151.0 L698 148.8 L700 149.3 L702 150.6 L704 150.0 L706 151.5 L708 150.0 L710 151.8 L712 152.8 L714 151.9 L716 150.2 L718 151.0 L720 152.4 L722 150.6 L724 148.5 L726 149.9 L728 150.2 L730 149.9 L732 151.1 L734 150.9 L736 152.7 L738 150.4 L740 150.1 L742 148.7 L744 147.6 L746 146.4 L748 147.2 L750 147.3 L752 149.6 L754 151.1 L756 150.9 L758 152.4 L760 149.9 L762 150.4 L764 150.7 L766 150.5 L768 151.7 L770 148.8 L772 148.4 L774 150.3 L776 150.9 L778 151.2 L780 150.3 L782 148.2 L784 149.1 L786 148.6 L788 149.4 L790 147.4 L792 147.5 L794 147.6 L796 149.7 L798 150.0 L800 150.8 L802 151.6 L804 150.7 L806 149.0 L808 150.3 L810 151.6 L812 149.3 L814 147.4 L816 148.4 L818 150.8 L820 150.6 L822 150.7 L824 152.0 L826 150.7 L828 150.2 L830 150.6 L832 149.5 L834 147.3 L836 148.6 L838 150.4 L840 147.8 L842 148.1 L844 150.5 L846 151.4 L848 149.9 L850 151.7 L852 151.5 L854 150.6 L856 151.0 L858 152.7 L860 150.2 L862 150.1 L864 149.8 L866 150.8 L868 149.7 L870 149.5 L872 148.5 L874 146.7 L876 146.8 L878 146.0 L880 149.2 L882 151.4 L884 148.6 L886 151.1 L888 149.9 L890 150.4 L892 151.7 L894 150.4 L896 150.1 L898 152.3 L900 152.2 L902 150.5 L904 151.9 L906 152.2 L908 149.8 L910 148.0 L912 150.9 L914 150.2 L916 150.9 L918 152.2 L920 150.7" fill="none" stroke="#b9b1a2" stroke-width="1.5" stroke-linejoin="round"/>
+      <rect class="cabezal" x="40" y="70" width="880" height="160" fill="#0b0908"/>
+    </g>
+    <line class="cabezal" x1="40" y1="74" x2="40" y2="226" stroke="#d24a3c" stroke-width="2"/>
+
+    <g class="golpes" font-family="system-ui, 'Segoe UI', Roboto, Arial, sans-serif" font-size="15" font-style="italic" fill="#d8d2c4" text-anchor="middle">
+      <text x="474" y="252">[tres golpes en la pared ←]</text>
+    </g>
+
+    <rect x="40" y="270" width="880" height="4" rx="2" fill="#221d18"/>
+    <rect class="progreso" x="40" y="270" width="880" height="4" rx="2" fill="#d24a3c"/>
+
+    <g font-family="system-ui, 'Segoe UI', Roboto, Arial, sans-serif" font-size="15" fill="#8d877b">
+      <text class="msj1" x="40" y="302">No te muevas. No hagas ruido.</text>
+      <text class="msj2" x="40" y="302">Algo golpea justo a tu lado. Contén la respiración.</text>
+      <text x="920" y="302" text-anchor="end" font-family="'Courier New', Courier, monospace" letter-spacing="2">6 s</text>
+    </g>
+
+    <g class="completa">
+      <rect x="318" y="116" width="324" height="66" rx="8" fill="#0b0908" stroke="#d24a3c"/>
+      <text x="480" y="156" text-anchor="middle" font-family="'Courier New', Courier, monospace" font-size="18" letter-spacing="3" fill="#d8d2c4">MEDICIÓN COMPLETA</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,487 @@
+/* Aquí están las pantallas completas: carga, inicio, menú principal, pausa,
+   ajustes, muerte y final. Todas respetan zonas seguras y funcionan en
+   horizontal desde 640x320 hasta 4K. */
+
+.pantalla {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--seguro-arriba) var(--seguro-der) var(--seguro-abajo) var(--seguro-izq);
+  pointer-events: auto;
+  opacity: 1;
+  transition: opacity 400ms ease;
+  z-index: 10;
+}
+
+.pantalla--oculta {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 300ms ease, visibility 0s linear 300ms;
+}
+
+.pantalla--oscura {
+  background: radial-gradient(ellipse at 30% 50%, rgba(20, 16, 14, 0.55), rgba(0, 0, 0, 0.94) 70%), rgba(0, 0, 0, 0.6);
+}
+
+.pantalla--negra {
+  background: #000;
+}
+
+/* --- Título del juego --- */
+.titulo-juego {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: var(--texto-titulo);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  color: #e9e2d2;
+  text-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+}
+
+.titulo-juego span {
+  display: block;
+}
+
+.titulo-juego__acento {
+  color: var(--color-acento-claro);
+  animation: parpadeo-titulo 7s infinite;
+}
+
+@keyframes parpadeo-titulo {
+  0%, 91%, 93%, 100% { opacity: 1; }
+  92% { opacity: 0.25; }
+  94% { opacity: 0.7; }
+}
+
+.subtitulo-juego {
+  margin: var(--espacio-s) 0 0;
+  font-size: var(--texto-s);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+}
+
+/* --- Carga --- */
+.carga {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: var(--espacio-l);
+  background: #000;
+}
+
+.carga__barra {
+  width: min(70vw, 420px);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.carga__progreso {
+  height: 100%;
+  width: 0;
+  background: var(--color-acento-claro);
+  transition: width 200ms linear;
+}
+
+.carga__texto {
+  font-size: var(--texto-s);
+  color: var(--color-texto-tenue);
+  letter-spacing: 0.1em;
+  min-height: 1.4em;
+}
+
+/* --- Inicio (audífonos) --- */
+.inicio {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: var(--espacio-m);
+  background: #000;
+  cursor: pointer;
+}
+
+.inicio__icono {
+  width: clamp(44px, 10vmin, 96px);
+  height: clamp(44px, 10vmin, 96px);
+  color: var(--color-texto);
+  opacity: 0.85;
+}
+
+.inicio__texto {
+  max-width: 34em;
+  margin: 0;
+  font-size: var(--texto-l);
+  line-height: 1.45;
+  font-family: var(--fuente-titulo);
+}
+
+.inicio__nota {
+  margin: 0;
+  font-size: var(--texto-s);
+  color: var(--color-texto-tenue);
+}
+
+.inicio__continuar {
+  margin-top: var(--espacio-l);
+  font-size: var(--texto-s);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  animation: respirar 2.6s ease-in-out infinite;
+}
+
+@keyframes respirar {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.9; }
+}
+
+/* --- Menú principal: título arriba a la izquierda, opciones debajo --- */
+.menu {
+  justify-content: space-between;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.55) 45%, rgba(0, 0, 0, 0) 75%);
+}
+
+.menu__cabecera {
+  padding-top: var(--espacio-l);
+}
+
+.menu__opciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin: var(--espacio-l) 0;
+}
+
+.menu__pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--espacio-s);
+  font-size: var(--texto-xs);
+  color: var(--color-texto-tenue);
+  letter-spacing: 0.08em;
+}
+
+/* En pantallas bajitas pongo el título y las opciones lado a lado. */
+@media (max-height: 480px) {
+  .menu {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
+    column-gap: var(--espacio-l);
+  }
+  .menu__cabecera {
+    align-self: center;
+    padding-top: 0;
+  }
+  .menu__opciones {
+    align-self: center;
+    margin: 0;
+  }
+  .menu__pie {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --- Pausa --- */
+.pausa {
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.pausa__contenido {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: var(--espacio-xl);
+  align-items: center;
+  width: min(100%, 1100px);
+  margin: 0 auto;
+}
+
+.pausa__titulo {
+  margin: 0 0 var(--espacio-m);
+  font-family: var(--fuente-titulo);
+  font-size: var(--texto-l);
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.pausa__objetivo {
+  padding-left: var(--espacio-m);
+  border-left: 2px solid var(--color-acento);
+  font-size: var(--texto-m);
+  line-height: 1.45;
+}
+
+.pausa__objetivo small {
+  display: block;
+  margin-bottom: var(--espacio-xs);
+  font-size: var(--texto-xs);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+}
+
+.pausa__opciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+@media (max-width: 700px) {
+  .pausa__contenido {
+    grid-template-columns: 1fr;
+    gap: var(--espacio-m);
+  }
+}
+
+@media (max-height: 420px) {
+  .pausa__titulo {
+    margin-bottom: var(--espacio-s);
+  }
+}
+
+/* --- Panel con cabecera (ajustes, documentos, créditos) --- */
+.panel {
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.panel__caja {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 960px);
+  height: min(100%, 720px);
+  border: 1px solid var(--color-borde);
+  background: var(--color-panel);
+}
+
+.panel__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-m);
+  padding: var(--espacio-s) var(--espacio-s) var(--espacio-s) var(--espacio-l);
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.panel__titulo {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: var(--texto-l);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+}
+
+.panel__pestanas {
+  display: flex;
+  gap: 2px;
+  padding: 0 var(--espacio-l);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-borde);
+  scrollbar-width: none;
+  touch-action: pan-x;
+}
+
+.panel__pestanas::-webkit-scrollbar {
+  display: none;
+}
+
+.pestana {
+  flex: 0 0 auto;
+  min-height: var(--alto-boton);
+  padding: 0 var(--espacio-m);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-texto-tenue);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.pestana[aria-selected="true"] {
+  color: #fff;
+  border-bottom-color: var(--color-acento-claro);
+}
+
+.panel__cuerpo {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--espacio-s) var(--espacio-l) var(--espacio-l);
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+}
+
+.panel__pie {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--espacio-s);
+  padding: var(--espacio-s) var(--espacio-l);
+  border-top: 1px solid var(--color-borde);
+}
+
+/* Botones en línea dentro de una fila de ajustes (se apilan si no caben). */
+.panel__acciones-fila {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espacio-s);
+}
+
+/* En celulares en horizontal el panel ocupa toda la pantalla. */
+@media (max-height: 480px) {
+  .panel {
+    padding: 0;
+  }
+  .panel__caja {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    padding: var(--seguro-arriba) var(--seguro-der) var(--seguro-abajo) var(--seguro-izq);
+  }
+}
+
+/* Muestra de calibración de brillo. */
+.calibracion {
+  display: flex;
+  gap: var(--espacio-m);
+  align-items: center;
+  padding: var(--espacio-m) 0;
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+}
+
+.calibracion__muestra {
+  display: flex;
+  gap: 6px;
+}
+
+.calibracion__muestra span {
+  width: clamp(28px, 5vmin, 56px);
+  height: clamp(28px, 5vmin, 56px);
+  background: #000;
+  display: grid;
+  place-items: center;
+}
+
+.calibracion__muestra i {
+  width: 60%;
+  height: 60%;
+  display: block;
+}
+
+/* --- Lista de documentos --- */
+.lista-documentos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: var(--espacio-s);
+}
+
+.lista-documentos__vacia {
+  color: var(--color-texto-tenue);
+  padding: var(--espacio-l) 0;
+}
+
+/* --- Muerte y final --- */
+.muerte,
+.fin {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: var(--espacio-m);
+  background: #000;
+}
+
+.muerte__titulo {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: var(--texto-titulo);
+  font-weight: 400;
+  color: var(--color-acento-claro);
+  letter-spacing: 0.08em;
+}
+
+/* Lo que ella oyó: la línea importante, en letra de título pero más pequeña. */
+.muerte__linea {
+  max-width: 32em;
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: var(--texto-l);
+  line-height: 1.4;
+  color: var(--color-texto);
+}
+
+.muerte__pista {
+  max-width: 32em;
+  margin: 0;
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-m);
+  line-height: 1.5;
+}
+
+.muerte__acciones,
+.fin__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espacio-s);
+  margin-top: var(--espacio-l);
+}
+
+.fin__texto {
+  max-width: 36em;
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: var(--texto-l);
+  line-height: 1.5;
+}
+
+.fin__estadisticas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espacio-l);
+  margin: var(--espacio-m) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-s);
+}
+
+.fin__estadisticas strong {
+  display: block;
+  color: var(--color-texto);
+  font-size: var(--texto-l);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.creditos__texto {
+  line-height: 1.7;
+  color: var(--color-texto);
+  max-width: 44em;
+}
+
+.creditos__texto h3 {
+  margin: var(--espacio-l) 0 var(--espacio-xs);
+  font-size: var(--texto-xs);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+  font-weight: 400;
+}
+
+.creditos__texto p {
+  margin: 0;
+}

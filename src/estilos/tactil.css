@@ -1,0 +1,154 @@
+/* Aquí están los controles táctiles. Los botones se agrupan en arco bajo el
+   pulgar derecho; el joystick aparece donde apoye el pulgar izquierdo.
+   El tamaño se ajusta con --escala-controles (opción de accesibilidad). */
+
+.tactil {
+  position: absolute;
+  inset: 0;
+  display: none;
+  z-index: 4;
+  pointer-events: none;
+  --boton: calc(clamp(50px, 10.5vmin, 80px) * var(--escala-controles));
+  --separacion: calc(var(--boton) * 1.28);
+}
+
+.tactil--visible {
+  display: block;
+}
+
+.tactil__zona {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.tactil__zona--mover {
+  left: 0;
+  width: 45%;
+}
+
+.tactil__zona--mirar {
+  right: 0;
+  width: 55%;
+}
+
+.tactil__joystick {
+  position: absolute;
+  width: calc(var(--boton) * 1.7);
+  height: calc(var(--boton) * 1.7);
+  border: 1px solid rgba(230, 222, 205, 0.22);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230, 222, 205, 0.06), rgba(0, 0, 0, 0.2));
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 150ms ease, border-color 150ms ease;
+  pointer-events: none;
+}
+
+.tactil__joystick--visible {
+  opacity: 1;
+}
+
+.tactil__joystick--correr {
+  border-color: rgba(210, 74, 60, 0.7);
+}
+
+.tactil__palanca {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--boton) * 0.7);
+  height: calc(var(--boton) * 0.7);
+  margin: calc(var(--boton) * -0.35) 0 0 calc(var(--boton) * -0.35);
+  border-radius: 50%;
+  background: rgba(230, 222, 205, 0.35);
+}
+
+.tactil__botones {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tactil__boton {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: var(--boton);
+  height: var(--boton);
+  padding: 0;
+  border: 1px solid rgba(230, 222, 205, 0.25);
+  border-radius: 50%;
+  background: rgba(8, 7, 6, 0.35);
+  color: rgba(230, 222, 205, 0.8);
+  pointer-events: auto;
+  touch-action: none;
+  transition: transform 90ms ease, background 120ms ease, opacity 150ms ease;
+}
+
+.tactil__boton svg {
+  width: 48%;
+  height: 48%;
+}
+
+.tactil__boton--activo {
+  transform: scale(0.92);
+  background: rgba(230, 222, 205, 0.22);
+}
+
+.tactil__boton--encendido {
+  border-color: rgba(230, 222, 205, 0.75);
+  color: #fff;
+}
+
+.tactil__boton--oculto {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Posiciones en arco (anclado abajo a la derecha, respetando el notch). */
+.tactil__boton--aguantar {
+  right: var(--seguro-der);
+  bottom: var(--seguro-abajo);
+  width: calc(var(--boton) * 1.15);
+  height: calc(var(--boton) * 1.15);
+}
+
+.tactil__boton--escuchar {
+  right: calc(var(--seguro-der) + var(--separacion) * 1.05);
+  bottom: var(--seguro-abajo);
+}
+
+.tactil__boton--agacharse {
+  right: var(--seguro-der);
+  bottom: calc(var(--seguro-abajo) + var(--separacion) * 1.05);
+}
+
+.tactil__boton--interactuar {
+  right: calc(var(--seguro-der) + var(--separacion) * 1.1);
+  bottom: calc(var(--seguro-abajo) + var(--separacion) * 1.1);
+  width: calc(var(--boton) * 1.2);
+  height: calc(var(--boton) * 1.2);
+  border-color: rgba(210, 74, 60, 0.8);
+  background: rgba(60, 12, 8, 0.45);
+  color: #fff;
+}
+
+.tactil__boton--linterna {
+  right: calc(var(--seguro-der) + var(--separacion) * 2.1);
+  bottom: var(--seguro-abajo);
+}
+
+.tactil__boton--senuelo {
+  right: var(--seguro-der);
+  bottom: calc(var(--seguro-abajo) + var(--separacion) * 2.1);
+}
+
+.tactil__boton--pausa {
+  top: var(--seguro-arriba);
+  right: var(--seguro-der);
+  width: calc(var(--boton) * 0.75);
+  height: calc(var(--boton) * 0.75);
+}

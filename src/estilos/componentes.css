@@ -1,0 +1,272 @@
+/* Aquí están mis componentes reutilizables: botones, deslizadores,
+   interruptores, selectores y diálogos. Todos con objetivos táctiles
+   de al menos 44 px y foco visible para teclado y mando. */
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-s);
+  min-height: var(--alto-boton);
+  padding: 0 var(--espacio-m);
+  border: 1px solid transparent;
+  border-radius: var(--radio);
+  background: transparent;
+  color: var(--color-texto);
+  font-size: var(--texto-m);
+  letter-spacing: 0.06em;
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--transicion), background var(--transicion), border-color var(--transicion), transform var(--transicion);
+}
+
+.boton::before {
+  content: "";
+  width: 0.5em;
+  height: 1px;
+  background: var(--color-acento-claro);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: opacity var(--transicion), transform var(--transicion), width var(--transicion);
+}
+
+.boton:hover,
+.boton:focus-visible {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+  outline: none;
+}
+
+.boton:hover::before,
+.boton:focus-visible::before {
+  opacity: 1;
+  width: 1.4em;
+  transform: scaleX(1);
+}
+
+.boton:active {
+  transform: translateX(2px);
+}
+
+.boton:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.boton--principal {
+  color: #fff;
+}
+
+.boton--peligro:hover,
+.boton--peligro:focus-visible {
+  color: var(--color-acento-claro);
+}
+
+.boton--icono {
+  justify-content: center;
+  width: var(--alto-boton);
+  padding: 0;
+}
+
+.boton--icono::before {
+  display: none;
+}
+
+.boton--icono svg {
+  width: 55%;
+  height: 55%;
+}
+
+.boton--contorno {
+  border-color: var(--color-borde);
+  justify-content: center;
+}
+
+.boton--contorno::before {
+  display: none;
+}
+
+/* --- Filas de ajustes --- */
+.fila-ajuste {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--espacio-s) var(--espacio-m);
+  min-height: var(--alto-boton);
+  padding: var(--espacio-xs) 0;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.fila-ajuste__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: min(100%, 14em);
+  flex: 1 1 14em;
+}
+
+.fila-ajuste__etiqueta {
+  font-size: var(--texto-m);
+}
+
+.fila-ajuste__ayuda {
+  font-size: var(--texto-xs);
+  color: var(--color-texto-tenue);
+}
+
+.fila-ajuste__control {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-s);
+  flex: 0 1 auto;
+}
+
+/* --- Deslizador --- */
+.deslizador {
+  -webkit-appearance: none;
+  appearance: none;
+  width: clamp(130px, 22vw, 320px);
+  height: var(--alto-boton);
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+
+.deslizador::-webkit-slider-runnable-track {
+  height: 3px;
+  background: linear-gradient(to right, var(--color-acento-claro) var(--relleno, 50%), rgba(255, 255, 255, 0.15) var(--relleno, 50%));
+}
+
+.deslizador::-moz-range-track {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.deslizador::-moz-range-progress {
+  height: 3px;
+  background: var(--color-acento-claro);
+}
+
+.deslizador::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -8.5px;
+  border-radius: 50%;
+  background: var(--color-texto);
+  border: 3px solid var(--color-fondo);
+  box-shadow: 0 0 0 1px var(--color-borde);
+}
+
+.deslizador::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-texto);
+  border: 3px solid var(--color-fondo);
+}
+
+.deslizador__valor {
+  min-width: 3.2em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-s);
+}
+
+/* --- Interruptor --- */
+.interruptor {
+  position: relative;
+  width: 3.2em;
+  height: 1.7em;
+  min-height: 28px;
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: background var(--transicion);
+}
+
+.interruptor::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0.2em;
+  width: 1.2em;
+  height: 1.2em;
+  border-radius: 50%;
+  background: var(--color-texto-tenue);
+  transform: translateY(-50%);
+  transition: left var(--transicion), background var(--transicion);
+}
+
+.interruptor[aria-checked="true"] {
+  background: rgba(163, 35, 27, 0.55);
+}
+
+.interruptor[aria-checked="true"]::after {
+  left: calc(100% - 1.4em);
+  background: #fff;
+}
+
+/* --- Selector de opciones --- */
+.selector {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  padding: 2px;
+}
+
+.selector__opcion {
+  min-height: calc(var(--alto-boton) - 8px);
+  padding: 0 var(--espacio-m);
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--color-texto-tenue);
+  cursor: pointer;
+  font-size: var(--texto-s);
+  letter-spacing: 0.04em;
+}
+
+.selector__opcion[aria-checked="true"] {
+  background: var(--color-texto);
+  color: var(--color-fondo);
+}
+
+/* --- Diálogo de confirmación --- */
+.dialogo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--seguro-arriba) var(--seguro-der) var(--seguro-abajo) var(--seguro-izq);
+  background: rgba(0, 0, 0, 0.75);
+  pointer-events: auto;
+  z-index: 50;
+}
+
+.dialogo__caja {
+  width: min(100%, 34em);
+  max-height: 100%;
+  overflow: auto;
+  padding: var(--espacio-l);
+  border: 1px solid var(--color-borde);
+  background: var(--color-panel);
+}
+
+.dialogo__texto {
+  margin: 0 0 var(--espacio-l);
+  line-height: 1.5;
+}
+
+.dialogo__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espacio-s);
+}

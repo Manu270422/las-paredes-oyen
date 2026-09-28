@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 56" width="1280" height="56" role="img" aria-label="Un latido recorre la línea">
+  <defs>
+    <linearGradient id="bordes" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="0.18" stop-color="#fff" stop-opacity="1"/>
+      <stop offset="0.82" stop-color="#fff" stop-opacity="1"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="desvanecer" maskUnits="userSpaceOnUse" x="0" y="0" width="1280" height="56">
+      <rect width="1280" height="56" fill="url(#bordes)"/>
+    </mask>
+    <!-- Un latido cada 640 px; lo repito para que el desplazamiento no tenga cortes. -->
+    <path id="latido" d="M0 28 H250 L262 22 L272 28 H286 L292 31 L300 6 L309 46 L316 24 L322 28 H350 L362 23 L376 28 H640"/>
+  </defs>
+  <style>
+    .pulso { animation: pulso 5s linear infinite; }
+    @keyframes pulso { from { transform: translateX(0); } to { transform: translateX(-640px); } }
+    @media (prefers-reduced-motion: reduce) { .pulso { animation: none; } }
+  </style>
+  <g mask="url(#desvanecer)">
+    <line x1="0" y1="28" x2="1280" y2="28" stroke="#2a241e" stroke-width="1"/>
+    <g class="pulso" fill="none" stroke="#d24a3c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+      <use href="#latido"/>
+      <use href="#latido" x="640"/>
+      <use href="#latido" x="1280"/>
+    </g>
+  </g>
+</svg>

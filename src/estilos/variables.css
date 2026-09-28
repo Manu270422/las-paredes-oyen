@@ -1,0 +1,71 @@
+/* Aquí defino mis variables de diseño: colores, tipografías, espacios y tamaños.
+   Todo escala con clamp() para verse bien desde un celular en horizontal
+   hasta un televisor 4K, sin saltos bruscos entre dispositivos. */
+
+:root {
+  /* Paleta: negro de edificio abandonado, papel envejecido, rojo de cinta de medición. */
+  --color-fondo: #050505;
+  --color-panel: rgba(10, 9, 8, 0.92);
+  --color-panel-claro: rgba(22, 20, 18, 0.9);
+  --color-borde: rgba(216, 210, 196, 0.14);
+  --color-texto: #d8d2c4;
+  --color-texto-tenue: #8d877b;
+  --color-acento: #a3231b;
+  --color-acento-claro: #d24a3c;
+  --color-foco: #e8dcc0;
+  --color-papel: #ddd4bf;
+  --color-tinta: #1d1a16;
+
+  /* Tipografías del sistema: el juego funciona offline y no descarga fuentes. */
+  --fuente-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --fuente-titulo: Georgia, "Times New Roman", Times, serif;
+  --fuente-maquina: "Courier New", Courier, "Liberation Mono", monospace;
+  --fuente-mano: "Segoe Print", "Bradley Hand", "Chalkboard SE", "Comic Neue", cursive;
+
+  /* Zonas seguras (notch, barra de gestos) + margen mínimo de 16 px. */
+  --seguro-arriba: max(12px, env(safe-area-inset-top, 0px));
+  --seguro-abajo: max(12px, env(safe-area-inset-bottom, 0px));
+  --seguro-izq: max(16px, env(safe-area-inset-left, 0px));
+  --seguro-der: max(16px, env(safe-area-inset-right, 0px));
+
+  /* Espacios fluidos. */
+  --espacio-xs: clamp(4px, 0.6vmin, 8px);
+  --espacio-s: clamp(6px, 1.1vmin, 12px);
+  --espacio-m: clamp(10px, 2vmin, 20px);
+  --espacio-l: clamp(16px, 3.4vmin, 36px);
+  --espacio-xl: clamp(22px, 5vmin, 60px);
+
+  /* Tamaños de texto fluidos. */
+  --texto-xs: clamp(11px, 0.55rem + 0.4vmin, 13px);
+  --texto-s: clamp(12px, 0.6rem + 0.6vmin, 15px);
+  --texto-m: clamp(14px, 0.7rem + 0.8vmin, 18px);
+  --texto-l: clamp(17px, 0.8rem + 1.4vmin, 26px);
+  --texto-titulo: clamp(30px, 1rem + 6.5vmin, 88px);
+
+  /* Controles: mínimo 44 px de alto para dedos (guía de accesibilidad). */
+  --alto-boton: clamp(44px, 6.2vmin, 58px);
+  --radio: 3px;
+  --escala-controles: 1;
+  --transicion: 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Pantallas grandes (monitores 2K/4K sin escalado, televisores): todo un poco más grande. */
+@media (min-width: 2200px) {
+  :root {
+    --texto-s: clamp(15px, 0.75vw, 22px);
+    --texto-m: clamp(18px, 0.95vw, 28px);
+    --texto-l: clamp(24px, 1.3vw, 38px);
+    --texto-titulo: clamp(80px, 4.5vw, 150px);
+    --alto-boton: clamp(56px, 2.9vw, 84px);
+  }
+}
+
+/* Pantallas bajitas (celular en horizontal): compacto. */
+@media (max-height: 480px) {
+  :root {
+    --texto-titulo: clamp(26px, 9vh, 44px);
+    --alto-boton: 44px;
+    --espacio-l: 14px;
+    --espacio-xl: 18px;
+  }
+}
