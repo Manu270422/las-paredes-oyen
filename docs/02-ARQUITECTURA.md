@@ -16,7 +16,7 @@
 ```text
 LasParedesOyen/
 ├─ index.html                  Contenedor: lienzo + capa de UI
-├─ public/                     Manifiesto PWA (horizontal) e ícono
+├─ public/                     Manifiesto PWA (horizontal), ícono y audio/manifiesto.json (grabaciones reales)
 ├─ docs/                       Diseño, arquitectura, hoja de ruta
 └─ src/
    ├─ main.ts                  Punto de entrada (estilos + arranque + errores)
@@ -28,7 +28,7 @@ LasParedesOyen/
    │  ├─ shaders/              GLSL del postprocesado
    │  └─ texturas/             Generador procedural, recetas, cookie de la linterna
    ├─ audio/                   Motor, fuentes 3D, reverberación, ambiente, biblioteca
-   │  └─ sintesis/             Sintetizador y recetas de los 34 sonidos
+   │  └─ sintesis/             Sintetizador y recetas de los 39 sonidos
    ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, colisiones
    │  └─ datos/                Tipos de mapa y el Piso 4
    ├─ jugador/                 Jugador, cámara, respiración, corazón, linterna, grabadora
@@ -73,6 +73,16 @@ entrada → jugador (movimiento, ruido, respiración) → interacción → graba
 `evento-director`, `director-fase`, `grabadora`, `imitacion`, `encuentro`. Además se empezaron a emitir
 `susto`, `jugador-atrapado` (con `motivo` y `enPared`), `fin-demo` y `documento`, que estaban declarados pero nadie publicaba.
 
+## Añadidos en el Sprint 2
+
+- Bus: `director-adaptacion` (estilo dominante del jugador y alivio), `grabacion-captada` (huellas y presencia de cada cinta);
+  `evento-director` lleva la `carga` de tensión.
+- `director/PresupuestoTension.ts` y `director/PerfilJugador.ts`: memoria de tensión y adaptación (el director se conecta al bus con `conectar`).
+- `ia/FirmaSonora.ts`: tabla de datos con el sonido de cada estado de la criatura.
+- `jugador/CapturaGrabadora.ts`: observa el motor de audio (`MotorAudio.observar`) mientras se mide.
+- `nucleo/SecuenciaMuerte.ts` y `nucleo/Susto.ts`: fuera de `Juego.ts`; la muerte avanza en tiempo de juego.
+- `audio/BibliotecaSonidos.ts`: sintetiza todo y luego carga las grabaciones de `public/audio/manifiesto.json`.
+
 ## Estados de la aplicación
 
 `cargando → inicio (gesto: audio + pantalla completa) → menú ⇄ jugando ⇄ pausa / documento → muerte | fin`
@@ -85,11 +95,12 @@ entrada → jugador (movimiento, ruido, respiración) → interacción → graba
 | Logros / estadísticas | Suscriptores del bus (`bandera`, `entidad-estado`) |
 | Contenido adicional | Nuevos `mundo/datos/*.ts` + eventos en `director/eventos/` |
 | Cooperativo | El bus y las banderas ya separan "qué pasó" de "quién lo muestra"; faltaría red (WebRTC) |
-| Audio grabado real | Reemplazar recetas en `audio/sintesis/RecetasSonidos.ts` manteniendo `IdSonido` |
+| Audio grabado real | **Ya implementado**: una línea en `public/audio/manifiesto.json` por `IdSonido` (reemplaza o suma variantes, con ganancia) |
 | Modelos 3D | Reemplazar `ia/ModeloEntidad.ts` y `mundo/Muebles.ts` por glTF |
 
 ## Multiplataforma
 
 - **Hoy:** cualquier navegador con WebGL 2 (Chrome, Edge, Firefox, Safari 15+), Windows/macOS/Linux/Android/iOS.
+- **Publicado:** Vercel ejecuta `npm run build` y sirve `dist/` en `almendros.elmundodemanu.com` (dominio en Hostinger).
 - **PC nativo:** Tauri 2 (ejecutable ~10 MB).
 - **Móvil nativo:** Capacitor (Android/iOS, con orientación horizontal forzada desde el manifiesto nativo).

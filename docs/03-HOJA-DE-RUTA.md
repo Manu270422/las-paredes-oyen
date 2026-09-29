@@ -1,5 +1,7 @@
 # Hoja de ruta
 
+> Publicado en Vercel: [almendros.elmundodemanu.com](https://almendros.elmundodemanu.com).
+
 ## Hecho en este ciclo (vertical slice jugable)
 
 | Fase | Contenido | Estado |
@@ -8,7 +10,7 @@
 | 2. Plataforma, entrada y render | Detección de dispositivo, orientación horizontal, pantalla completa, teclado/ratón, mando, táctil, WebGL2, perfiles de calidad, resolución dinámica, postprocesado propio | ✅ |
 | 3. Escenario | Rejilla de datos → geometría (vanos de puertas, guardaescobas), texturas procedurales PBR, muebles y sábanas, colisiones | ✅ |
 | 4. Iluminación | Linterna con cookie y sombras, pool de luces, lámparas con parpadeo e interferencia, niebla | ✅ |
-| 5. Audio | Motor Web Audio, HRTF, oclusión por muros, reverb por habitación, 34 sonidos sintetizados, ambiente y dron | ✅ |
+| 5. Audio | Motor Web Audio, HRTF, oclusión por muros, reverb por habitación, 34 sonidos sintetizados (39 desde el Sprint 2), ambiente y dron | ✅ |
 | 6. Interacción | Puertas (llave, lento/normal), documentos, recogibles, medición, tablero, radio | ✅ |
 | 7. IA | Criatura con 5 estados, percepción auditiva, memoria, A*, apertura de puertas, falsa retirada, imitación de pasos | ✅ |
 | 8. Eventos de terror | Director con fases + 13 eventos + memoria del mundo + visibilidad | ✅ |

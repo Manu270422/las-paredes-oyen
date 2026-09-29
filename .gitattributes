@@ -1,0 +1,15 @@
+# Todo el texto se guarda y se descarga con LF, en cualquier sistema.
+# Evita los avisos "LF will be replaced by CRLF" y los diffs de solo finales de línea.
+* text=auto eol=lf
+
+# Binarios: nunca convertir.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.wav binary
+*.ogg binary
+*.mp3 binary
+*.glb binary
+*.ktx2 binary

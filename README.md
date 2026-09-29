@@ -154,7 +154,8 @@ Sus reglas se pueden aprender. Descubrirlas es parte del miedo. Descubrir que ti
 2. Dentro de los muros oye mejor: las paredes le llevan el sonido.
 3. Hacer ruido pegado a la pared te delata más.
 4. Si lo ves y no haces ruido, a veces se retira.
-5. Solo mata cuando está cazando. La caza siempre tiene aviso y una causa.
+5. Solo mata cuando está cazando. La caza siempre tiene aviso y una causa: nunca sale del muro cazando,
+   y antes de lanzarse se queda quieta un instante, gira hacia ti y jadea.
 6. Si estás quieto, no camina encima de ti: se detiene a unos dos metros y **escucha**. Si contienes el aire, se va.
 
 **Las excepciones**
@@ -178,9 +179,8 @@ stateDiagram-v2
     state "Retirada" as Retirada
 
     [*] --> Paredes
-    Paredes --> Investigando: oye algo cerca
+    Paredes --> Investigando: te oye (sale del muro a 5 m o más y se queda escuchando)
     Paredes --> Acechando: el director pide presión
-    Paredes --> Cazando: ruido muy fuerte
     Investigando --> Encuentro: llega a ~2.5 m y estás quieto
     Encuentro --> Retirada: silencio total
     Encuentro --> Cazando: respiras, jadeas o te mueves
@@ -226,7 +226,10 @@ de dibujo sobre WebGL 2: la IA, el audio, el director, la física, la interacci�
 - Web Audio API nativa, audio 3D binaural (**HRTF**)
 - **Oclusión por muros**: un golpe detrás de dos paredes suena apagado y grave
 - Reverberación por convolución distinta en cada habitación
-- **34 sonidos sintetizados por código**, con variantes: cero archivos de audio
+- **39 sonidos sintetizados por código**, con variantes
+- **Audio híbrido**: cualquier sonido se puede reemplazar por una grabación real desde `public/audio/manifiesto.json`
+  (hoy está vacío: todo lo que suena sigue siendo síntesis)
+- **Firma sonora** de El Inquilino por estado: su jadeo al cazar te dice dónde está
 - Tono de sala, dron que sube con la tensión y acúfeno cuando el miedo es alto
 
 </td>
@@ -247,6 +250,8 @@ de dibujo sobre WebGL 2: la IA, el audio, el director, la física, la interacci�
 **🎬 Director de terror**
 - Ciclo de tensión: calma → acumulación → pico → relajación
 - **13 eventos** con condiciones propias y selección por novedad
+- **Memoria de tensión**: no apila sustos ni pisa una medición o un encuentro
+- Se adapta a cómo juegas (pegado a los muros, corriendo, atrincherado) y afloja si mueres varias veces seguidas
 - Memoria del mundo: qué habitaciones y puertas ya conoces
 - Sistema de visibilidad: los cambios ocurren fuera de tu vista
 
@@ -356,6 +361,8 @@ Abre `http://localhost:5173`. Para jugar en el celular, conéctalo a la misma re
 | `npm run preview` | Sirve la versión final para probarla |
 
 La versión final es un sitio estático con rutas relativas: `dist/` se puede publicar en cualquier dominio o subcarpeta.
+La versión pública está **publicada en Vercel** (que ejecuta `npm run build`) con el dominio
+[almendros.elmundodemanu.com](https://almendros.elmundodemanu.com).
 
 > [!TIP]
 > En modo desarrollo el juego queda expuesto en la consola del navegador como `window.__juego`, por ejemplo
@@ -381,9 +388,11 @@ en los [issues del repositorio](https://github.com/Manu270422/las-paredes-oyen/i
 - [x] **Vertical slice**: piso 4, cinco documentos, tres mediciones, el apagón y el final
 - [x] **IA acústica** con encuentro de presencia, imitación en etapas y muertes explicadas
 - [x] **Telemetría local** y protocolo de playtesting
-- [ ] **Playtesting** con al menos cinco personas y ajuste con esos datos
-- [ ] **Firma sonora** de El Inquilino por estado y audio híbrido (grabaciones reales + síntesis)
-- [ ] **La grabadora como segunda realidad**: lo que capta sale de lo que de verdad pasó fuera de tu vista
+- [x] **Firma sonora** de El Inquilino por estado y audio híbrido (grabaciones reales + síntesis)
+- [x] **La grabadora como segunda realidad**: lo que capta sale de lo que de verdad pasó fuera de tu vista
+- [x] **Director adaptativo**: memoria de tensión, estilo de juego y alivio tras muertes seguidas
+- [ ] **Playtesting** con al menos cinco personas (una en celular) y ajuste con esos datos
+- [ ] **Pisos como paquetes de datos** y guardado con migración de versiones (Sprint 3)
 - [ ] **Calidad visual**: El Inquilino en glTF con esqueleto, sin perder sus 12 poses por segundo
 - [ ] **Nuevos espacios**: *el hueco* entre el 401 y el 403, el piso 3, el cuarto de bombas y la azotea
 - [ ] **Versiones nativas** para PC (Tauri) y móvil (Capacitor)
@@ -415,7 +424,7 @@ while something blind that lives inside the walls listens for you. Every step, e
 flashlight is information for it.
 
 Built without a commercial engine: TypeScript, WebGL 2 (Three.js as a drawing library only) and the Web Audio API,
-with binaural HRTF audio, wall occlusion, per-room convolution reverb, 34 procedurally synthesized sounds, an acoustic
+with binaural HRTF audio, wall occlusion, per-room convolution reverb, 39 procedurally synthesized sounds, an acoustic
 AI, and a horror director. It runs in the browser on PC, phones and tablets. The game is currently Spanish-only.
 Play it at [almendros.elmundodemanu.com](https://almendros.elmundodemanu.com). Headphones required.
 

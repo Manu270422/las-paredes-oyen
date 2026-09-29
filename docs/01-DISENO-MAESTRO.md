@@ -62,7 +62,7 @@ No es un clon de: Amnesia (no hay cordura ni escondites mágicos), Outlast (no h
   2. Dentro de los muros oye **mejor** (los muros casi no lo atenúan).
   3. Hacer ruido pegado a la pared te delata más.
   4. Si lo ves y no haces ruido, a veces se retira.
-  5. **Solo mata cuando caza.** La caza siempre tiene aviso (su respiración, interferencia, sobresalto) y siempre una causa que la pantalla de muerte puede explicar.
+  5. **Solo mata cuando caza.** La caza siempre tiene aviso (su respiración, interferencia, sobresalto, y 0.8 s quieta girando hacia ti antes de lanzarse) y siempre una causa que la pantalla de muerte puede explicar. **Nunca sale del muro cazando**: sale a 5 m o más, se queda 1.5 s escuchando y va a investigar (hotfix del 2026-09-29: antes salía a 3.5 m ya cazando y mataba en 1.3 s).
   6. **No camina encima de ti si estás quieto** (*encuentro de presencia*, Sprint 1): se detiene a ~2.5 m, inhala despacio y **escucha** 3–4.5 s. Si contienes el aire y no te mueves, se retira. Si respiras, jadeas o te mueves, caza. Mientras ella inhala (0.9 s), su respiración tapa la tuya: es tu ventana para reaccionar.
 - **Excepciones (rompen la regla):**
   - Si **te mueves** cerca de ella (< 1.9 m), te siente aunque no hagas ruido. Si estás prácticamente encima (< 1.2 m), aunque estés quieto.
@@ -72,6 +72,7 @@ No es un clon de: Amnesia (no hay cordura ni escondites mágicos), Outlast (no h
 - **Imitación en etapas** (`ia/Imitador.ts`): 1) eco perfecto de tus pasos ("¿acústica?"); 2) cuando te detienes, da **un paso más**; 3) tras la grabación del 403, cuando te detienes **repite tu ritmo** acercándose… y un último paso que ya no es tuyo. La etapa sube con lo vivido, no al azar.
 - **Estados de IA:** en las paredes · investigando (con encuentro) · cazando · acechando · retirada.
 - **Señales aprendibles:** parpadeo de linterna y lámparas cerca de él, pasos húmedos con un segundo impacto arrastrado, rasguños dentro del muro.
+- **Firma sonora por estado** (`ia/FirmaSonora.ts`): roza el muro cuando va hacia un ruido, le crujen las articulaciones cuando investiga, jadea al cazar (el jadeo dice dónde está), respira lentísimo al acechar y el edificio se calla a su alrededor, arrastra un pie al retirarse (en la falsa retirada, el arrastre se calla).
 - **Aparición:** solo por un punto que el jugador **no** está mirando.
 
 ## 7. Mecánicas principales (cada una con razón de ser)
@@ -101,6 +102,8 @@ No es un clon de: Amnesia (no hay cordura ni escondites mágicos), Outlast (no h
 
 - **DirectorTerror** decide *cuándo* (fases, enfriamientos, tope de intensidad creciente) y *qué* (13 eventos, cada uno en su archivo, con condiciones propias).
 - Selección **ponderada por novedad**: lo que no ha pasado hace rato pesa más; nada se siente repetido.
+- **Memoria de tensión** (`PresupuestoTension`): cada susto gasta presupuesto (vida media 40 s); nunca lanza eventos durante una medición, un encuentro o una caza.
+- **Perfil del jugador** (`PerfilJugador`): pegado a los muros, corriendo, atrincherado o escuchando; cada evento declara a qué estilo "contesta". Tras 2+ muertes seguidas sin avanzar, el director afloja (hasta −45 %).
 - **MemoriaMundo**: habitaciones visitadas, tiempo en cada una, puertas vistas/usadas → "esa habitación no era así".
 - **Visibilidad**: casi todo cambio ocurre fuera de la vista; lo visible ocurre en la **periferia**, 0.22 s.
 - **Guion** separado del director para los golpes narrativos que deben ocurrir siempre (apagón, transcripciones, final).
@@ -111,7 +114,9 @@ No es un clon de: Amnesia (no hay cordura ni escondites mágicos), Outlast (no h
 - **Audio 3D HRTF** (binaural) en calidad media/alta; paneo simple en baja.
 - **Oclusión por rejilla**: cuento muros y puertas cerradas entre oyente y fuente → filtro pasa-bajos + atenuación; los muros "reverberan" más.
 - **Reverb por habitación** con convolución: impulsos generados por código (pasillo, sala, cuarto, baño, escalera, ducto metálico) y fundido cruzado al cambiar de cuarto.
-- **Todo sintetizado** (34 sonidos con variantes): pasos por superficie, crujidos por *stick-slip*, golpes, respiración con formantes, susurros con fonemas falsos, zumbido de 60 Hz, tuberías inarmónicas.
+- **Todo sintetizado** (39 sonidos con variantes): pasos por superficie, crujidos por *stick-slip*, golpes, respiración con formantes, susurros con fonemas falsos, zumbido de 60 Hz, tuberías inarmónicas, y la firma de la criatura.
+- **Audio híbrido**: `public/audio/manifiesto.json` permite reemplazar (o sumar variantes a) cualquier `IdSonido` con una grabación real; si falla, queda la síntesis. Hoy el manifiesto está vacío.
+- **La grabadora como segunda realidad** (`jugador/CapturaGrabadora.ts`): la cinta capta los sonidos reales a < 12 m y la presencia silenciosa de la criatura, con dirección y distancia.
 - **Modo escuchar**: baja ambiente, sube la entidad, reduce la oclusión.
 - **Dron de tensión** (segunda menor) + **acúfeno** con estrés alto.
 - Subtítulos de efectos **con dirección** (accesibilidad).
@@ -184,11 +189,11 @@ Ver `03-HOJA-DE-RUTA.md`.
 |---|---|
 | Rendimiento en móviles de gama baja | Perfiles + resolución dinámica + pool de luces; probar en un Android de ~150 USD cada fase |
 | iOS Safari: sin bloqueo de orientación, audio más estricto | Aviso de orientación + gesto inicial obligatorio (implementado) |
-| Audio sintético puede sonar "de juguete" en foley cercano | Arquitectura permite reemplazar cualquier `IdSonido` por grabación real sin tocar lógica |
+| Audio sintético puede sonar "de juguete" en foley cercano | `public/audio/manifiesto.json` reemplaza cualquier `IdSonido` por una grabación real sin tocar lógica (implementado, falta grabar) |
 | Arte 3D procedural limita el techo visual | Pipeline de modelos glTF + texturas CC0 escaneadas en fase 4 |
 | IA "injusta" (muertes que se sienten aleatorias) | Señales aprendibles + pistas en pantalla de muerte + playtesting con métricas |
 | Pointer Lock en navegadores | Aviso "haz clic para mirar" + pausa automática al perderlo (implementado) |
 
 ## 20. Qué construimos primero
 
-Ya construido: **Fases 1–9 en forma de vertical slice jugable** y el **Sprint 1 de la Fase 10** (justicia de la IA, encuentro de presencia, imitación en etapas, muerte explicada, telemetría local). Lo siguiente: **playtesting real con 5 personas con audífonos** siguiendo `04-PROTOCOLO-PLAYTESTING.md`, y afinar con esos datos antes de agregar contenido.
+Ya construido y publicado en Vercel (`almendros.elmundodemanu.com`): **Fases 1–9 en forma de vertical slice jugable**, el **Sprint 1 de la Fase 10** (justicia de la IA, encuentro de presencia, imitación en etapas, muerte explicada, telemetría local) y el **Sprint 2** (director adaptativo, firma sonora, audio híbrido, grabadora como segunda realidad). Lo siguiente (Sprint 3): infraestructura que no depende de datos (pisos como paquetes, guardado versionado, pruebas en el repo) mientras se hace el **playtesting real con 5 personas con audífonos** (Gate 1). Sin esos datos no se toca balance ni se agrega contenido.
