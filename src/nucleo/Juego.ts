@@ -26,6 +26,7 @@ import { Guion } from '../narrativa/Guion';
 import { MemoriaMundo } from '../director/MemoriaMundo';
 import { DirectorTerror } from '../director/DirectorTerror';
 import { SistemaGuardado, type DatosPartida } from '../guardado/SistemaGuardado';
+import { Perfil } from '../guardado/Perfil';
 import { GestorUI } from '../ui/GestorUI';
 import { Telemetria } from '../telemetria/Telemetria';
 import { aplicarParametroTelemetria } from '../telemetria/ParametroUrl';
@@ -59,6 +60,8 @@ export class Juego {
   private readonly pantalla = new GestorPantalla();
   private readonly dispositivo = detectarDispositivo();
   private readonly guardado = new SistemaGuardado();
+  /** Mejores marcas y totales del jugador: sobrevive a todas las partidas. */
+  private readonly perfilGuardado = new Perfil();
   private readonly escena = new Scene();
   private readonly interaccion = new SistemaInteraccion();
   /** Telemetría local de playtesting: escucha el bus, no toca la lógica de nadie. */
@@ -267,6 +270,7 @@ export class Juego {
         this.guardarPartida();
       }
     });
+    this.perfilGuardado.conectar(this.bus);
     this.bus.on('interferencia', ({ intensidad }) => {
       this.interferencia = Math.max(this.interferencia, intensidad);
     });
@@ -335,6 +339,7 @@ export class Juego {
   private nuevaPartida(): void {
     this.guardado.borrar();
     this.memoria.reiniciarEstadisticas();
+    this.perfilGuardado.registrarInicio();
     this.director.olvidarPerfil();
     this.tiempoJugado = 0;
     this.comenzar(null, 'nueva');
@@ -497,6 +502,7 @@ export class Juego {
       sustos: this.memoria.sustos,
       persecuciones: this.memoria.persecuciones,
       muertes: this.memoria.muertes,
+      marcas: this.perfilGuardado.registrarFinal(this.tiempoJugado, this.memoria.muertes),
     });
     this.ui.hud.fundir(false, 0.5);
   }

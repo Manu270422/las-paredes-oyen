@@ -2,6 +2,7 @@
 // partida y la vuelta al menú. Sin fanfarria: el silencio es parte del final.
 import { crearBoton } from '../componentes/Boton';
 import type { PuenteTelemetria } from '../PuenteTelemetria';
+import type { MarcasFinal } from '../../guardado/Perfil';
 import { Pantalla } from './Pantalla';
 
 export interface EstadisticasFin {
@@ -9,7 +10,11 @@ export interface EstadisticasFin {
   sustos: number;
   persecuciones: number;
   muertes: number;
+  /** Las mejores marcas del perfil (sobreviven a todas las partidas). */
+  marcas: MarcasFinal;
 }
+
+const reloj = (segundos: number) => `${Math.floor(segundos / 60)}:${Math.floor(segundos % 60).toString().padStart(2, '0')}`;
 
 export class PantallaFin extends Pantalla {
   private readonly lista: HTMLUListElement;
@@ -42,13 +47,16 @@ export class PantallaFin extends Pantalla {
   fijarEstadisticas(e: EstadisticasFin): void {
     this.exportar.hidden = !this.telemetria.activa();
     this.exportar.textContent = 'Exportar registro de la prueba';
-    const minutos = Math.floor(e.tiempo / 60);
-    const segundos = Math.floor(e.tiempo % 60).toString().padStart(2, '0');
+    const m = e.marcas;
+    // Sin fanfarria: la marca es un dato más, dicho en voz baja.
+    const mejor: [string, string] =
+      m.finales <= 1 ? [reloj(m.mejorTiempo), 'Tu primera vez hasta el final'] : m.nuevoMejorTiempo ? [reloj(m.mejorTiempo), 'Tu mejor tiempo. Nunca saliste tan rápido'] : [reloj(m.mejorTiempo), 'Tu mejor tiempo'];
     const datos: Array<[string, string]> = [
-      [`${minutos}:${segundos}`, 'Tiempo'],
+      [reloj(e.tiempo), 'Tiempo'],
       [String(e.sustos), 'Cosas que cambiaron'],
       [String(e.persecuciones), 'Veces que te cazó'],
       [String(e.muertes), 'Veces que te oyó'],
+      mejor,
     ];
     this.lista.replaceChildren(
       ...datos.map(([valor, nombre]) => {

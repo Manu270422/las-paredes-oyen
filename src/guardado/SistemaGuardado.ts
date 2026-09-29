@@ -1,12 +1,17 @@
 // Aquí guardo y cargo la partida (localmente, en el navegador).
-// El formato lleva versión: si en el futuro cambio la estructura, puedo
-// migrar partidas viejas en vez de romperlas. Este mismo formato podrá
-// sincronizarse con la nube más adelante sin cambiar nada del juego.
+// El formato lleva versión y pasa por las migraciones de Versionado.ts:
+// cuando cambie la estructura, agrego un paso "vN → vN+1" en MIGRACIONES y
+// las partidas viejas siguen cargando. Si encuentro una partida de una versión
+// MÁS NUEVA del juego (se volvió a publicar una versión vieja), no la toco.
 import type { DatosProgreso } from '../narrativa/Progreso';
-import { borrar, escribirJSON, leerJSON } from '../utilidades/Almacenamiento';
+import { borrar, escribirJSON } from '../utilidades/Almacenamiento';
+import { leerVersionado } from './AlmacenVersionado';
+import type { Migracion } from './Versionado';
+
+export const VERSION_PARTIDA = 1;
 
 export interface DatosPartida {
-  version: 1;
+  version: typeof VERSION_PARTIDA;
   puntoControl: string;
   progreso: DatosProgreso;
   bateria: number;
@@ -15,24 +20,47 @@ export interface DatosPartida {
   estadisticas: { persecuciones: number; muertes: number; sustos: number };
 }
 
+/** Pasos para subir partidas viejas a la versión actual (vacío: la v1 es la primera). */
+const MIGRACIONES: readonly Migracion[] = [];
+
 const CLAVE = 'partida';
 
+function esPartida(d: Record<string, unknown>): d is Record<string, unknown> & DatosPartida {
+  const e = d.estadisticas as Record<string, unknown> | undefined;
+  return (
+    d.version === VERSION_PARTIDA &&
+    typeof d.puntoControl === 'string' &&
+    typeof d.progreso === 'object' &&
+    d.progreso !== null &&
+    typeof d.bateria === 'number' &&
+    typeof d.tiempoJugado === 'number' &&
+    typeof e === 'object' &&
+    e !== null &&
+    typeof e.muertes === 'number'
+  );
+}
+
 export class SistemaGuardado {
+  /** Hay una partida de una versión más nueva: no la sobrescribo ni la borro. */
+  private protegida = false;
+
   hayPartida(): boolean {
     return this.cargar() !== null;
   }
 
   cargar(): DatosPartida | null {
-    const datos = leerJSON<DatosPartida>(CLAVE);
-    if (!datos || datos.version !== 1) return null;
-    return datos;
+    const carga = leerVersionado<DatosPartida>(CLAVE, VERSION_PARTIDA, MIGRACIONES, esPartida);
+    this.protegida = carga.estado === 'futuro';
+    return carga.estado === 'ok' ? carga.datos : null;
   }
 
   guardar(datos: Omit<DatosPartida, 'version' | 'fecha'>): void {
-    escribirJSON(CLAVE, { ...datos, version: 1, fecha: Date.now() });
+    if (this.protegida) return;
+    escribirJSON(CLAVE, { ...datos, version: VERSION_PARTIDA, fecha: Date.now() });
   }
 
   borrar(): void {
+    if (this.protegida) return;
     borrar(CLAVE);
   }
 }

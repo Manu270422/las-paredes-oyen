@@ -83,6 +83,27 @@ entrada → jugador (movimiento, ruido, respiración) → interacción → graba
 - `nucleo/SecuenciaMuerte.ts` y `nucleo/Susto.ts`: fuera de `Juego.ts`; la muerte avanza en tiempo de juego.
 - `audio/BibliotecaSonidos.ts`: sintetiza todo y luego carga las grabaciones de `public/audio/manifiesto.json`.
 
+## Guardado versionado (Sprint 3, A2)
+
+Todo lo que se guarda en el navegador (`localStorage`, prefijo `las-paredes-oyen:`) lleva versión y pasa por el mismo
+cargador (`guardado/Versionado.ts` + `guardado/AlmacenVersionado.ts`):
+
+| Clave | Qué es | Versión | Se borra |
+|---|---|---|---|
+| `partida` | Punto de control, banderas, batería, tiempo (`guardado/SistemaGuardado.ts`) | 1 | Al terminar o con "Nueva partida" |
+| `ajustes` | Ajustes del jugador (`config/Ajustes.ts`) | 1 (migra desde v0, sin versión) | Nunca |
+| `perfil` | Mejores marcas y totales de toda la vida (`guardado/Perfil.ts`) | 1 | Nunca |
+| `telemetria` | Sesiones de prueba (`telemetria/`) | 1 por sesión | Desde Ajustes → Pruebas |
+
+Reglas del cargador:
+- **Sin versión = v0.** Cada cambio de formato agrega un paso `{ desde: N, migrar }` en `MIGRACIONES`; los datos suben
+  paso a paso y se guardan ya migrados.
+- **Versión más nueva que la del juego** (se volvió a publicar una versión vieja): se usa lo de por defecto, pero **no se
+  pisa ni se borra** lo guardado.
+- **Dañado** (JSON roto o forma inesperada): se guarda una copia en `<clave>:respaldo` antes de reemplazarlo.
+- Los ajustes solo aceptan claves conocidas con el tipo correcto: un valor raro vuelve al valor por defecto.
+- El perfil premia jugar bien, no jugar más: mejor tiempo y menos muertes en una partida terminada, sin rachas.
+
 ## Estados de la aplicación
 
 `cargando → inicio (gesto: audio + pantalla completa) → menú ⇄ jugando ⇄ pausa / documento → muerte | fin`
@@ -91,7 +112,7 @@ entrada → jugador (movimiento, ruido, respiración) → interacción → graba
 
 | Futuro | Dónde encaja |
 |---|---|
-| Perfiles / nube | `guardado/SistemaGuardado.ts` (formato versionado) |
+| Perfiles / nube | `guardado/` (formato versionado con migraciones; el perfil ya existe localmente) |
 | Logros / estadísticas | Suscriptores del bus (`bandera`, `entidad-estado`) |
 | Contenido adicional | Nuevos `mundo/datos/*.ts` + eventos en `director/eventos/` |
 | Cooperativo | El bus y las banderas ya separan "qué pasó" de "quién lo muestra"; faltaría red (WebRTC) |

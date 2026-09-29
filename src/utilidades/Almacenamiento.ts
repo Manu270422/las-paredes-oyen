@@ -22,6 +22,24 @@ export function escribirJSON(clave: string, valor: unknown): boolean {
   }
 }
 
+/** Leo el texto tal cual (null si no existe). Sirve para distinguir "vacío" de "dañado". */
+export function leerTexto(clave: string): string | null {
+  try {
+    return window.localStorage.getItem(PREFIJO + clave);
+  } catch {
+    return null;
+  }
+}
+
+export function escribirTexto(clave: string, texto: string): boolean {
+  try {
+    window.localStorage.setItem(PREFIJO + clave, texto);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function borrar(clave: string): void {
   try {
     window.localStorage.removeItem(PREFIJO + clave);

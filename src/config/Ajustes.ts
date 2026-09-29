@@ -2,7 +2,33 @@
 // Se guardan en el navegador y cualquier sistema puede suscribirse para
 // reaccionar en vivo cuando algo cambia en el menú.
 import type { NivelCalidad } from './PerfilesCalidad';
-import { leerJSON, escribirJSON } from '../utilidades/Almacenamiento';
+import { escribirJSON } from '../utilidades/Almacenamiento';
+import { leerVersionado } from '../guardado/AlmacenVersionado';
+import type { Migracion } from '../guardado/Versionado';
+
+const CLAVE = 'ajustes';
+const VERSION_AJUSTES = 1;
+
+interface AjustesGuardados {
+  version: typeof VERSION_AJUSTES;
+  valores: Record<string, unknown>;
+}
+
+/** v0 (hasta el Sprint 2) guardaba los valores sueltos, sin versión: los envuelvo. */
+const MIGRACIONES: readonly Migracion[] = [{ desde: 0, migrar: (viejo) => ({ valores: viejo }) }];
+
+function sonAjustes(d: Record<string, unknown>): d is Record<string, unknown> & AjustesGuardados {
+  return d.version === VERSION_AJUSTES && typeof d.valores === 'object' && d.valores !== null;
+}
+
+/** Solo acepto claves que existen y con el tipo correcto: un valor raro no rompe el juego. */
+function sanear(valores: Record<string, unknown>): Partial<AjustesJugador> {
+  const limpio: Record<string, unknown> = {};
+  for (const [clave, porDefecto] of Object.entries(AJUSTES_POR_DEFECTO)) {
+    if (typeof valores[clave] === typeof porDefecto) limpio[clave] = valores[clave];
+  }
+  return limpio as Partial<AjustesJugador>;
+}
 
 export interface AjustesJugador {
   calidad: 'auto' | NivelCalidad;
@@ -48,11 +74,14 @@ type Oyente = (ajustes: Readonly<AjustesJugador>, clave: keyof AjustesJugador | 
 export class GestorAjustes {
   private datos: AjustesJugador;
   private readonly oyentes = new Set<Oyente>();
+  /** Ajustes de una versión más nueva del juego: juego con los valores por defecto, pero no los piso. */
+  private readonly guardable: boolean;
 
   constructor() {
     // Mezclo lo guardado con los valores por defecto, por si agrego ajustes nuevos en el futuro.
-    const guardados = leerJSON<Partial<AjustesJugador>>('ajustes');
-    this.datos = { ...AJUSTES_POR_DEFECTO, ...(guardados ?? {}) };
+    const carga = leerVersionado<AjustesGuardados>(CLAVE, VERSION_AJUSTES, MIGRACIONES, sonAjustes);
+    this.datos = { ...AJUSTES_POR_DEFECTO, ...(carga.estado === 'ok' ? sanear(carga.datos.valores) : {}) };
+    this.guardable = carga.estado !== 'futuro';
   }
 
   get valores(): Readonly<AjustesJugador> {
@@ -62,13 +91,13 @@ export class GestorAjustes {
   cambiar<K extends keyof AjustesJugador>(clave: K, valor: AjustesJugador[K]): void {
     if (this.datos[clave] === valor) return;
     this.datos = { ...this.datos, [clave]: valor };
-    escribirJSON('ajustes', this.datos);
+    this.guardar();
     for (const oyente of this.oyentes) oyente(this.datos, clave);
   }
 
   restablecer(): void {
     this.datos = { ...AJUSTES_POR_DEFECTO };
-    escribirJSON('ajustes', this.datos);
+    this.guardar();
     for (const oyente of this.oyentes) oyente(this.datos, null);
   }
 
@@ -76,5 +105,9 @@ export class GestorAjustes {
   suscribir(oyente: Oyente): () => void {
     this.oyentes.add(oyente);
     return () => this.oyentes.delete(oyente);
+  }
+
+  private guardar(): void {
+    if (this.guardable) escribirJSON(CLAVE, { version: VERSION_AJUSTES, valores: this.datos });
   }
 }
