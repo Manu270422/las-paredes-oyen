@@ -16,6 +16,14 @@ import { aleatorio, distancia2D } from '../../utilidades/Matematicas';
 
 /** Distancia (m) a la que dejo de rascar mientras el jugador mide: ya llegué, solo escucho. */
 const DISTANCIA_LLEGADA_MEDICION = 2.6;
+/** Salgo del muro al menos a esta distancia del jugador: que alcance a oír cómo me desprendo. */
+const DISTANCIA_SALIDA = 5;
+/**
+ * Al salir me quedo quieta escuchando antes de caminar. Es el aviso ("salió")
+ * y es aire: si el jugador acaba de jadear, sin esta pausa llegaba al
+ * encuentro con 58 % de aire, que no alcanza para uno de cada tres encuentros.
+ */
+const PAUSA_SALIDA = 1.5;
 
 export class EstadoParedes implements EstadoIA {
   readonly nombre = 'paredes' as const;
@@ -89,11 +97,15 @@ export class EstadoParedes implements EstadoIA {
       return;
     }
     if (memoria.sospecha >= 0.75 && ruidoReciente && cercaDelObjetivo && ctx.director.permiteManifestacion) {
-      const salida = entidad.buscarPuntoSalida(ruidoReciente.x, ruidoReciente.z, ctx, 3.5, 5);
+      const salida = entidad.buscarPuntoSalida(ruidoReciente.x, ruidoReciente.z, ctx, DISTANCIA_SALIDA, 6);
       if (salida) {
         entidad.manifestar(salida.x, salida.z, ctx);
-        if (memoria.sospecha >= 1) entidad.cazar(memoria.ultimaCausaJugador ?? 'desconocido', ctx, memoria.ultimaCausaEnPared);
-        else entidad.cambiarEstado('investigando', ctx);
+        entidad.pausaSalida = PAUSA_SALIDA;
+        // NUNCA salgo cazando: salgo a BUSCAR. Antes, con sospecha alta salía a
+        // 3.5 m ya cazando y mataba en 1.3 s: el jugador no tenía ninguna
+        // oportunidad. Ahora camino hacia el ruido y, si el jugador está quieto,
+        // llega el encuentro. Si sigue haciendo ruido, la caza nace de ahí.
+        entidad.cambiarEstado('investigando', ctx);
       }
     }
   }

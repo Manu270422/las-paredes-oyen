@@ -2,7 +2,7 @@
 // maneja los estados de la aplicación (carga, menú, juego, pausa, lectura,
 // muerte, final) y ejecuta el bucle principal. No tiene lógica de juego
 // propia: solo conecta las piezas y decide qué se actualiza en cada estado.
-import { Color, FogExp2, HemisphereLight, Scene, Vector3 } from 'three';
+import { Color, FogExp2, HemisphereLight, Scene } from 'three';
 import { CONFIG } from '../config/ConfiguracionJuego';
 import { GestorAjustes } from '../config/Ajustes';
 import { PERFILES, type NivelCalidad, type PerfilCalidad } from '../config/PerfilesCalidad';
@@ -29,11 +29,12 @@ import { SistemaGuardado, type DatosPartida } from '../guardado/SistemaGuardado'
 import { GestorUI } from '../ui/GestorUI';
 import { Telemetria } from '../telemetria/Telemetria';
 import { aplicarParametroTelemetria } from '../telemetria/ParametroUrl';
-import { explicarMuerte } from '../narrativa/ExplicacionesMuerte';
 import { BusEventos } from './BusEventos';
 import type { MapaEventos } from './Eventos';
 import { Programador } from './Programador';
 import { BucleJuego } from './BucleJuego';
+import { SecuenciaMuerte, type SalidaMuerte } from './SecuenciaMuerte';
+import { mostrarSusto } from './Susto';
 import type { ContextoJuego } from './ContextoJuego';
 import { amortiguar, normalizarAngulo } from '../utilidades/Matematicas';
 
@@ -41,9 +42,6 @@ type EstadoApp = 'cargando' | 'inicio' | 'menu' | 'jugando' | 'pausa' | 'documen
 
 /** Cómo empiezo a jugar: una partida nueva, continuar la guardada o reintentar tras morir. */
 type OrigenPartida = 'nueva' | 'continuar' | 'reintento';
-
-/** Segundos entre que me atrapa y aparece la pantalla de muerte. */
-const DURACION_SUSTO_MUERTE = 1.5;
 
 /** Banderas que crean un punto de control (y dónde reaparezco). */
 const PUNTOS_CONTROL: Record<string, string> = {
@@ -65,6 +63,17 @@ export class Juego {
   private readonly interaccion = new SistemaInteraccion();
   /** Telemetría local de playtesting: escucha el bus, no toca la lógica de nadie. */
   private readonly telemetria = new Telemetria(this.bus, this.ajustes);
+  private readonly muerte = new SecuenciaMuerte();
+  /** Lo que la secuencia de muerte le pide al juego. */
+  private readonly salidaMuerte: SalidaMuerte = {
+    fundir: (aNegro, segundos) => this.ui.hud.fundir(aNegro, segundos),
+    apagarMundo: () => {
+      this.audio.detenerTodo();
+      this.ambiente.olvidarFuentes();
+      this.guardarPartidaEstadisticas();
+    },
+    mostrarPantalla: (datos) => this.ui.mostrarMuerte(datos),
+  };
   private readonly lienzo: HTMLCanvasElement;
   private readonly raizUI: HTMLElement;
 
@@ -97,7 +106,6 @@ export class Juego {
   private interferencia = 0;
   private temporizadorMenu = 12;
   private tiempoMenu = 0;
-  private tiempoMuerte = 0;
 
   constructor(contenedor: HTMLElement) {
     this.lienzo = contenedor.querySelector('#lienzo') as HTMLCanvasElement;
@@ -201,8 +209,9 @@ export class Juego {
     this.progreso = new Progreso(this.bus);
     this.memoria = new MemoriaMundo();
     this.director = new DirectorTerror();
+    this.director.conectar(this.bus);
     this.guion = new Guion({
-      mostrarSusto: () => this.mostrarSusto('final'),
+      mostrarSusto: () => mostrarSusto(this.ctx, 'final'),
       fundido: (aNegro, segundos) => this.ui.hud.fundir(aNegro, segundos),
       fijarSoloMirar: (activo) => (this.soloMirar = activo),
       terminarDemo: () => this.terminarDemo(),
@@ -252,6 +261,8 @@ export class Juego {
     this.bus.on('bandera', ({ nombre }) => {
       const punto = PUNTOS_CONTROL[nombre];
       if (punto) {
+        // Avancé en la historia: el alivio por muertes seguidas se reinicia.
+        this.memoria.muertesSinProgreso = 0;
         this.puntoControl = punto;
         this.guardarPartida();
       }
@@ -324,6 +335,7 @@ export class Juego {
   private nuevaPartida(): void {
     this.guardado.borrar();
     this.memoria.reiniciarEstadisticas();
+    this.director.olvidarPerfil();
     this.tiempoJugado = 0;
     this.comenzar(null, 'nueva');
   }
@@ -391,7 +403,7 @@ export class Juego {
     const guarida = MAPA_PISO_4.guaridaEntidad;
     this.entidad.reiniciar(guarida.x * CONFIG.celda, guarida.y * CONFIG.celda, ctx);
     this.entidad.puedeManifestarse = this.progreso.tiene('medido:401');
-    this.director.reiniciar();
+    this.director.reiniciar(this.memoria.muertesSinProgreso);
     this.director.activo = this.progreso.tiene('leyo:orden_trabajo');
     this.guion.reiniciar(ctx);
     this.ambiente.iniciarViento(2 * CONFIG.celda, 12 * CONFIG.celda);
@@ -457,38 +469,11 @@ export class Juego {
     this.irAlMenu();
   }
 
-  /**
-   * La criatura me atrapó: el único susto "directo" que me permito fuera del final.
-   * Después, la pantalla de muerte dice QUÉ oyó y lo hace sonar como ella lo oyó
-   * (apagado, a través del muro). La muerte debe sentirse "fue culpa mía".
-   */
+  /** La criatura me atrapó: la secuencia (susto → negro → por qué morí) vive en SecuenciaMuerte. */
   private atrapado(): void {
     this.estado = 'muerte';
-    this.tiempoMuerte = 0;
     this.entrada.fijarEnJuego(false);
-    this.memoria.muertes++;
-    const motivo = this.entidad.motivoCaza;
-    const enPared = this.entidad.motivoEnPared;
-    const j = this.jugador.posicion;
-    this.bus.emit('jugador-atrapado', { x: j.x, z: j.z, motivo, enPared });
-    const explicacion = explicarMuerte(motivo, enPared);
-    // El consejo práctico solo la primera vez por causa: la segunda, basta el sonido.
-    const primeraVez = !this.memoria.consejosVistos.has(explicacion.clave);
-    this.memoria.consejosVistos.add(explicacion.clave);
-    this.mostrarSusto('muerte');
-    window.setTimeout(() => this.ui.hud.fundir(true, 0.12), 750);
-    window.setTimeout(() => {
-      this.audio.detenerTodo();
-      this.ambiente.olvidarFuentes();
-      this.guardarPartidaEstadisticas();
-      this.ui.mostrarMuerte({ titulo: explicacion.titulo, linea: explicacion.linea, consejo: primeraVez ? explicacion.consejo : null });
-      this.ui.hud.fundir(false, 0);
-      const eco = explicacion.eco;
-      if (!eco) return;
-      for (let i = 0; i < eco.repeticiones; i++) {
-        this.audio.reproducir(eco.id, { bus: 'efectos', volumen: eco.volumen, tono: eco.tono ?? 1, retraso: 0.6 + i * eco.intervalo, dentroPared: true, reverb: 0.55, variacion: 0.03 });
-      }
-    }, DURACION_SUSTO_MUERTE * 1000);
+    this.muerte.iniciar(this.ctx);
   }
 
   /** Guardo solo las estadísticas nuevas sin mover el punto de control. */
@@ -516,29 +501,6 @@ export class Juego {
     this.ui.hud.fundir(false, 0.5);
   }
 
-  /** Pongo a la criatura frente a la cámara, con la linterna encendida y el grito. */
-  private mostrarSusto(origen: 'muerte' | 'final'): void {
-    this.bus.emit('susto', { origen });
-    const camara = this.jugador.camara;
-    const adelante = new Vector3();
-    camara.getWorldDirection(adelante);
-    adelante.y = 0;
-    adelante.normalize();
-    const modelo = this.entidad.modelo;
-    modelo.raiz.position.set(camara.position.x + adelante.x * 0.55, camara.position.y - 2.02, camara.position.z + adelante.z * 0.55);
-    modelo.raiz.rotation.y = Math.atan2(-adelante.x, -adelante.z);
-    modelo.forzarPose('susto');
-    modelo.fijarVisible(true);
-    this.linterna.encendida = true;
-    this.linterna.bateria = Math.max(this.linterna.bateria, 0.3);
-    this.linterna.cancelarApagado();
-    this.audio.reproducir('chillido', { bus: 'entidad', volumen: 0.85, reverb: 0.3, variacion: 0 });
-    this.jugador.sobresaltar(1);
-    this.renderizador.efectos.susto = 1;
-    this.interferencia = 0.7;
-    this.entrada.vibrar(1, 600);
-  }
-
   // ---------------------------------------------------------------------------
   // BUCLE PRINCIPAL
   // ---------------------------------------------------------------------------
@@ -550,11 +512,11 @@ export class Juego {
       case 'muerte':
         // Solo animo la cámara y la luz durante el susto. Después, en la pantalla
         // de muerte, ya no respiro ni late mi corazón: estoy muerto.
-        this.tiempoMuerte += dt;
-        if (this.tiempoMuerte < DURACION_SUSTO_MUERTE) {
+        if (this.muerte.enSusto) {
           this.jugador.actualizar(dt, this.entrada.estado, this.ctx, false);
           this.linterna.actualizar(dt, Infinity, this.ctx);
         }
+        this.muerte.actualizar(dt, this.ctx, this.salidaMuerte);
         break;
       case 'menu':
       case 'inicio':

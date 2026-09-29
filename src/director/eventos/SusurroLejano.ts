@@ -8,6 +8,7 @@ export const susurroLejano: EventoTerror = {
   fases: ['calma', 'acumulacion'],
   intensidad: 1,
   peso: 2,
+  afinidad: { escucha: 1.5 },
   enfriamiento: 60,
   puedeOcurrir: () => true,
   ejecutar(ctx) {

@@ -20,6 +20,7 @@ export const puertaCambiada: EventoTerror = {
   fases: ['acumulacion', 'pico'],
   intensidad: 2,
   peso: 2,
+  afinidad: { acampa: 1 },
   enfriamiento: 70,
   puedeOcurrir: (ctx) => candidatas(ctx).length > 0,
   ejecutar(ctx) {

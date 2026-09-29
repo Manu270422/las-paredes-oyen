@@ -38,10 +38,6 @@ export class Mando {
     return hayBoton || hayEje;
   }
 
-  get hayMando(): boolean {
-    return this.conectado !== null;
-  }
-
   private presionado(i: number): boolean {
     return this.actual[i] ?? false;
   }

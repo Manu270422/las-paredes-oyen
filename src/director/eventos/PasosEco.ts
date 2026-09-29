@@ -22,6 +22,7 @@ export const pasosEco: EventoTerror = {
   fases: ['acumulacion'],
   intensidad: 2,
   peso: 2,
+  afinidad: { corre: 2 },
   enfriamiento: 100,
   duracion: 16,
   puedeOcurrir: (ctx) => ctx.jugador.rapidez > 0.5 && ctx.entidad.estado === 'paredes' && !ctx.entidad.imitador.imitando,

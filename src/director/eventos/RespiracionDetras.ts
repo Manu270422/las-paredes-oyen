@@ -9,6 +9,7 @@ export const respiracionDetras: EventoTerror = {
   fases: ['acumulacion', 'pico'],
   intensidad: 3,
   peso: 1,
+  afinidad: { acampa: 2, escucha: 1 },
   enfriamiento: 180,
   maxUsos: 2,
   duracion: 6,

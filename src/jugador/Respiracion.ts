@@ -12,6 +12,12 @@ export class Respiracion {
   aire = 1;
   aguantando = false;
   private recuperando = false;
+  /**
+   * Después de un jadeo forzado tengo que SOLTAR la tecla para volver a aguantar.
+   * Antes, con la tecla apretada, volvía a aguantar al recuperar un 35 % y
+   * jadeaba otra vez cada ~4.5 s: una trampa que el jugador no podía ver.
+   */
+  private debeSoltar = false;
   private tiempoAguantado = 0;
   private temporizador = 1.5;
   private inhalando = true;
@@ -20,13 +26,15 @@ export class Respiracion {
     this.aire = 1;
     this.aguantando = false;
     this.recuperando = false;
+    this.debeSoltar = false;
     this.temporizador = 1.5;
   }
 
   actualizar(dt: number, quiereAguantar: boolean, esfuerzo: number, estres: number, ctx: ContextoJuego, x: number, z: number): void {
     const agitacion = Math.min(1, Math.max(esfuerzo, estres));
 
-    if (quiereAguantar && !this.recuperando && this.aire > 0) {
+    if (!quiereAguantar) this.debeSoltar = false;
+    if (quiereAguantar && !this.recuperando && !this.debeSoltar && this.aire > 0) {
       if (!this.aguantando) this.tiempoAguantado = 0;
       this.aguantando = true;
       this.tiempoAguantado += dt;
@@ -36,6 +44,7 @@ export class Respiracion {
         this.aire = 0;
         this.aguantando = false;
         this.recuperando = true;
+        this.debeSoltar = true;
         this.jadear(ctx, x, z, 1);
         ctx.jugador.sumarEstres(0.15);
       }
@@ -43,10 +52,15 @@ export class Respiracion {
     }
 
     if (this.aguantando) {
-      // Solté el aire voluntariamente: si aguanté mucho, igual se me escapa un jadeo.
+      // Solté el aire a tiempo: nunca jadeo (el jadeo es solo si se acaba, como dice
+      // la pantalla de muerte). Si aguanté mucho, la exhalación es honda y se oye un poco.
       this.aguantando = false;
-      if (this.aire < 0.3) this.jadear(ctx, x, z, 0.55);
-      else ctx.audio.reproducir('respira_out', { bus: 'voz', volumen: 0.25 });
+      if (this.aire < 0.3) {
+        ctx.audio.reproducir('respira_out', { bus: 'voz', volumen: 0.45 });
+        ctx.bus.emit('ruido', { x, z, intensidad: CONFIG.ruido.exhalacionHonda, origen: 'jugador', causa: 'respiracion' });
+      } else {
+        ctx.audio.reproducir('respira_out', { bus: 'voz', volumen: 0.25 });
+      }
       this.temporizador = 0.8;
       this.inhalando = true;
     }
@@ -73,9 +87,5 @@ export class Respiracion {
     ctx.audio.reproducir('jadeo', { bus: 'voz', volumen: 0.7 * fuerza });
     ctx.bus.emit('ruido', { x, z, intensidad: CONFIG.ruido.jadeo * fuerza, origen: 'jugador', causa: 'jadeo' });
     ctx.bus.emit('subtitulo', { texto: '[Jadeas]', duracion: 1.5, tipo: 'efecto' });
-  }
-
-  get estaRecuperando(): boolean {
-    return this.recuperando;
   }
 }

@@ -116,10 +116,6 @@ export class GestorUI {
     });
   }
 
-  get hayPantallaAbierta(): boolean {
-    return this.pila.length > 0;
-  }
-
   /** Reemplazo toda la pila por una pantalla. */
   private reemplazar(pantalla: Pantalla | null): void {
     for (const p of this.pila) p.ocultar();

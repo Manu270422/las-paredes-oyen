@@ -119,22 +119,25 @@ export class Guion {
     }
   }
 
-  /** Reproduzco lo que "captó" la grabadora, línea por línea con su sonido. */
+  /**
+   * Reproduzco la cinta: las líneas de la historia MÁS lo que el micrófono
+   * captó de verdad durante la medición (la segunda realidad).
+   */
   private reproducirTranscripcion(id: string, ctx: ContextoJuego, alTerminar: () => void): void {
-    const lineas = TRANSCRIPCIONES[id] ?? [];
-    ctx.director.bloquear(14);
-    const siseo = ctx.audio.reproducir('siseo_cinta', { bus: 'voz', bucle: true, volumen: 0.15, variacion: 0 });
+    const guion = TRANSCRIPCIONES[id] ?? [];
+    const lineas = [...guion, ...ctx.grabadora.captura.lineas(guion)].sort((a, b) => a.t - b.t);
     let final = 0;
+    for (const linea of lineas) final = Math.max(final, linea.t);
+    ctx.director.bloquear(final + 5);
+    const siseo = ctx.audio.reproducir('siseo_cinta', { bus: 'voz', bucle: true, volumen: 0.15, variacion: 0 });
     for (const linea of lineas) {
-      final = Math.max(final, linea.t);
       ctx.programador.despues(linea.t, () => {
         if (linea.texto) ctx.bus.emit('subtitulo', { texto: linea.texto, duracion: 3.2, tipo: 'efecto' });
-        if (linea.sonido) {
-          if (linea.sonido === 'golpe') {
-            for (let i = 0; i < 3; i++) ctx.audio.reproducir('golpe', { bus: 'voz', volumen: linea.volumen ?? 0.5, retraso: i * 0.36 });
-          } else {
-            ctx.audio.reproducir(linea.sonido, { bus: 'voz', volumen: linea.volumen ?? 0.5 });
-          }
+        const sonido = linea.sonido;
+        if (!sonido) return;
+        // Suena "desde la cinta": un poco más grave, y apagado si se captó a través del muro.
+        for (let i = 0; i < (linea.repeticiones ?? 1); i++) {
+          ctx.audio.reproducir(sonido, { bus: 'voz', volumen: linea.volumen ?? 0.5, retraso: i * 0.36, tono: 0.97, dentroPared: linea.dentroPared });
         }
       });
     }

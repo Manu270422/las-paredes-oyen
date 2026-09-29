@@ -1,6 +1,8 @@
 // Aquí está mi grabadora de campo, la herramienta del protagonista:
 // 1) MEDIR: en cada punto marcado grabo 6 s de "tono de sala". Si me muevo
 //    o hago ruido (incluido jadear), la medición se arruina.
+//    Y lo que capta el micrófono en esos 6 s es REAL (CapturaGrabadora):
+//    al reproducirlo descubro lo que pasó a mi alrededor sin que lo oyera.
 // 2) SEÑUELO: la dejo en el piso reproduciendo mis pasos grabados. La
 //    criatura va hacia ella. Luego tengo que ir a recogerla... si me atrevo.
 import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial, type Scene } from 'three';
@@ -10,6 +12,7 @@ import type { CausaRuido, Ruido } from '../nucleo/Eventos';
 import type { FuenteSonido } from '../audio/FuenteSonido';
 import type { PuntoMedicion } from '../interaccion/objetos/PuntoMedicion';
 import { crearZonaToque, vincular, type Interactuable } from '../interaccion/Interactuable';
+import { CapturaGrabadora } from './CapturaGrabadora';
 
 const DURACION_MEDICION = 6;
 const DURACION_SENUELO = 7;
@@ -54,6 +57,8 @@ export class Grabadora {
   midiendo: PuntoMedicion | null = null;
   progresoMedicion = 0;
   readonly interactuable: GrabadoraEnPiso;
+  /** Lo que el micrófono oyó de verdad en la última medición. */
+  readonly captura = new CapturaGrabadora();
   private readonly modelo = new Group();
   private inicioX = 0;
   private inicioZ = 0;
@@ -86,14 +91,6 @@ export class Grabadora {
     return this.colocada && this.senueloTiempo > 0;
   }
 
-  get senueloColocado(): boolean {
-    return this.colocada;
-  }
-
-  get posicionSenuelo(): { x: number; z: number } | null {
-    return this.colocada ? { x: this.modelo.position.x, z: this.modelo.position.z } : null;
-  }
-
   /** El señuelo se desbloquea tras la primera medición (ya tengo pasos grabados). */
   puedeUsarSenuelo(ctx: ContextoJuego): boolean {
     return ctx.progreso.tiene('medido:401') && !this.colocada && !this.midiendo;
@@ -111,6 +108,7 @@ export class Grabadora {
     this.inicioZ = ctx.jugador.posicion.z;
     ctx.audio.reproducir('bip', { bus: 'interfaz', volumen: 0.6 });
     this.siseo = ctx.audio.reproducir('siseo_cinta', { bus: 'voz', bucle: true, volumen: 0.12, variacion: 0 });
+    this.captura.iniciar(ctx);
     ctx.bus.emit('medicion', { estado: 'inicio', progreso: 0, apartamento: punto.apartamento });
   }
 
@@ -126,6 +124,7 @@ export class Grabadora {
     this.midiendo = null;
     this.siseo?.detener(0.1);
     this.siseo = null;
+    this.captura.cancelar();
     if (motivo) {
       ctx.audio.reproducir('bip', { bus: 'interfaz', volumen: 0.5, tono: 0.6 });
       ctx.bus.emit('subtitulo', { texto: MOTIVOS_FALLO[motivo] ?? 'Demasiado ruido. La medición no sirve.', duracion: 3 });
@@ -168,11 +167,15 @@ export class Grabadora {
         this.cancelarMedicion(ctx, 'movimiento');
       } else {
         this.progresoMedicion = Math.min(1, this.progresoMedicion + dt / DURACION_MEDICION);
+        this.captura.actualizar(dt, ctx);
         if (this.progresoMedicion >= 1) {
           this.midiendo = null;
           this.siseo?.detener(0.1);
           this.siseo = null;
           punto.completar();
+          // Cierro la cinta ANTES de marcar la bandera: el guion la reproduce al instante.
+          this.captura.cerrar();
+          ctx.bus.emit('grabacion-captada', { apartamento: punto.apartamento, huellas: this.captura.cantidad, presencia: this.captura.captoPresencia });
           ctx.audio.reproducir('bip', { bus: 'interfaz', volumen: 0.6 });
           ctx.audio.reproducir('bip', { bus: 'interfaz', volumen: 0.6, retraso: 0.18 });
           ctx.bus.emit('medicion', { estado: 'completa', progreso: 1, apartamento: punto.apartamento });
@@ -196,6 +199,7 @@ export class Grabadora {
   }
 
   reiniciar(): void {
+    this.captura.cancelar();
     this.midiendo = null;
     this.progresoMedicion = 0;
     this.siseo?.detener(0.05);

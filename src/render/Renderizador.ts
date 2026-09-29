@@ -53,10 +53,6 @@ export class Renderizador {
     return ext.has('EXT_color_buffer_float') || ext.has('EXT_color_buffer_half_float');
   }
 
-  get usaPostproceso(): boolean {
-    return this.post !== null;
-  }
-
   aplicarPerfil(perfil: PerfilCalidad): void {
     this.perfil = perfil;
     this.webgl.shadowMap.enabled = perfil.sombras;

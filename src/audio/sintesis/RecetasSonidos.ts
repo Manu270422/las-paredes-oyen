@@ -143,6 +143,121 @@ function respiraEntidad(tasa: number): Float32Array {
 }
 
 // ---------------------------------------------------------------------------
+// FIRMA SONORA DE EL INQUILINO: cada estado suena distinto para que el
+// jugador aprenda a "leerla" sin verla. Todo grave, húmedo y con algo roto.
+// ---------------------------------------------------------------------------
+
+/** Una respiración que se repite sin costura: el período del ciclo divide exacto la duración. */
+function cicloRespiracion(
+  tasa: number,
+  duracion: number,
+  ciclos: number,
+  forma: (fase: number) => number,
+  formantes: [number, number],
+  estertor: number,
+  grave: number,
+): Float32Array {
+  const a = new PasaBanda(formantes[0], 3, tasa);
+  const b = new PasaBanda(formantes[1], 4, tasa);
+  const lp = new PasaBajos(1500, tasa);
+  const periodo = duracion / ciclos;
+  // Genero un poco de más y lo fundo sobre el inicio: los filtros "suenan" un
+  // instante después de la envolvente y, sin esto, el bucle hace clic al repetirse.
+  const solape = Math.floor(0.04 * tasa);
+  const total = Math.floor(duracion * tasa);
+  const extendido = crearMuestras(duracion + solape / tasa, tasa, (t) => {
+    const fase = (t % periodo) / periodo;
+    const env = forma(fase);
+    // Estertor: la garganta vibra en la exhalación (la segunda mitad del ciclo).
+    const vibra = fase > 0.5 ? 1 - estertor + estertor * (0.5 + 0.5 * Math.sign(Math.sin(DOS_PI * 29 * t))) : 1;
+    const n = ruido();
+    const aire = (a.procesar(n) + b.procesar(n) * 0.55) * env * vibra;
+    return lp.procesar(aire + Math.sin(DOS_PI * 41 * t) * env * grave);
+  });
+  const datos = extendido.slice(0, total);
+  for (let i = 0; i < solape && total + i < extendido.length; i++) {
+    const k = i / solape;
+    datos[i] = datos[i] * k + extendido[total + i] * (1 - k);
+  }
+  return datos;
+}
+
+/** Mientras caza: jadeo rápido, ronco y rítmico. Dice DÓNDE está en una persecución. */
+function jadeoEntidad(tasa: number): Float32Array {
+  // 4 ciclos en 2.4 s: ~100 respiraciones por minuto, animal.
+  const forma = (f: number) => (f < 0.42 ? Math.pow(Math.sin((Math.PI * f) / 0.42), 1.4) * 0.75 : Math.pow(Math.sin((Math.PI * (f - 0.42)) / 0.58), 0.8));
+  return normalizar(cicloRespiracion(tasa, 2.4, 4, forma, [380, 820], 0.6, 0.35), 0.8);
+}
+
+/** Mientras acecha: una respiración lentísima, contenida. Solo se oye muy de cerca. */
+function respiraAcecho(tasa: number): Float32Array {
+  // Inhala largo, retiene, suelta húmedo y queda en silencio casi dos segundos.
+  const forma = (f: number) => {
+    if (f < 0.3) return Math.pow(Math.sin((Math.PI * f) / 0.6), 1.5);
+    if (f < 0.42) return Math.max(0, 1 - (f - 0.3) / 0.03);
+    if (f < 0.68) return Math.pow(Math.sin((Math.PI * (f - 0.42)) / 0.26), 1.1) * 0.8;
+    return 0;
+  };
+  return normalizar(cicloRespiracion(tasa, 5.2, 1, forma, [300, 700], 0.8, 0.5), 0.7);
+}
+
+/** Articulaciones que crujen: dos a cuatro chasquidos secos con cuerpo de hueso. */
+function chasquido(tasa: number, variante: number): Float32Array {
+  const hueso = new PasaBanda(azar(1500, 2200), 9, tasa);
+  const cuerpo = new PasaBanda(azar(520, 700), 5, tasa);
+  const golpes: number[] = [];
+  let t0 = 0.01;
+  const total = 2 + (variante % 3);
+  for (let i = 0; i < total; i++) {
+    golpes.push(t0);
+    t0 += azar(0.03, 0.09);
+  }
+  const duracion = t0 + 0.15;
+  return terminar(
+    crearMuestras(duracion, tasa, (t) => {
+      let impulso = 0;
+      for (const g of golpes) if (t >= g && t < g + 0.0015) impulso += ruido() * 3;
+      return hueso.procesar(impulso) * 0.9 + cuerpo.procesar(impulso) * 0.6;
+    }),
+    tasa,
+    0.8,
+  );
+}
+
+/** Algo grande rozando el yeso por dentro del muro: fricción lenta con tirones. */
+function friccionMuro(tasa: number, variante: number): Float32Array {
+  const duracion = 1.6;
+  const banda = new PasaBanda(azar(420, 650), 1.2, tasa);
+  const lp = new PasaBajos(1100, tasa);
+  const tirones = crujido(tasa, duracion, 6, 22, [[340, 6, 0.6], [780, 8, 0.35]], variante);
+  const datos = crearMuestras(duracion, tasa, (t, i) => {
+    const p = t / duracion;
+    const empuje = Math.pow(Math.sin(Math.PI * p), 0.7) * (0.65 + 0.35 * Math.sin(DOS_PI * (1.3 + variante * 0.4) * t));
+    return lp.procesar(banda.procesar(ruido()) * empuje + tirones[i] * 0.8);
+  });
+  return terminar(datos, tasa, 0.75);
+}
+
+/** Un pie que se arrastra por el piso: la retirada suena a cansancio, no a huida. */
+function arrastre(tasa: number): Float32Array {
+  const duracion = azar(0.7, 1);
+  const banda = new PasaBanda(azar(260, 380), 1.4, tasa);
+  const grano = new PasaAltos(1800, tasa);
+  let aspereza = 1;
+  return terminar(
+    crearMuestras(duracion, tasa, (t, i) => {
+      if (i % Math.floor(tasa * 0.004) === 0) aspereza = 0.4 + Math.random() * 0.6;
+      const p = t / duracion;
+      const env = Math.min(1, p / 0.25) * Math.pow(1 - p, 0.7);
+      const n = ruido();
+      return (banda.procesar(n) + grano.procesar(n) * 0.12 * aspereza) * env;
+    }),
+    tasa,
+    0.7,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // SUSURRO: fonemas falsos con formantes. Suena a voz... pero nunca a palabras.
 // El jugador "casi" entiende. Esa ambigüedad es el punto.
 // ---------------------------------------------------------------------------
@@ -345,6 +460,11 @@ export const RECETAS_SONIDO: Record<IdSonido, RecetaSonido> = {
   },
 
   respira_entidad: { variantes: 2, generar: (t) => respiraEntidad(t) },
+  jadeo_entidad: { variantes: 1, bucle: true, generar: (t) => jadeoEntidad(t) },
+  respira_acecho: { variantes: 1, bucle: true, generar: (t) => respiraAcecho(t) },
+  chasquido: { variantes: 4, generar: (t, v) => chasquido(t, v) },
+  friccion_muro: { variantes: 3, generar: (t, v) => friccionMuro(t, v) },
+  arrastre: { variantes: 3, generar: (t) => arrastre(t) },
   susurro: { variantes: 4, generar: (t) => susurro(t) },
 
   estatica: {

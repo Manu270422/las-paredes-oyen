@@ -1,7 +1,7 @@
 // Aquí declaro TODOS los eventos que viajan por el bus y qué datos llevan.
 // Si un sistema publica algo que no está aquí, TypeScript me avisa.
 import type { AcabadoPiso } from '../mundo/datos/TiposMapa';
-import type { FaseDirector } from '../director/TiposDirector';
+import type { FaseDirector, RasgoJugador } from '../director/TiposDirector';
 
 export type OrigenRuido = 'jugador' | 'puerta' | 'grabadora' | 'entorno' | 'radio';
 
@@ -66,8 +66,15 @@ export interface MapaEventos {
   /** Tarjeta grande de lugar y hora (estilo cine). */
   tarjeta: { titulo: string; subtitulo: string };
   /** El director lanzó un evento de terror (x/z si ocurrió en un punto concreto). */
-  'evento-director': { id: string; intensidad: number; fase: FaseDirector; x?: number; z?: number };
+  'evento-director': { id: string; intensidad: number; fase: FaseDirector; x?: number; z?: number; carga?: number };
   'director-fase': { fase: FaseDirector };
+  /** Cambió la forma de jugar dominante (o el alivio tras muertes seguidas). */
+  'director-adaptacion': { rasgo: RasgoJugador | null; alivio: number };
+  /**
+   * La grabadora terminó una medición y captó lo que yo no oí:
+   * "huellas" = sonidos del mundo; "presencia" = la criatura cerca en silencio.
+   */
+  'grabacion-captada': { apartamento: string; huellas: number; presencia: boolean };
   /** Uso del señuelo de la grabadora. */
   grabadora: { accion: 'senuelo-colocado' | 'senuelo-recogido' };
   /** La criatura imitó mis pasos (etapa 1: eco, 2: paso de más, 3: repite mi ritmo cuando paro). */

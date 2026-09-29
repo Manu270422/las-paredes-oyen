@@ -47,16 +47,47 @@ Verificado caminando de verdad: escalera → abrir el 401 con E → rodear el so
 cruzan en ambos sentidos; un objeto detrás de un muro sigue sin poderse tocar. **Lección:** toda prueba automática nueva
 debe incluir un recorrido caminando, sin teletransporte.
 
-#### Pendiente de la Fase 10
-- **Probar con 5+ personas** siguiendo el protocolo. Nada de lo siguiente debería priorizarse sin esos datos.
-- Afinar con los datos: umbrales de audición, duración del encuentro, fases del director, volúmenes de la imitación.
+#### Primera ronda informal de pruebas (2026-09-28)
+Amigos del creador, sin telemetría: la mayoría murió asustada y abandonó; **uno terminó el juego** (abrió el 402 con la llave).
+El núcleo se puede completar con habilidad. El riesgo que muestra: quien muere varias veces seguidas se rinde.
 
-#### Sprint 2 propuesto (después de la primera ronda de pruebas)
-1. **Firma sonora de El Inquilino por estado** (paredes / investigando / cazando / acechando / retirada): capas de respiración, fricción contra el muro, paso húmedo doble, silencios. Requiere escuchar en audífonos: no se diseña a ciegas.
-2. **Pipeline de audio híbrido**: `BibliotecaSonidos` carga grabaciones reales por `IdSonido` cuando existan (manifiesto + `decodeAudioData`) y cae a la receta sintética si no. Base de la Fase 12.
-3. **Grabadora como segunda realidad con reglas**: lo que "capta" una medición sale de lo que realmente ocurrió fuera de vista durante esos 6 s (posición de la criatura, eventos no vistos), no solo de un guion fijo.
-4. **Director con memoria de tensión**: presupuesto de intensidad reciente, no lanzar eventos que pisen un encuentro o una medición, y primeras señales de adaptación (jugador que se pega a las paredes, que corre, que acampa) usando los mismos contadores de la telemetría.
-5. **Deuda técnica**: `Juego.ts` (~700 líneas) → extraer el flujo de muerte/final; secuencia de muerte con `setTimeout` real (debería usar tiempo de juego); getters sin uso.
+#### Sprint 2 — Director adaptativo, firma sonora y segunda realidad ✅ (2026-09-28)
+| Tarea | Resultado |
+|---|---|
+| Director con memoria de tensión | `director/PresupuestoTension.ts`: cada susto gasta presupuesto (vida media 40 s); cuentan también encuentros, cazas, imitaciones y sustos. Respiro obligado tras un encuentro o una retirada. Nunca lanza eventos durante una medición, un encuentro o una caza |
+| Adaptación al estilo de juego | `director/PerfilJugador.ts`: rasgos pared / corre / acampa / escucha (promedio móvil ~45 s). Cada evento declara `afinidad`: si te pegas a los muros, los muros contestan; si acampas, la calma se corta a los 20 s |
+| Alivio tras muertes seguidas | `MemoriaMundo.muertesSinProgreso`: 2 muertes sin avanzar → límite de tensión −15 %, 3 → −30 %, tope −45 %. Se reinicia al alcanzar un punto de control |
+| Firma sonora por estado | `ia/FirmaSonora.ts` (tabla de datos) + 5 sonidos: `jadeo_entidad` (bucle al cazar, dice dónde está), `respira_acecho` (bucle lentísimo), `chasquido` (articulaciones al escuchar), `friccion_muro` (paredes, yendo hacia un ruido), `arrastre` (retirada; en la falsa retirada se calla). Al acechar cerca, el ambiente baja hasta 30 % |
+| Audio híbrido | `BibliotecaSonidos`: sintetiza todo y luego lee `public/audio/manifiesto.json`; cada grabación reemplaza o suma variantes, con ganancia. Si un archivo falla, queda la síntesis |
+| Grabadora como segunda realidad | `jugador/CapturaGrabadora.ts`: la cinta capta los sonidos del mundo a < 12 m y la **presencia silenciosa** de la criatura (< 6 m en el muro, < 8 m con cuerpo), con dirección y distancia. Se mezcla con las líneas de la historia sin duplicarlas |
+| Deuda técnica | `nucleo/SecuenciaMuerte.ts` (tiempo de juego, sin `setTimeout`) y `nucleo/Susto.ts` fuera de `Juego.ts` (717 → 679 líneas); 9 getters sin uso eliminados |
+
+Verificado en el juego real (navegador headless, recorrido caminando escalera → puerta del 401 con E → X de medición):
+medición completa con 0 eventos del director encima, cinta con presencia captada, presupuesto/respiro/vida media/alivio
+exactos, bucles de la firma siguiendo al cuerpo y recreándose tras detener el audio, muerte a 1.50 s de tiempo de juego,
+archivo real cargado y archivo faltante con respaldo sintético, costura del jadeo sin clic. 0 errores de consola.
+
+**Pendiente de oído (no se puede verificar con pruebas):** escuchar la firma con audífonos y afinar volúmenes en la tabla
+`FIRMAS`. En desarrollo: `__juego.audio.reproducir('jadeo_entidad')` en la consola.
+
+#### Hotfix — caza sin oportunidad (encontrado con la telemetría, 2026-09-29)
+En 2 de 2 muertes: un jadeo → la caza empezó a 3.5 m → muerte en 1.3 s, con 0 encuentros. En la sesión 1, en el
+segundo exacto en que terminó la cinta del 401.
+| Causa | Arreglo |
+|---|---|
+| Con sospecha ≥ 1, `EstadoParedes` salía del muro a 3.5 m **ya cazando** (nunca pasaba por el encuentro) | Sale siempre a **investigar**, a ≥ 5 m, y se queda 1.5 s escuchando antes de caminar |
+| La caza corría desde el primer fotograma | `EstadoCazando`: 0.8 s de aviso (quieta, gira, jadea) antes de correr. Atrapar a 4 m: 1.3 → 1.8 s |
+| Con Q apretada, tras el jadeo forzado volvía a aguantar al 35 % y jadeaba cada ~4.5 s | Hay que soltar Q para volver a aguantar |
+| Soltar Q con < 30 % de aire también era jadeo (contradecía el consejo de muerte) | Solo jadeas si el aire se acaba; soltar a tiempo es una exhalación honda (ruido 0.14) |
+
+Verificado reproduciendo el caso (punto de control 401, criatura en el muro a ~3 m, aguantar hasta jadear): sale a
+5.2 m, investiga, encuentro con 95 % de aire, superado 3/3. Si no contienes el aire en el encuentro, sigue matando.
+La telemetría ahora guarda el `motivo` de cada caza.
+
+#### Pendiente de la Fase 10
+- **Probar con 5+ personas con `?telemetria=1`** siguiendo el protocolo: ahora la telemetría también guarda la carga de
+  tensión, el estilo detectado (`adaptacion`) y lo que captó cada cinta (`cinta`).
+- Afinar con los datos: umbrales de audición, duración del encuentro, límites del presupuesto, afinidades y alivio.
 
 ### Fase 11 — Calidad visual (3–4 semanas)
 - Modelo de la criatura en glTF con esqueleto (Blender) manteniendo la animación a 12 fps.

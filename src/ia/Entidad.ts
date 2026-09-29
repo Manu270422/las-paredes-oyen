@@ -17,6 +17,7 @@ import { Navegacion } from './Navegacion';
 import { Percepcion } from './Percepcion';
 import { Memoria } from './Memoria';
 import { Imitador } from './Imitador';
+import { FirmaSonora } from './FirmaSonora';
 import { MaquinaEstados } from './MaquinaEstados';
 import type { Celda, NombreEstadoIA } from './TiposIA';
 import { EstadoParedes } from './estados/EstadoParedes';
@@ -37,6 +38,8 @@ export class Entidad {
   readonly maquina = new MaquinaEstados();
   /** Su habilidad más perturbadora: repetir mis pasos (con o sin cuerpo). */
   readonly imitador = new Imitador();
+  /** Cómo sueno en cada estado: el jugador me lee por el oído. */
+  readonly firma = new FirmaSonora();
   readonly navegacion: Navegacion;
   rumbo = 0;
   /** true cuando tiene cuerpo en el mundo. */
@@ -51,6 +54,10 @@ export class Entidad {
   motivoCaza: MotivoCaza = 'desconocido';
   /** Si lo que lo delató lo hizo pegado a la pared (la regla central). */
   motivoEnPared = false;
+  /** Estoy a pocos metros del jugador, quieta, escuchándolo (lo marca el estado Investigando). */
+  enEncuentro = false;
+  /** Segundos que me quedo escuchando justo después de salir del muro (lo consume Investigando). */
+  pausaSalida = 0;
 
   private camino: Celda[] = [];
   private indiceCamino = 0;
@@ -90,7 +97,10 @@ export class Entidad {
     this.motivoCaza = 'desconocido';
     this.motivoEnPared = false;
     this.imitador.detener();
+    this.enEncuentro = false;
+    this.pausaSalida = 0;
     this.desvanecer();
+    this.firma.detener(ctx);
     this.cambiarEstado('paredes', ctx);
   }
 
@@ -256,6 +266,7 @@ export class Entidad {
     if (habitacion) this.memoria.registrarHabito(habitacion.id, dt);
 
     this.maquina.actualizar(this, ctx, dt);
+    this.firma.actualizar(dt, this, ctx);
 
     if (!this.fisica) return;
     // Cuerpo: posición, orientación y animación.

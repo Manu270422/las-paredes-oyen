@@ -23,6 +23,10 @@ export interface MuestraCurva {
   estres: number;
   /** Tensión del director (0..1). */
   tension: number;
+  /** Memoria de tensión del director: cuánto susto reciente "pesa" todavía. */
+  carga: number;
+  /** Estilo de juego dominante que detectó el director (pared, corre, acampa, escucha). */
+  rasgo: string | null;
   fase: string;
   habitacion: string | null;
   entidad: string | null;

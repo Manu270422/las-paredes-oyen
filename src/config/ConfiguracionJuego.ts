@@ -47,6 +47,8 @@ export const CONFIG = {
     clicLinterna: 0.1,
     zumbidoLinterna: 0.16,
     jadeo: 0.7,
+    /** Soltar el aire tras aguantar mucho: se oye, pero mucho menos que un jadeo. */
+    exhalacionHonda: 0.14,
     senuelo: 0.85,
   },
 

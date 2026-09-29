@@ -20,6 +20,7 @@ export const siluetaFugaz: EventoTerror = {
   fases: ['acumulacion', 'pico'],
   intensidad: 3,
   peso: 1.5,
+  afinidad: { corre: 1 },
   enfriamiento: 120,
   maxUsos: 3,
   duracion: 6,

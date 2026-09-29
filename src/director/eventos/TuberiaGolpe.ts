@@ -8,6 +8,7 @@ export const tuberiaGolpe: EventoTerror = {
   fases: ['calma', 'acumulacion'],
   intensidad: 2,
   peso: 1,
+  afinidad: { pared: 1 },
   enfriamiento: 110,
   duracion: 6,
   puedeOcurrir: () => true,

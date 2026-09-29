@@ -83,11 +83,6 @@ export class Puerta {
     return this.llave !== null;
   }
 
-  /** Qué tan abierta está, de 0 a 1. */
-  get apertura(): number {
-    return this.angulo / ANGULO_ABIERTA;
-  }
-
   get enMovimiento(): boolean {
     return Math.abs(this.objetivo - this.angulo) > 0.02;
   }

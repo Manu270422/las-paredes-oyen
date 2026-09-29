@@ -9,6 +9,7 @@ export const silencioTotal: EventoTerror = {
   fases: ['acumulacion'],
   intensidad: 2,
   peso: 1,
+  afinidad: { escucha: 1.5, corre: 1 },
   enfriamiento: 160,
   duracion: 12,
   puedeOcurrir: (ctx) => !ctx.entidad.fisica,

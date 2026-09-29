@@ -9,6 +9,7 @@ export const golpesEnPared: EventoTerror = {
   fases: ['calma', 'acumulacion'],
   intensidad: 1,
   peso: 3,
+  afinidad: { pared: 2 },
   enfriamiento: 45,
   duracion: 5,
   puedeOcurrir: (ctx) => muroCercano(ctx, detrasDelJugador(ctx, 2.5, (Math.random() - 0.5) * 1.5)) !== null,

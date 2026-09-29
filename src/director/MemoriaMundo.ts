@@ -27,6 +27,8 @@ export class MemoriaMundo {
    */
   exposicionesImitacion = 0;
   readonly consejosVistos = new Set<string>();
+  /** Muertes seguidas sin alcanzar un punto de control nuevo: el director afloja con esto. */
+  muertesSinProgreso = 0;
 
   reiniciarSesion(): void {
     this.habitacionActual = null;
@@ -40,6 +42,7 @@ export class MemoriaMundo {
     this.sustos = 0;
     this.exposicionesImitacion = 0;
     this.consejosVistos.clear();
+    this.muertesSinProgreso = 0;
   }
 
   visitas(id: string): number {

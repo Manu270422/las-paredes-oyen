@@ -9,6 +9,7 @@ export const rasgunoCercano: EventoTerror = {
   fases: ['calma', 'acumulacion', 'pico'],
   intensidad: 2,
   peso: 3,
+  afinidad: { pared: 1.5, acampa: 1 },
   enfriamiento: 55,
   duracion: 5,
   puedeOcurrir: (ctx) => {

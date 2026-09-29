@@ -8,6 +8,7 @@ export const radioEncendida: EventoTerror = {
   fases: ['calma', 'acumulacion'],
   intensidad: 2,
   peso: 2,
+  afinidad: { acampa: 1 },
   enfriamiento: 150,
   maxUsos: 3,
   puedeOcurrir: (ctx) => {

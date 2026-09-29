@@ -1,6 +1,8 @@
 // Aquí están las transcripciones de lo que la grabadora captó en cada
 // medición. La idea central: lo que grabo no es lo que oí. Al reproducir,
 // aparece algo que no estaba (o que estaba y no escuché).
+// Estas son las líneas de la HISTORIA (siempre iguales). Lo que la cinta captó
+// de verdad en cada medición lo agrega CapturaGrabadora (jugador/).
 import type { IdSonido } from '../audio/TiposAudio';
 
 export interface LineaTranscripcion {
@@ -10,13 +12,17 @@ export interface LineaTranscripcion {
   /** Sonido que acompaña a la línea (reproducido "desde la grabadora"). */
   sonido?: IdSonido;
   volumen?: number;
+  /** Cuántas veces suena, separadas 0.36 s (los tres golpes). */
+  repeticiones?: number;
+  /** Captado a través del muro: suena apagado. */
+  dentroPared?: boolean;
 }
 
 export const TRANSCRIPCIONES: Record<string, LineaTranscripcion[]> = {
   '401': [
     { t: 0.2, texto: '[Reproduces la medición del 401]', sonido: 'bip' },
     { t: 1.2, texto: '[Siseo de cinta]' },
-    { t: 3.0, texto: '[Tres golpes. Muy cerca del micrófono]', sonido: 'golpe', volumen: 0.5 },
+    { t: 3.0, texto: '[Tres golpes. Muy cerca del micrófono]', sonido: 'golpe', volumen: 0.5, repeticiones: 3 },
     { t: 5.4, texto: '[Algo respira junto al micrófono]', sonido: 'respira_entidad', volumen: 0.35 },
     { t: 8.6, texto: 'Una voz de mujer, muy despacio: «...no le contestes...»', sonido: 'susurro', volumen: 0.6 },
   ],

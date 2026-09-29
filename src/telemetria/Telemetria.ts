@@ -213,6 +213,8 @@ export class Telemetria {
         t: r2(this.tiempo),
         estres: r2(j.estres),
         tension: r2(ctx.director.tension),
+        carga: r2(ctx.director.presupuesto.carga),
+        rasgo: ctx.director.perfil.dominante,
         fase: ctx.director.activo ? ctx.director.fase : 'inactivo',
         habitacion: this.habitacionJugador(),
         entidad: ctx.entidad.estado,
@@ -261,15 +263,18 @@ export class Telemetria {
       });
     });
     bus.on('entidad-estado', (e) => {
-      this.registrar('entidad', { estado: e.estado, fisica: e.fisica, ...this.estadoPeligro() });
+      const motivo = e.estado === 'cazando' ? (this.ctx?.entidad.motivoCaza ?? null) : null;
+      this.registrar('entidad', { estado: e.estado, fisica: e.fisica, motivo, ...this.estadoPeligro() });
       if (e.estado === 'cazando') this.observarReaccion('caza');
     });
     bus.on('evento-director', (ev) => {
-      this.registrar('evento-director', { id: ev.id, intensidad: ev.intensidad, fase: ev.fase, tension: r2(this.ctx?.director.tension ?? 0) });
+      this.registrar('evento-director', { id: ev.id, intensidad: ev.intensidad, fase: ev.fase, tension: r2(this.ctx?.director.tension ?? 0), carga: ev.carga ?? null });
       this.observarReaccion(ev.id);
       if (ev.x !== undefined && ev.z !== undefined && this.sesion) this.vigilancias.push(new VigilanciaEvento(ev.id, ev.x, ev.z));
     });
     bus.on('director-fase', ({ fase }) => this.registrar('fase', { fase }));
+    bus.on('director-adaptacion', ({ rasgo, alivio }) => this.registrar('adaptacion', { rasgo, alivio: r2(alivio) }));
+    bus.on('grabacion-captada', (g) => this.registrar('cinta', { apartamento: g.apartamento, huellas: g.huellas, presencia: g.presencia }));
     bus.on('encuentro', (e) => {
       const r = this.ctx?.jugador.respiracion;
       this.registrar('encuentro', { estado: e.estado, distancia: r2(e.distancia), aire: r ? r2(r.aire) : null, aguantando: r?.aguantando ?? null });

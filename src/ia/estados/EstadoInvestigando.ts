@@ -37,13 +37,23 @@ export class EstadoInvestigando implements EstadoIA {
   /** Segundos que me quedan escuchando al jugador de cerca (0 = no hay encuentro). */
   private encuentro = 0;
   private gracia = 0;
+  /** Recién salida del muro: me quedo quieta escuchando antes de caminar hacia el ruido. */
+  private pausa = 0;
 
   entrar(entidad: Entidad, ctx: ContextoJuego): void {
     this.busquedas = 0;
     this.escuchando = 0;
     this.encuentro = 0;
+    entidad.enEncuentro = false;
+    this.pausa = entidad.pausaSalida;
+    entidad.pausaSalida = 0;
     const r = entidad.memoria.ultimoRuido;
     if (r) entidad.irHacia(r.x, r.z, ctx);
+  }
+
+  salir(entidad: Entidad): void {
+    this.encuentro = 0;
+    entidad.enEncuentro = false;
   }
 
   actualizar(entidad: Entidad, ctx: ContextoJuego, dt: number): void {
@@ -61,6 +71,13 @@ export class EstadoInvestigando implements EstadoIA {
     }
     if (distancia < RADIO_ENCUENTRO) {
       this.iniciarEncuentro(entidad, ctx, distancia);
+      return;
+    }
+
+    if (this.pausa > 0) {
+      this.pausa -= dt;
+      entidad.pose = 'escuchar';
+      entidad.velocidadActual = 0;
       return;
     }
 
@@ -88,6 +105,7 @@ export class EstadoInvestigando implements EstadoIA {
   private iniciarEncuentro(entidad: Entidad, ctx: ContextoJuego, distancia: number): void {
     this.encuentro = aleatorio(...DURACION_ENCUENTRO);
     this.gracia = GRACIA_INHALACION;
+    entidad.enEncuentro = true;
     entidad.pose = 'escuchar';
     entidad.velocidadActual = 0;
     const p = entidad.posicion;
@@ -152,6 +170,7 @@ export class EstadoInvestigando implements EstadoIA {
       }
       // Un ruido ajeno (la radio, el señuelo, una puerta) me distrae: voy hacia allá.
       this.encuentro = 0;
+      entidad.enEncuentro = false;
       ctx.bus.emit('encuentro', { estado: 'superado', distancia: entidad.distanciaAlJugador(ctx) });
     }
     if (percibido >= CONFIG.entidad.umbralCaza && ruido.origen === 'jugador') {

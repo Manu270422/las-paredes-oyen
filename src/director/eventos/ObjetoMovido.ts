@@ -24,6 +24,7 @@ export const objetoMovido: EventoTerror = {
   fases: ['acumulacion', 'pico'],
   intensidad: 2,
   peso: 2,
+  afinidad: { acampa: 2 },
   enfriamiento: 80,
   puedeOcurrir: (ctx) => candidatos(ctx).length > 0,
   ejecutar(ctx) {

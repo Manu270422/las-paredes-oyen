@@ -13,6 +13,9 @@ import type { AjustesJugador } from '../config/Ajustes';
 /** Función que me dice cuántos obstáculos hay entre el oyente y un punto. */
 export type ConsultaOclusion = (ax: number, az: number, bx: number, bz: number) => number;
 
+/** Quien quiere enterarse de cada sonido que suena en el mundo (la grabadora, al medir). */
+export type ObservadorSonido = (id: IdSonido, opciones: OpcionesSonido) => void;
+
 const BUSES: NombreBus[] = ['ambiente', 'efectos', 'entidad', 'voz', 'interfaz'];
 
 /** Cómo cambia cada bus al escuchar con atención. */
@@ -34,7 +37,10 @@ export class MotorAudio {
   private readonly arriba = new Vector3();
   private escucha = 0;
   private silencioAmbiente = 1;
+  /** Silencio que impone la criatura cuando acecha cerca. Va aparte para no pisar el de los eventos. */
+  private silencioEntidad = 1;
   private temporizadorOclusion = 0;
+  private readonly observadores = new Set<ObservadorSonido>();
 
   constructor(private hrtf: boolean) {
     const Contexto = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -97,7 +103,7 @@ export class MotorAudio {
     const t = this.contexto.currentTime;
     for (const nombre of BUSES) {
       const escucha = 1 + (MODO_ESCUCHA[nombre] - 1) * this.escucha;
-      const silencio = nombre === 'ambiente' ? this.silencioAmbiente : 1;
+      const silencio = nombre === 'ambiente' ? this.silencioAmbiente * this.silencioEntidad : 1;
       this.buses[nombre].gain.setTargetAtTime(this.volumenBus[nombre] * escucha * silencio, t, transicion);
     }
   }
@@ -105,10 +111,6 @@ export class MotorAudio {
   /** Nodo de un bus (para el ambiente, que crea sus propios osciladores). */
   bus(nombre: NombreBus): GainNode {
     return this.buses[nombre];
-  }
-
-  get envioReverb(): AudioNode {
-    return this.reverb.entrada;
   }
 
   reproducir(id: IdSonido, opciones: OpcionesSonido = {}): FuenteSonido | null {
@@ -119,7 +121,14 @@ export class MotorAudio {
     const fuente = new FuenteSonido(this.contexto, buffer, destino, this.reverb.entrada, opciones, this.hrtf);
     this.activas.add(fuente);
     this.aplicarOclusion(fuente);
+    for (const observador of this.observadores) observador(id, opciones);
     return fuente;
+  }
+
+  /** Me suscribo a cada sonido que se reproduzca. Devuelve la función para desuscribirme. */
+  observar(observador: ObservadorSonido): () => void {
+    this.observadores.add(observador);
+    return () => this.observadores.delete(observador);
   }
 
   private aplicarOclusion(fuente: FuenteSonido): void {
@@ -187,8 +196,11 @@ export class MotorAudio {
     this.refrescarBuses(0.6);
   }
 
-  get posicionOyente(): Vector3 {
-    return this.oyente;
+  /** El edificio contiene el aliento mientras ella acecha cerca (1 = normal). */
+  fijarSilencioEntidad(factor: number): void {
+    if (Math.abs(factor - this.silencioEntidad) < 0.02) return;
+    this.silencioEntidad = factor;
+    this.refrescarBuses(0.9);
   }
 
   detenerTodo(): void {

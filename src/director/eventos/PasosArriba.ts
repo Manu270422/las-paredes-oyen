@@ -8,6 +8,7 @@ export const pasosArriba: EventoTerror = {
   fases: ['calma', 'acumulacion'],
   intensidad: 1,
   peso: 2,
+  afinidad: { escucha: 1 },
   enfriamiento: 80,
   duracion: 6,
   puedeOcurrir: () => true,
