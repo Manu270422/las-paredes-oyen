@@ -4,4 +4,6 @@ dist/
 .DS_Store
 Thumbs.db
 .vite/
+test-results/
+playwright-report/
 docs/PROMPT_SPRINT_3_ESCALAR_LAS_PAREDES_OYEN.md

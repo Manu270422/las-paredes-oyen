@@ -359,10 +359,37 @@ Abre `http://localhost:5173`. Para jugar en el celular, conéctalo a la misma re
 | `npm run typecheck` | Revisa los tipos sin compilar |
 | `npm run build` | Revisa los tipos y genera la versión final en `dist/` |
 | `npm run preview` | Sirve la versión final para probarla |
+| `npm test` | Todas las pruebas: tipos de las pruebas, lógica pura y el recorrido caminando |
 
 La versión final es un sitio estático con rutas relativas: `dist/` se puede publicar en cualquier dominio o subcarpeta.
 La versión pública está **publicada en Vercel** (que ejecuta `npm run build`) con el dominio
 [almendros.elmundodemanu.com](https://almendros.elmundodemanu.com).
+
+### Pruebas
+
+Todo vive en `pruebas/`. Ni `npm run build` ni el despliegue en Vercel las cargan ni las ejecutan.
+
+| Comando | Qué prueba | Tiempo |
+|---|---|---|
+| `npm run test:unit` | Lógica pura con Vitest: memoria de tensión, alivio, respiración, la cinta de la grabadora, explicaciones de muerte | ~3 s |
+| `npm run test:e2e` | El juego real con Playwright: camina de la escalera al 401 (E para leer, E en la puerta, medir con Q), el caso "aguantar el aire hasta jadear con la criatura en el muro" y el aviso antes de cada caza | ~1.5 min |
+
+**Navegador para `test:e2e`:** por defecto usa el **Google Chrome que ya tienes instalado** (no descarga nada).
+Para usar otro:
+
+```bat
+:: Microsoft Edge (viene con Windows)
+set PRUEBAS_NAVEGADOR=msedge
+npm run test:e2e
+
+:: Chromium de Playwright (descarga ~150 MB la primera vez)
+npx playwright install chromium
+set PRUEBAS_NAVEGADOR=chromium
+npm run test:e2e
+```
+
+En macOS o Linux: `PRUEBAS_NAVEGADOR=msedge npm run test:e2e`. Las pruebas levantan su propio servidor en el puerto 5174,
+así que pueden correr con `npm run dev` abierto.
 
 > [!TIP]
 > En modo desarrollo el juego queda expuesto en la consola del navegador como `window.__juego`, por ejemplo
