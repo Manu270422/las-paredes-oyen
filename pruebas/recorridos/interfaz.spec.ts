@@ -35,16 +35,18 @@ test('una pantalla oculta sale del árbol de accesibilidad y no se puede enfocar
   await page.keyboard.press('Space');
   await page.waitForFunction(() => window.__juego?.estado === 'menu');
   // La salida es una animación de 300 ms: hasta que termina, la pantalla sigue "visible" (es normal).
-  await page.waitForTimeout(700);
-  const r = await page.evaluate(() => {
-    const ocultas = [...document.querySelectorAll<HTMLElement>('.pantalla.pantalla--oculta')];
-    return {
-      total: ocultas.length,
-      visibles: ocultas.filter((p) => getComputedStyle(p).visibility !== 'hidden').map((p) => p.className),
-    };
-  });
-  expect(r.total, 'hay pantallas ocultas que revisar').toBeGreaterThan(5);
-  expect(r.visibles, 'pantallas ocultas que siguen visibles').toEqual([]);
+  // No espero un tiempo fijo: con la máquina cargada (la suite completa) 700 ms a veces no alcanzaban.
+  // Pregunto hasta que se oculten; si una nunca se oculta, falla igual al vencer el plazo.
+  const revisar = () =>
+    page.evaluate(() => {
+      const ocultas = [...document.querySelectorAll<HTMLElement>('.pantalla.pantalla--oculta')];
+      return {
+        total: ocultas.length,
+        visibles: ocultas.filter((p) => getComputedStyle(p).visibility !== 'hidden').map((p) => p.className),
+      };
+    });
+  await expect.poll(async () => (await revisar()).visibles, { message: 'pantallas ocultas que siguen visibles', timeout: 5000 }).toEqual([]);
+  expect((await revisar()).total, 'hay pantallas ocultas que revisar').toBeGreaterThan(5);
   // Lo que ve un lector de pantalla: la pantalla de inicio ya no existe, el menú sí.
   await expect(page.getByRole('button', { name: /Este juego se escucha/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Nueva partida', exact: true })).toBeVisible();
