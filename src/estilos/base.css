@@ -7,6 +7,12 @@
   box-sizing: border-box;
 }
 
+/* El atributo hidden SIEMPRE oculta: clases como .boton (display: inline-flex)
+   lo anulaban y dejaban visible, por ejemplo, el botón de exportar sin telemetría. */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
