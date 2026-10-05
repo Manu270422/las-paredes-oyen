@@ -10,6 +10,7 @@
     "preview": "vite preview --host",
     "typecheck": "tsc --noEmit",
     "test": "npm run typecheck:tests && npm run test:unit && npm run test:e2e",
+    "test:rapido": "npm run typecheck && npm run typecheck:tests && npm run test:unit",
     "typecheck:tests": "tsc -p pruebas/tsconfig.json",
     "test:unit": "vitest run --config pruebas/vitest.config.ts",
     "test:e2e": "playwright test --config pruebas/playwright.config.ts"

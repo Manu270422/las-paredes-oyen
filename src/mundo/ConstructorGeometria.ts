@@ -150,6 +150,24 @@ export function construirGeometria(
     );
   };
 
+  /**
+   * Marco de ~6 cm alrededor del vano, SOLO VISUAL (no agrega colisiones): dos jambas y un cabezal pegados
+   * a la cara del muro, por fuera del hueco (el vano sigue midiendo 95 cm). Va 1.6 cm delante del muro
+   * para tapar el final del guardaescoba, como en un marco de verdad. Hace que la hoja y el muro se lean
+   * como una sola pieza.
+   */
+  const ANCHO_MARCO = 0.06;
+  const SALIDA_MARCO = 0.016;
+  const marco = (centro: Vector3, normal: Vector3) => {
+    const mitad = CONFIG.anchoVano / 2;
+    const lado = new Vector3(normal.z, 0, -normal.x);
+    const punto = (t: number) => centro.clone().addScaledVector(lado, t).addScaledVector(normal, SALIDA_MARCO);
+    const tira = (t0: number, t1: number, y0: number, y1: number) => muro('madera', punto(t0), punto(t1), y0, y1, normal, false);
+    tira(-mitad - ANCHO_MARCO, -mitad, 0, HP + ANCHO_MARCO);
+    tira(mitad, mitad + ANCHO_MARCO, 0, HP + ANCHO_MARCO);
+    tira(-mitad, mitad, HP, HP + ANCHO_MARCO);
+  };
+
   for (let gy = 0; gy < rejilla.alto; gy++) {
     for (let gx = 0; gx < rejilla.ancho; gx++) {
       if (!rejilla.esTransitable(gx, gy)) continue;
@@ -162,7 +180,7 @@ export function construirGeometria(
 
       suelo(materialPiso(habitacion), x0, z0, x1, z1, 0, true);
       // En las puertas el "techo" es la cara inferior del dintel.
-      suelo(esPuerta ? materialPared(habitacion) : 'techo', x0, z0, x1, z1, esPuerta ? HP : H, false);
+      suelo('techo', x0, z0, x1, z1, esPuerta ? HP : H, false);
 
       if (esPuerta) {
         construirVano(gx, gy, x0, x1, z0, z1);
@@ -215,12 +233,16 @@ export function construirGeometria(
       muro(id, new Vector3(x1 - relleno, 0, z0), new Vector3(x1 - relleno, 0, z1), 0, HP, new Vector3(-1, 0, 0), false);
       cajasEstaticas.push({ minX: x0, maxX: x0 + relleno, minZ: z0, maxZ: z1 });
       cajasEstaticas.push({ minX: x1 - relleno, maxX: x1, minZ: z0, maxZ: z1 });
+      marco(new Vector3((x0 + x1) / 2, 0, z0), new Vector3(0, 0, -1));
+      marco(new Vector3((x0 + x1) / 2, 0, z1), new Vector3(0, 0, 1));
     } else {
       // Paso este-oeste: las jambas están arriba y abajo en Z.
       muro(id, new Vector3(x0, 0, z0 + relleno), new Vector3(x1, 0, z0 + relleno), 0, HP, new Vector3(0, 0, 1), false);
       muro(id, new Vector3(x1, 0, z1 - relleno), new Vector3(x0, 0, z1 - relleno), 0, HP, new Vector3(0, 0, -1), false);
       cajasEstaticas.push({ minX: x0, maxX: x1, minZ: z0, maxZ: z0 + relleno });
       cajasEstaticas.push({ minX: x0, maxX: x1, minZ: z1 - relleno, maxZ: z1 });
+      marco(new Vector3(x0, 0, (z0 + z1) / 2), new Vector3(-1, 0, 0));
+      marco(new Vector3(x1, 0, (z0 + z1) / 2), new Vector3(1, 0, 0));
     }
   }
 

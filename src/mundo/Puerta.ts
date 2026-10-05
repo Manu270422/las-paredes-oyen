@@ -75,12 +75,28 @@ export class Puerta {
     this.hoja.receiveShadow = true;
     this.hoja.position.set(ancho / 2, alto / 2, this.sentido * DESPLAZAMIENTO);
 
-    // La perilla metálica a ambos lados.
+    // Las posiciones de lo que cuelga de la hoja son relativas a su CENTRO: el borde de la bisagra
+    // está en -ancho / 2 y el borde libre en +ancho / 2.
+    // La perilla metálica a ambos lados, a 9 cm del borde libre. (Antes estaba a ancho - 9 cm del
+    // centro: 37 cm FUERA de la hoja, flotando en el aire cuando la puerta estaba abierta.)
     const metal = new MeshStandardMaterial({ color: 0x8a7a5a, metalness: 0.8, roughness: 0.35 });
     const perilla = new Mesh(new CylinderGeometry(0.03, 0.03, 0.14, 12), metal);
     perilla.rotation.x = Math.PI / 2;
-    perilla.position.set(ancho - 0.09, 1.0 - alto / 2, 0);
+    perilla.position.set(ancho / 2 - 0.09, 1.0 - alto / 2, 0);
     this.hoja.add(perilla);
+
+    // Tres bisagras en el borde de la bisagra: una placa que abraza el canto (se ve por las dos
+    // caras) y el nudillo cilíndrico. Sin ellas la hoja no se leía unida al marco.
+    const placa = new BoxGeometry(0.05, 0.1, GROSOR_HOJA + 0.004);
+    const nudillo = new CylinderGeometry(0.016, 0.016, 0.1, 10);
+    for (const altura of [0.22, alto / 2, alto - 0.22]) {
+      const y = altura - alto / 2;
+      const chapa = new Mesh(placa, metal);
+      chapa.position.set(-ancho / 2 + 0.02, y, 0);
+      const eje = new Mesh(nudillo, metal);
+      eje.position.set(-ancho / 2, y, 0);
+      this.hoja.add(chapa, eje);
+    }
 
     this.pivote.add(this.hoja);
 
@@ -156,6 +172,11 @@ export class Puerta {
   /**
    * Si está casi cerrada bloquea el paso: una caja delgada en el plano de la hoja, pegada al borde de
    * mi celda. Abierta no estorba: la hoja queda pegada a la jamba y el vano queda libre.
+   *
+   * El umbral de 0.55 rad (~31°) es ANTERIOR al cambio de la bisagra: lo dejé como estaba. Bajo ese
+   * ángulo la hoja bloquea; por encima NO bloquea nada, así que una hoja a medio abrir (por ejemplo
+   * la que deja el director con `fijarInstantaneo(true, 0.45)`, que son ~40°) se puede cruzar. Es
+   * solo visual: mientras la hoja barre el túnel no hay colisión con ella.
    */
   cajaColision(): CajaColision | null {
     if (this.angulo > 0.55) return null;
