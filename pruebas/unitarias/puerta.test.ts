@@ -1,7 +1,7 @@
 // La geometría de la hoja de la puerta (las 4 orientaciones): colgada del borde de su celda,
 // abierta queda pegada a la jamba sin sobresalir, y su colisión no estorba el vano.
 // Antes la bisagra estaba a mitad del túnel y la hoja abierta sobresalía 28 cm en el aire.
-import { Box3, MeshStandardMaterial } from 'three';
+import { Box3, type BoxGeometry, type CylinderGeometry, type Mesh, MeshStandardMaterial } from 'three';
 import { describe, expect, it } from 'vitest';
 import { CONFIG } from '../../src/config/ConfiguracionJuego';
 import type { Direccion } from '../../src/mundo/datos/TiposMapa';
@@ -110,5 +110,52 @@ describe.each(CASOS)('Puerta que abre hacia $abreHacia', ({ abreHacia, pasoEnZ }
       expect(v.y).toBeGreaterThan(0.8);
       expect(v.y).toBeLessThan(1.3);
     }
+  });
+});
+
+describe.each(CASOS)('Perilla de la puerta que abre hacia $abreHacia', ({ abreHacia, pasoEnZ }) => {
+  /** La perilla es el único hijo de la hoja que es un cilindro de 3 cm de radio. */
+  function perillaDe(p: Puerta) {
+    const perilla = (p.hoja.children as Mesh[]).find((h) => (h.geometry as CylinderGeometry).parameters?.radiusTop === 0.03);
+    expect(perilla, 'la hoja tiene perilla').toBeDefined();
+    return perilla as Mesh;
+  }
+
+  it('queda DENTRO de los límites de la hoja (ancho y alto) y del lado del borde libre', () => {
+    const p = crear(abreHacia, pasoEnZ);
+    const perilla = perillaDe(p);
+    // Todo en el marco de la propia hoja: su origen es el centro de la hoja, la bisagra está en -ancho / 2.
+    const { width, height } = (p.hoja.geometry as BoxGeometry).parameters;
+    perilla.updateMatrix();
+    perilla.geometry.computeBoundingBox();
+    const caja = new Box3().copy(perilla.geometry.boundingBox!).applyMatrix4(perilla.matrix);
+    expect(caja.min.x, 'no pasa del borde de la bisagra').toBeGreaterThan(-width / 2);
+    expect(caja.max.x, 'no pasa del borde libre (antes flotaba 37 cm afuera)').toBeLessThan(width / 2);
+    expect(caja.min.y).toBeGreaterThan(-height / 2);
+    expect(caja.max.y).toBeLessThan(height / 2);
+    // Del lado del borde libre, no de la bisagra: ahí van las bisagras.
+    expect(caja.min.x).toBeGreaterThan(0);
+  });
+
+  it('sobresale por AMBAS caras de la hoja, por igual', () => {
+    const p = crear(abreHacia, pasoEnZ);
+    const perilla = perillaDe(p);
+    const { depth } = (p.hoja.geometry as BoxGeometry).parameters;
+    perilla.updateMatrix();
+    perilla.geometry.computeBoundingBox();
+    const caja = new Box3().copy(perilla.geometry.boundingBox!).applyMatrix4(perilla.matrix);
+    expect(caja.min.z, 'sobresale por la cara de atrás').toBeLessThan(-depth / 2);
+    expect(caja.max.z, 'sobresale por la cara de adelante').toBeGreaterThan(depth / 2);
+    expect(Math.abs(caja.min.z + caja.max.z), 'simétrica respecto al centro de la hoja').toBeLessThan(1e-6);
+  });
+
+  it('cerrada, queda dentro del hueco del vano (no enterrada en la jamba ni en la pared)', () => {
+    const p = crear(abreHacia, pasoEnZ);
+    const c = celdaDe(p);
+    p.pivote.updateWorldMatrix(true, true);
+    const caja = new Box3().setFromObject(perillaDe(p));
+    const [min, max, jambaMin, jambaMax] = pasoEnZ ? [caja.min.x, caja.max.x, c.x0 + RELLENO, c.x1 - RELLENO] : [caja.min.z, caja.max.z, c.z0 + RELLENO, c.z1 - RELLENO];
+    expect(min).toBeGreaterThan(jambaMin);
+    expect(max).toBeLessThan(jambaMax);
   });
 });
