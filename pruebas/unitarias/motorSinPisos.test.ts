@@ -23,9 +23,6 @@ interface Excepcion {
 }
 
 const EXCEPCIONES: Record<string, Excepcion> = {
-  // Paso 6: el guion (cintas, apagón, final) es un módulo del piso.
-  'src/narrativa/Guion.ts': { menciones: 7, hastaElPaso: 6 },
-  'src/narrativa/SecuenciaFinal.ts': { menciones: 1, hastaElPaso: 6 },
   // Paso 8: los datos del Piso 4 se mueven físicamente a src/pisos/piso4/.
   'src/mundo/datos/MapaPiso4.ts': { menciones: 59, hastaElPaso: 8 },
   'src/narrativa/Documentos.ts': { menciones: 17, hastaElPaso: 8 },

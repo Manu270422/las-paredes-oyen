@@ -13,7 +13,7 @@ const OBJETIVOS_FALSOS: Objetivo[] = [
   { id: 'b', texto: 'Segundo', bandera: 'hizo:b' },
 ];
 
-const REGLAS_FALSAS = { despiertaCon: 'hizo:a', imitacionCompletaCon: 'hizo:b' };
+const REGLAS_FALSAS = { directorDesde: 'hizo:a', despiertaCon: 'hizo:a', imitacionCompletaCon: 'hizo:b' };
 
 describe('Progreso con las reglas de un piso', () => {
   it('la criatura despierta y la imitación se completa con las banderas que declara el piso, no con unas fijas', () => {

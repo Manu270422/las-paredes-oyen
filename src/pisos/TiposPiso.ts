@@ -4,11 +4,13 @@
 //
 // El tipo CRECE con la migración (A1, ver docs/propuestas/A1-pisos-como-paquetes.md):
 // cada campo entra cuando el motor ya lo lee de aquí, para no dejar datos sin dueño.
-// Todavía falta: tarjeta de lugar y el guion opcional.
+// Todavía falta: la tarjeta de lugar (Tarea 3).
 import type { DefMapa, EstadoLampara, PuntoAparicion } from '../mundo/datos/TiposMapa';
 import type { Documento } from '../narrativa/Documentos';
 import type { Objetivo } from '../narrativa/Objetivos';
 import type { LineaTranscripcion } from '../narrativa/Transcripciones';
+import type { AccionesGuion } from '../narrativa/AccionesGuion';
+import type { ContextoJuego } from '../nucleo/ContextoJuego';
 
 /** Un objeto que se recoge del piso (unas pilas, una llave): qué es, cómo se ve y qué pasa al tomarlo. */
 export interface DefObjetoRecogible {
@@ -27,10 +29,23 @@ export interface DefObjetoRecogible {
 
 /** Las banderas de la historia a las que el motor reacciona, sin saber de qué piso ni de qué apartamento son. */
 export interface ReglasPiso {
+  /** La bandera desde la que trabaja el director de terror (antes de ella, el piso está en calma total). */
+  readonly directorDesde: string;
   /** La bandera que despierta a la criatura: desde ahí puede salir de las paredes, y se desbloquea el señuelo de la grabadora. */
   readonly despiertaCon: string;
   /** La bandera que revela cómo imita: desde ahí su imitación llega a la etapa 3 (repite tu ritmo al detenerte). */
   readonly imitacionCompletaCon: string;
+}
+
+/**
+ * El guion de un piso: los momentos escritos a mano (cintas, apagones, el final). Es lo único del paquete
+ * que es código y no datos. El motor lo crea una vez, lo conecta al bus, lo reinicia al cargar un punto de
+ * control y lo actualiza cada fotograma. Un piso sin guion funciona igual, solo con el director.
+ */
+export interface GuionPiso {
+  conectar(ctx: ContextoJuego): void;
+  reiniciar(ctx: ContextoJuego): void;
+  actualizar(dt: number, ctx: ContextoJuego): void;
 }
 
 /** Qué luces cambian cuando se marca una bandera de progreso. */
@@ -62,6 +77,8 @@ export interface PaquetePiso {
    * en el orden en que están escritas (por eso una bandera posterior puede romper lo que otra encendió).
    */
   readonly luzPorBandera: Readonly<Record<string, CambioDeLuz>>;
+  /** El guion del piso (opcional): recibe lo que puede pedirle al juego (fundidos, susto, final). */
+  readonly guion?: (acciones: AccionesGuion) => GuionPiso;
   /** El fondo del menú: se dibuja sobre el piso real, con alguien de pie al fondo. */
   readonly menu: {
     /** Dónde está la cámara (en celdas) y hacia dónde mira (grados). */

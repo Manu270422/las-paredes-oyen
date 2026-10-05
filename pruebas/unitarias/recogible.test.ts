@@ -19,7 +19,7 @@ function colocar(objeto: string) {
   const recargas: number[] = [];
   const subtitulos: Array<{ texto: string; duracion?: number }> = [];
   falso.bus.on('subtitulo', (s) => subtitulos.push({ texto: s.texto, duracion: s.duracion }));
-  const progreso = new Progreso(falso.bus, [], { despiertaCon: 'x', imitacionCompletaCon: 'y' });
+  const progreso = new Progreso(falso.bus, [], { directorDesde: 'x', despiertaCon: 'x', imitacionCompletaCon: 'y' });
   const ctx = { ...falso.ctx, progreso, linterna: { recargar: (n: number) => recargas.push(n) } } as unknown as ContextoJuego;
   return { recogible: new Recogible(def, OBJETOS), ctx, progreso, recargas, subtitulos };
 }

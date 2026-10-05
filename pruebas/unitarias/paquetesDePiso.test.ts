@@ -71,6 +71,12 @@ describe.each(PISOS.map((p) => [p.id, p] as const))('Reglas de %s', (_id, piso) 
     const otorgadas = new Set(piso.objetivos.map((o) => o.bandera));
     expect(otorgadas.has(piso.reglas.despiertaCon), 'despiertaCon no es la bandera de ningún objetivo').toBe(true);
     expect(otorgadas.has(piso.reglas.imitacionCompletaCon), 'imitacionCompletaCon no es la bandera de ningún objetivo').toBe(true);
+    expect(otorgadas.has(piso.reglas.directorDesde), 'directorDesde no es la bandera de ningún objetivo').toBe(true);
+  });
+
+  it('el director empieza a trabajar antes (o a la vez) que la criatura despierta', () => {
+    const orden = piso.objetivos.map((o) => o.bandera);
+    expect(orden.indexOf(piso.reglas.directorDesde)).toBeLessThanOrEqual(orden.indexOf(piso.reglas.despiertaCon));
   });
 
   it('la imitación completa llega DESPUÉS de despertar a la criatura', () => {

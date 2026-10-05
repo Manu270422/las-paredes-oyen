@@ -3,10 +3,10 @@
 // Luego los pasos dejan de venir de la grabadora y vienen de atrás.
 // La linterna muere. Algo respira en mi nuca. Tengo tiempo para girarme...
 // o no. Cuando la luz vuelve, está frente a mí.
-import type { ContextoJuego } from '../nucleo/ContextoJuego';
-import type { AccionesGuion } from './AccionesGuion';
-import type { FuenteSonido } from '../audio/FuenteSonido';
-import { detrasDelJugador } from '../director/eventos/Ayudas';
+import type { ContextoJuego } from '../../nucleo/ContextoJuego';
+import type { AccionesGuion } from '../../narrativa/AccionesGuion';
+import type { FuenteSonido } from '../../audio/FuenteSonido';
+import { detrasDelJugador } from '../../director/eventos/Ayudas';
 
 export function ejecutarSecuenciaFinal(ctx: ContextoJuego, acciones: AccionesGuion): void {
   const g = 'final';

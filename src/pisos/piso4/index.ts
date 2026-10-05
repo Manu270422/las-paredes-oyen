@@ -7,6 +7,7 @@ import { DOCUMENTOS } from '../../narrativa/Documentos';
 import { OBJETIVOS } from '../../narrativa/Objetivos';
 import { TRANSCRIPCIONES } from '../../narrativa/Transcripciones';
 import type { PaquetePiso } from '../TiposPiso';
+import { GuionPiso4 } from './guion';
 
 export const PISO_4: PaquetePiso = {
   id: 'piso4',
@@ -16,7 +17,8 @@ export const PISO_4: PaquetePiso = {
   documentos: DOCUMENTOS,
   transcripciones: TRANSCRIPCIONES,
   // Medir el 401 despierta a la criatura (y desbloquea el señuelo); medir el 403 revela su imitación completa.
-  reglas: { despiertaCon: 'medido:401', imitacionCompletaCon: 'medido:403' },
+  // Leer la orden de trabajo pone a trabajar al director.
+  reglas: { directorDesde: 'leyo:orden_trabajo', despiertaCon: 'medido:401', imitacionCompletaCon: 'medido:403' },
   objetos: {
     pilas: {
       modelo: 'pilas',
@@ -48,6 +50,7 @@ export const PISO_4: PaquetePiso = {
     // El apagón del pasillo: las cinco lámparas revientan (el guion las revienta una a una hacia el jugador).
     apagon_pasillo: { lamparas: { pasillo1: 'rota', pasillo2: 'rota', pasillo3: 'rota', pasillo4: 'rota', pasillo5: 'rota' } },
   },
+  guion: (acciones) => new GuionPiso4(acciones),
   menu: {
     camara: { x: 4.4, y: 10.5, angulo: -90 },
     figura: { x: 15.5, y: 10.5, angulo: -90 },

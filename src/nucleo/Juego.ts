@@ -16,14 +16,13 @@ import { MotorAudio } from '../audio/MotorAudio';
 import { AmbienteSonoro } from '../audio/AmbienteSonoro';
 import { Nivel } from '../mundo/Nivel';
 import { PISO_INICIAL } from '../pisos/catalogo';
-import type { PaquetePiso } from '../pisos/TiposPiso';
+import type { GuionPiso, PaquetePiso } from '../pisos/TiposPiso';
 import { Jugador } from '../jugador/Jugador';
 import { Linterna } from '../jugador/Linterna';
 import { Grabadora } from '../jugador/Grabadora';
 import { Entidad } from '../ia/Entidad';
 import { SistemaInteraccion } from '../interaccion/SistemaInteraccion';
 import { Progreso } from '../narrativa/Progreso';
-import { Guion } from '../narrativa/Guion';
 import { MemoriaMundo } from '../director/MemoriaMundo';
 import { DirectorTerror } from '../director/DirectorTerror';
 import { SistemaGuardado, type DatosPartida } from '../guardado/SistemaGuardado';
@@ -90,7 +89,8 @@ export class Juego {
   private progreso!: Progreso;
   private memoria!: MemoriaMundo;
   private director!: DirectorTerror;
-  private guion!: Guion;
+  /** El guion del piso, si tiene (los momentos escritos a mano). */
+  private guion: GuionPiso | null = null;
   private ctx!: ContextoJuego;
   private bucle!: BucleJuego;
 
@@ -207,13 +207,13 @@ export class Juego {
     this.progreso = new Progreso(this.bus, this.piso.objetivos, this.piso.reglas);
     this.memoria = new MemoriaMundo();
     this.director = new DirectorTerror();
-    this.director.conectar(this.bus);
-    this.guion = new Guion({
+    this.director.conectar(this.bus, this.piso.reglas.directorDesde);
+    this.guion = this.piso.guion?.({
       mostrarSusto: () => mostrarSusto(this.ctx, 'final'),
       fundido: (aNegro, segundos) => this.ui.hud.fundir(aNegro, segundos),
       fijarSoloMirar: (activo) => (this.soloMirar = activo),
       terminarDemo: () => this.terminarDemo(),
-    });
+    }) ?? null;
 
     this.ctx = {
       bus: this.bus,
@@ -236,7 +236,7 @@ export class Juego {
       director: this.director,
       ui: { abrirDocumento: (id) => this.abrirDocumento(id) },
     };
-    this.guion.conectar(this.ctx);
+    this.guion?.conectar(this.ctx);
     this.redimensionar();
   }
 
@@ -402,8 +402,8 @@ export class Juego {
     this.entidad.reiniciar(guarida.x * CONFIG.celda, guarida.y * CONFIG.celda, ctx);
     this.entidad.puedeManifestarse = this.progreso.criaturaDespierta;
     this.director.reiniciar(this.memoria.muertesSinProgreso);
-    this.director.activo = this.progreso.tiene('leyo:orden_trabajo');
-    this.guion.reiniciar(ctx);
+    this.director.activo = this.progreso.tiene(this.piso.reglas.directorDesde);
+    this.guion?.reiniciar(ctx);
     this.ambiente.iniciarViento(2 * CONFIG.celda, 12 * CONFIG.celda);
     const efectos = this.renderizador.efectos;
     efectos.susto = 0;
@@ -570,7 +570,7 @@ export class Juego {
     this.grabadora.actualizar(dt, ctx);
     this.entidad.actualizar(dt, ctx);
     this.director.actualizar(dt, ctx);
-    this.guion.actualizar(dt, ctx);
+    this.guion?.actualizar(dt, ctx);
     this.memoria.actualizar(dt, ctx);
     const distanciaEntidad = this.entidad.fisica ? this.entidad.distanciaAlJugador(ctx) : Infinity;
     this.linterna.actualizar(dt, distanciaEntidad, ctx);

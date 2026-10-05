@@ -1,4 +1,4 @@
-// Aquí están los momentos escritos a mano (el "guion"), separados del
+// Aquí está el GUION DEL PISO 4: los momentos escritos a mano, separados del
 // director procedural. El director improvisa; el guion marca los golpes
 // de la historia que deben ocurrir siempre:
 // - La primera medición y los tres golpes que la interrumpen.
@@ -6,13 +6,16 @@
 // - La luz que vuelve... y el apagón que avanza hacia mí.
 // - El final en el 402.
 // Todo se basa en condiciones y banderas, así funciona igual al cargar partida.
-import type { ContextoJuego } from '../nucleo/ContextoJuego';
-import type { AccionesGuion } from './AccionesGuion';
-import { ejecutarSecuenciaFinal } from './SecuenciaFinal';
-import { muroCercano } from '../director/eventos/Ayudas';
-import { CONFIG } from '../config/ConfiguracionJuego';
+// Vive en el paquete del piso: el motor solo conoce el contrato GuionPiso. (La activación del
+// director ya no está aquí: es la regla `directorDesde` del paquete y la aplica el propio director.)
+import type { ContextoJuego } from '../../nucleo/ContextoJuego';
+import type { AccionesGuion } from '../../narrativa/AccionesGuion';
+import type { GuionPiso } from '../TiposPiso';
+import { ejecutarSecuenciaFinal } from './secuenciaFinal';
+import { muroCercano } from '../../director/eventos/Ayudas';
+import { CONFIG } from '../../config/ConfiguracionJuego';
 
-export class Guion {
+export class GuionPiso4 implements GuionPiso {
   private tiempo = 0;
   private tiempoTablero = -1;
   private readonly hechos = new Set<string>();
@@ -91,9 +94,6 @@ export class Guion {
 
   private alBandera(nombre: string, ctx: ContextoJuego): void {
     switch (nombre) {
-      case 'leyo:orden_trabajo':
-        ctx.director.activo = true;
-        break;
       case 'medido:401':
         this.reproducirTranscripcion('401', ctx, () => {
           ctx.entidad.puedeManifestarse = true;
@@ -176,10 +176,5 @@ export class Guion {
       ctx.director.forzarFase('pico', ctx);
       this.pista(ctx, 'verla', 'Si la ves, no hagas ruido.');
     });
-  }
-
-  desconectar(): void {
-    for (const cancelar of this.cancelaciones) cancelar();
-    this.cancelaciones.length = 0;
   }
 }

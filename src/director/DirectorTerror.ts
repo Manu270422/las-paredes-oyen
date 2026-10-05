@@ -68,8 +68,12 @@ export class DirectorTerror {
   }
 
   /** Me engancho al bus una sola vez al construir el juego. */
-  conectar(bus: BusEventos<MapaEventos>): void {
+  /** Me engancho al bus una sola vez al construir el juego. Empiezo a trabajar cuando se marca `desde`. */
+  conectar(bus: BusEventos<MapaEventos>, desde: string): void {
     this.presupuesto.conectar(bus);
+    bus.on('bandera', ({ nombre }) => {
+      if (nombre === desde) this.activo = true;
+    });
   }
 
   /**
