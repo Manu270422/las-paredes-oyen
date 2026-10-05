@@ -166,6 +166,31 @@ export function construirGeometria(
     tira(-mitad - ANCHO_MARCO, -mitad, 0, HP + ANCHO_MARCO);
     tira(mitad, mitad + ANCHO_MARCO, 0, HP + ANCHO_MARCO);
     tira(-mitad, mitad, HP, HP + ANCHO_MARCO);
+
+    // Las tiras NO flotan: las cierro con sus cantos (1.6 cm de fondo) para que, vistas desde abajo o
+    // de lado, el marco sea una moldura con grosor y no un plano suelto que deja un escalón contra el dintel.
+    const punto3 = (t: number, y: number, fondo: number) => centro.clone().addScaledVector(lado, t).addScaledVector(normal, fondo).setY(y);
+    const canto = (t: number, y0: number, y1: number, haciaMas: boolean) =>
+      acumulador('madera').cuadro(
+        [punto3(t, y0, 0), punto3(t, y0, SALIDA_MARCO), punto3(t, y1, SALIDA_MARCO), punto3(t, y1, 0)],
+        lado.clone().multiplyScalar(haciaMas ? 1 : -1),
+        [0, 0, 0.1, 0, 0.1, 0.1, 0, 0.1],
+      );
+    const tapa = (t0: number, t1: number, y: number, haciaArriba: boolean) =>
+      acumulador('madera').cuadro(
+        [punto3(t0, y, 0), punto3(t1, y, 0), punto3(t1, y, SALIDA_MARCO), punto3(t0, y, SALIDA_MARCO)],
+        new Vector3(0, haciaArriba ? 1 : -1, 0),
+        [0, 0, 0.1, 0, 0.1, 0.1, 0, 0.1],
+      );
+    const tope = HP + ANCHO_MARCO;
+    canto(-mitad - ANCHO_MARCO, 0, tope, false); // canto exterior de la jamba izquierda
+    canto(-mitad, 0, HP, true); // canto interior de la jamba izquierda (hacia el vano)
+    canto(mitad, 0, HP, false); // canto interior de la jamba derecha
+    canto(mitad + ANCHO_MARCO, 0, tope, true); // canto exterior de la jamba derecha
+    tapa(-mitad - ANCHO_MARCO, -mitad, tope, true); // arriba de cada jamba y del cabezal
+    tapa(mitad, mitad + ANCHO_MARCO, tope, true);
+    tapa(-mitad, mitad, tope, true);
+    tapa(-mitad, mitad, HP, false); // la cara de abajo del cabezal, que se ve desde el vano
   };
 
   for (let gy = 0; gy < rejilla.alto; gy++) {
