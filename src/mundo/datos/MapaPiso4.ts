@@ -41,7 +41,7 @@ export const MAPA_PISO_4: DefMapa = {
 
   habitaciones: [
     { id: 'escalera', nombre: 'Escalera', x0: 1, y0: 8, x1: 3, y1: 12, reverb: 'escalera', pared: 'concreto', piso: 'concreto' },
-    { id: 'pasillo', nombre: 'Pasillo', x0: 4, y0: 10, x1: 27, y1: 10, reverb: 'pasillo', pared: 'pintura', piso: 'granito' },
+    { id: 'pasillo', nombre: 'Pasillo', x0: 4, y0: 10, x1: 27, y1: 10, reverb: 'pasillo', pared: 'pintura', piso: 'granito', paso: true },
     { id: 'sala401', nombre: 'Sala del 401', x0: 5, y0: 5, x1: 12, y1: 8, reverb: 'sala', pared: 'papel', piso: 'parque', apartamento: '401' },
     { id: 'dormitorio401', nombre: 'Dormitorio del 401', x0: 5, y0: 1, x1: 8, y1: 3, reverb: 'habitacion', pared: 'papel', piso: 'parque', apartamento: '401' },
     { id: 'bano401', nombre: 'Baño del 401', x0: 10, y0: 1, x1: 12, y1: 3, reverb: 'bano', pared: 'azulejo', piso: 'azulejo', apartamento: '401' },
@@ -148,7 +148,7 @@ export const MAPA_PISO_4: DefMapa = {
     { tipo: 'medicion', id: 'medir401', apartamento: '401', x: 9.5, y: 7.2 },
     { tipo: 'medicion', id: 'medir403', apartamento: '403', x: 21.5, y: 6.8 },
     { tipo: 'medicion', id: 'medir402', apartamento: '402', x: 14.5, y: 14.3 },
-    { tipo: 'tablero', id: 'tablero', x: 30.93, y: 9.5, altura: 1.45, rot: -90 },
+    { tipo: 'tablero', id: 'tablero', bandera: 'tablero_activado', x: 30.93, y: 9.5, altura: 1.45, rot: -90 },
     { tipo: 'radio', id: 'radio401', x: 7.1, y: 6.0, altura: 0.76, rot: 20 },
   ],
 

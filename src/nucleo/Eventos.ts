@@ -49,6 +49,8 @@ export interface MapaEventos {
   /** Pistas de tutorial. El texto lleva marcas {accion} que la UI traduce a teclas/botones. */
   pista: { id: string; texto: string };
   'habitacion-cambiada': { anterior: string | null; actual: string };
+  /** Un momento escrito del guion de un piso (el apagón...): la telemetría mide la reacción del jugador. */
+  'momento-guion': { id: string };
   /** Un susto directo (la criatura frente a la cámara). */
   susto: { origen: 'muerte' | 'final' };
   interferencia: { intensidad: number; duracion: number };

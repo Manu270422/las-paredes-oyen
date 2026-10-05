@@ -56,7 +56,7 @@ export class Memoria {
     let mejor: string | null = null;
     let tiempo = 0;
     for (const [h, t] of this.habitos) {
-      if (t > tiempo && h !== 'pasillo') {
+      if (t > tiempo) {
         tiempo = t;
         mejor = h;
       }

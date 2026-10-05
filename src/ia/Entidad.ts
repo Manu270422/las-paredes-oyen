@@ -263,7 +263,8 @@ export class Entidad {
     const j = ctx.jugador.posicion;
     this.memoria.registrarRastro(j.x, j.z);
     const habitacion = ctx.nivel.habitacionEn(j.x, j.z);
-    if (habitacion) this.memoria.registrarHabito(habitacion.id, dt);
+    // Los cuartos de paso (un pasillo) no son "lugares favoritos": nadie se refugia ahí.
+    if (habitacion && !habitacion.paso) this.memoria.registrarHabito(habitacion.id, dt);
 
     this.maquina.actualizar(this, ctx, dt);
     this.firma.actualizar(dt, this, ctx);

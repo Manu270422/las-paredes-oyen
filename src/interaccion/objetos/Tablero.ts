@@ -15,8 +15,13 @@ export class Tablero implements Interactuable {
   private readonly palanca: Group;
   private readonly piloto: MeshStandardMaterial;
 
+  /** La bandera que marco al activarme (dato del mapa). */
+  private readonly bandera: string;
+
   constructor(def: DefInteractuable) {
     this.id = def.id;
+    if (!def.bandera) throw new Error(`El tablero "${def.id}" no dice qué bandera marca.`);
+    this.bandera = def.bandera;
     const { grupo, palanca, piloto } = modeloTablero();
     this.palanca = palanca;
     this.piloto = piloto;
@@ -41,7 +46,7 @@ export class Tablero implements Interactuable {
     const p = this.objeto.position;
     ctx.audio.reproducir('tablero', { posicion: { x: p.x, y: p.y, z: p.z }, volumen: 0.9 });
     ctx.bus.emit('ruido', { x: p.x, z: p.z, intensidad: 0.5, origen: 'entorno', causa: 'tablero' });
-    ctx.progreso.marcar('tablero_activado');
+    ctx.progreso.marcar(this.bandera);
   }
 
   private fijarEncendido(encendido: boolean): void {
@@ -50,6 +55,6 @@ export class Tablero implements Interactuable {
   }
 
   restablecer(ctx: ContextoJuego): void {
-    this.fijarEncendido(ctx.progreso.tiene('tablero_activado'));
+    this.fijarEncendido(ctx.progreso.tiene(this.bandera));
   }
 }

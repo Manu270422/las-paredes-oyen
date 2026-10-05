@@ -139,6 +139,8 @@ test.describe.serial('Guion del Piso 4 jugado', () => {
       const J = window.__juego!;
       const P = window.__piloto!;
       const { ctx } = J;
+      const momentos: string[] = [];
+      ctx.bus.on('momento-guion', (m) => momentos.push(m.id));
       // El tablero (su bandera): la luz vuelve; el guion espera 9 s y a que yo entre al pasillo.
       ctx.progreso.marcar('tablero_activado');
       await P.esperarJuego(0.5);
@@ -151,6 +153,7 @@ test.describe.serial('Guion del Piso 4 jugado', () => {
       const rotas = ctx.nivel.lamparas.filter((l) => l.id.startsWith('pasillo')).map((l) => l.estado);
       const salida = {
         pasilloEncendido,
+        momentos,
         apagon: ctx.progreso.tiene('apagon_pasillo'),
         rotas,
         estadoCriatura: ctx.entidad.estado,
@@ -164,6 +167,7 @@ test.describe.serial('Guion del Piso 4 jugado', () => {
     });
     expect(r.pasilloEncendido, 'el tablero devuelve la luz al pasillo').toBe(true);
     expect(r.apagon, 'al entrar al pasillo, el apagón ocurre').toBe(true);
+    expect(r.momentos, 'el guion avisa el momento (la telemetría mide la reacción)').toEqual(['apagon']);
     expect(r.rotas, 'las cinco lámparas del pasillo revientan').toEqual(['rota', 'rota', 'rota', 'rota', 'rota']);
     expect(r.estadoCriatura, 'ella aparece al fondo, acechando').toBe('acechando');
     expect(r.fase, 'el director pasa al pico').toBe('pico');

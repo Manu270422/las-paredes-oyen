@@ -165,6 +165,7 @@ export class GuionPiso4 implements GuionPiso {
     const final = 1 + lamparas.length * 0.95 + 0.8;
     ctx.programador.despues(final, () => {
       ctx.progreso.marcar('apagon_pasillo');
+      ctx.bus.emit('momento-guion', { id: 'apagon' });
       // Aparece en el extremo del pasillo más lejano al jugador.
       const C = CONFIG.celda;
       const extremos = [{ x: 5.5 * C, z: 10.5 * C }, { x: 26.5 * C, z: 10.5 * C }];

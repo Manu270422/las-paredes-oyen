@@ -55,8 +55,9 @@ export class PerfilJugador {
       this.habitacion = actual;
       this.tiempoHabitacion = 0;
     }
-    // El pasillo no es un refugio: ahí no cuento "acampar".
-    if (actual !== 'pasillo') this.tiempoHabitacion += dt;
+    // Un cuarto de paso (el pasillo) no es un refugio: ahí no cuento "acampar".
+    const cuarto = actual ? ctx.nivel.habitacionPorId(actual) : undefined;
+    if (!cuarto?.paso) this.tiempoHabitacion += dt;
 
     this.muestreo += dt;
     if (this.muestreo < CADA_MUESTRA) return;

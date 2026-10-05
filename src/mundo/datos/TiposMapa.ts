@@ -19,6 +19,11 @@ export interface DefHabitacion {
   piso: AcabadoPiso;
   /** A qué apartamento pertenece (para medir y para la memoria del director). */
   apartamento?: string;
+  /**
+   * Cuarto de PASO (un pasillo): nadie se refugia ahí. No cuenta como "acampar" para el director ni
+   * como cuarto favorito del jugador para la criatura.
+   */
+  paso?: boolean;
 }
 
 export type Direccion = 'n' | 's' | 'e' | 'o';
@@ -95,6 +100,8 @@ export interface DefInteractuable {
   rot?: number;
   /** Documento que abre (tipo documento). */
   documento?: string;
+  /** La bandera que marca al activarse (tipo tablero). */
+  bandera?: string;
   /** Id del objeto que entrega (tipo recogible): una clave de `objetos` del paquete del piso. */
   objeto?: string;
   /** Apartamento que se mide (tipo medicion). */

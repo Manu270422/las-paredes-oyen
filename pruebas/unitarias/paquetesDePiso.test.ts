@@ -60,6 +60,12 @@ describe.each(PISOS.map((p) => [p.id, p] as const))('Objetos recogibles de %s', 
     expect(llaves.filter((l) => !entregados.has(l)), 'llaves que no están en ningún lugar del mapa (la puerta no se podría abrir)').toEqual([]);
   });
 
+  it('todo tablero dice qué bandera marca, y esa bandera es la de un objetivo del piso', () => {
+    const otorgadas = new Set(piso.objetivos.map((o) => o.bandera));
+    const tableros = piso.mapa.interactuables.filter((i) => i.tipo === 'tablero');
+    expect(tableros.filter((t) => !t.bandera || !otorgadas.has(t.bandera)).map((t) => t.id)).toEqual([]);
+  });
+
   it('no hay objetos declarados que nadie recoja', () => {
     const entregados = new Set(recogibles.map((i) => i.objeto));
     expect(Object.keys(piso.objetos).filter((id) => !entregados.has(id))).toEqual([]);

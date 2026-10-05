@@ -290,7 +290,10 @@ export class Telemetria {
       // Las pistas y lo recogido tienen su propio registro; aquí solo el progreso de la historia.
       if (nombre.startsWith('pista:') || nombre.startsWith('recogido:')) return;
       this.registrar('bandera', { nombre, bateria: r2(this.ctx?.linterna.bateria ?? 0) });
-      if (nombre === 'apagon_pasillo') this.observarReaccion('apagon');
+    });
+    bus.on('momento-guion', ({ id }) => {
+      this.registrar('momento', { id });
+      this.observarReaccion(id);
     });
     bus.on('documento', ({ id }) => this.registrar('documento', { id }));
     bus.on('pista', ({ id }) => this.registrar('pista', { id }));
