@@ -37,6 +37,8 @@ export interface EventoTerror {
   duracion?: number;
   /** Banderas de progreso necesarias. */
   requiere?: readonly string[];
+  /** Solo cuando la criatura ya despertó (la bandera `despiertaCon` del piso). */
+  requiereDespierta?: boolean;
   /**
    * A qué forma de jugar le "responde" este evento. El peso se multiplica por
    * 1 + Σ(afinidad × rasgo): si alguien se pega a las paredes, las paredes contestan.

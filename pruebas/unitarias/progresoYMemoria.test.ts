@@ -13,9 +13,28 @@ const OBJETIVOS_FALSOS: Objetivo[] = [
   { id: 'b', texto: 'Segundo', bandera: 'hizo:b' },
 ];
 
+const REGLAS_FALSAS = { despiertaCon: 'hizo:a', imitacionCompletaCon: 'hizo:b' };
+
+describe('Progreso con las reglas de un piso', () => {
+  it('la criatura despierta y la imitación se completa con las banderas que declara el piso, no con unas fijas', () => {
+    const p = new Progreso(new BusEventos<MapaEventos>(), OBJETIVOS_FALSOS, REGLAS_FALSAS);
+    expect([p.criaturaDespierta, p.imitacionCompleta]).toEqual([false, false]);
+    p.marcar('hizo:a');
+    expect([p.criaturaDespierta, p.imitacionCompleta]).toEqual([true, false]);
+    p.marcar('hizo:b');
+    expect([p.criaturaDespierta, p.imitacionCompleta]).toEqual([true, true]);
+  });
+
+  it('una bandera de otro piso no la despierta (medido:401 no significa nada fuera del Piso 4)', () => {
+    const p = new Progreso(new BusEventos<MapaEventos>(), OBJETIVOS_FALSOS, REGLAS_FALSAS);
+    p.marcar('medido:401');
+    expect(p.criaturaDespierta).toBe(false);
+  });
+});
+
 describe('Progreso con los objetivos de un piso', () => {
   it('avanza por los objetivos del piso que recibe, en orden', () => {
-    const p = new Progreso(new BusEventos<MapaEventos>(), OBJETIVOS_FALSOS);
+    const p = new Progreso(new BusEventos<MapaEventos>(), OBJETIVOS_FALSOS, REGLAS_FALSAS);
     expect(p.objetivoActual()?.id).toBe('a');
     p.marcar('hizo:a');
     expect(p.objetivoActual()?.id).toBe('b');
@@ -24,7 +43,7 @@ describe('Progreso con los objetivos de un piso', () => {
   });
 
   it('con los objetivos del piso inicial, empieza por leer la orden de trabajo', () => {
-    const p = new Progreso(new BusEventos<MapaEventos>(), PISO_INICIAL.objetivos);
+    const p = new Progreso(new BusEventos<MapaEventos>(), PISO_INICIAL.objetivos, PISO_INICIAL.reglas);
     expect(p.objetivoActual()?.bandera).toBe('leyo:orden_trabajo');
   });
 });

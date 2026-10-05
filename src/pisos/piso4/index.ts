@@ -15,6 +15,8 @@ export const PISO_4: PaquetePiso = {
   objetivos: OBJETIVOS,
   documentos: DOCUMENTOS,
   transcripciones: TRANSCRIPCIONES,
+  // Medir el 401 despierta a la criatura (y desbloquea el señuelo); medir el 403 revela su imitación completa.
+  reglas: { despiertaCon: 'medido:401', imitacionCompletaCon: 'medido:403' },
   puntoInicial: 'escalera',
   puntosControl: {
     'leyo:orden_trabajo': 'escalera',

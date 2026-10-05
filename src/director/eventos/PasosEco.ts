@@ -14,7 +14,7 @@ import { detrasDelJugador } from './Ayudas';
 
 function etapaSiguiente(ctx: ContextoJuego): EtapaImitacion {
   if (ctx.memoria.exposicionesImitacion === 0) return 1;
-  return ctx.progreso.tiene('medido:403') ? 3 : 2;
+  return ctx.progreso.imitacionCompleta ? 3 : 2;
 }
 
 export const pasosEco: EventoTerror = {

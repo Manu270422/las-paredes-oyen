@@ -184,6 +184,7 @@ export class DirectorTerror {
       if (e.maxUsos !== undefined && (this.usos.get(e.id) ?? 0) >= e.maxUsos) return false;
       if (ahora - (this.ultimoUso.get(e.id) ?? -Infinity) < e.enfriamiento) return false;
       if (e.requiere && !e.requiere.every((b) => ctx.progreso.tiene(b))) return false;
+      if (e.requiereDespierta && !ctx.progreso.criaturaDespierta) return false;
       return e.puedeOcurrir(ctx);
     });
     const validos = posibles.filter((e) => this.presupuesto.cabe(PresupuestoTension.costo(e.intensidad), this.fase, this.alivio));

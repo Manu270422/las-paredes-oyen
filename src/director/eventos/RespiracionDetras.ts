@@ -13,7 +13,7 @@ export const respiracionDetras: EventoTerror = {
   enfriamiento: 180,
   maxUsos: 2,
   duracion: 6,
-  requiere: ['medido:401'],
+  requiereDespierta: true,
   puedeOcurrir: (ctx) => ctx.jugador.tiempoQuieto > 2.5 && !ctx.entidad.fisica && !ctx.grabadora.midiendo,
   ejecutar(ctx) {
     const p = detrasDelJugador(ctx, 1.1);

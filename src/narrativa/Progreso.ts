@@ -4,6 +4,7 @@
 import type { BusEventos } from '../nucleo/BusEventos';
 import type { MapaEventos } from '../nucleo/Eventos';
 import type { Objetivo } from './Objetivos';
+import type { ReglasPiso } from '../pisos/TiposPiso';
 
 export interface DatosProgreso {
   banderas: string[];
@@ -21,7 +22,19 @@ export class Progreso {
     private readonly bus: BusEventos<MapaEventos>,
     /** Los objetivos del piso que se juega, en orden. */
     private readonly objetivos: readonly Objetivo[],
+    /** Las banderas de la historia a las que reacciona el motor (despertar a la criatura, imitación completa). */
+    private readonly reglas: ReglasPiso,
   ) {}
+
+  /** ¿Ya despertó la criatura? Desde ahí sale de las paredes y se puede dejar el señuelo. */
+  get criaturaDespierta(): boolean {
+    return this.banderas.has(this.reglas.despiertaCon);
+  }
+
+  /** ¿Ya sé cómo me imita? Desde ahí su imitación llega a la etapa 3. */
+  get imitacionCompleta(): boolean {
+    return this.banderas.has(this.reglas.imitacionCompletaCon);
+  }
 
   tiene(bandera: string): boolean {
     return this.banderas.has(bandera);

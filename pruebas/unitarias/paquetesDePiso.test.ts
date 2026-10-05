@@ -44,6 +44,19 @@ describe.each(PISOS.map((p) => [p.id, p] as const))('Paquete %s', (_id, piso) =>
   });
 });
 
+describe.each(PISOS.map((p) => [p.id, p] as const))('Reglas de %s', (_id, piso) => {
+  it('las banderas que despiertan a la criatura y revelan su imitación son banderas que el piso realmente otorga', () => {
+    const otorgadas = new Set(piso.objetivos.map((o) => o.bandera));
+    expect(otorgadas.has(piso.reglas.despiertaCon), 'despiertaCon no es la bandera de ningún objetivo').toBe(true);
+    expect(otorgadas.has(piso.reglas.imitacionCompletaCon), 'imitacionCompletaCon no es la bandera de ningún objetivo').toBe(true);
+  });
+
+  it('la imitación completa llega DESPUÉS de despertar a la criatura', () => {
+    const orden = piso.objetivos.map((o) => o.bandera);
+    expect(orden.indexOf(piso.reglas.imitacionCompletaCon)).toBeGreaterThan(orden.indexOf(piso.reglas.despiertaCon));
+  });
+});
+
 describe.each(PISOS.map((p) => [p.id, p] as const))('Luces por bandera de %s', (_id, piso) => {
   const idsLamparas = new Set(piso.mapa.lamparas.map((l) => l.id));
   const circuitos = new Set(piso.mapa.lamparas.map((l) => l.circuito));

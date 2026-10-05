@@ -4,11 +4,19 @@
 //
 // El tipo CRECE con la migración (A1, ver docs/propuestas/A1-pisos-como-paquetes.md):
 // cada campo entra cuando el motor ya lo lee de aquí, para no dejar datos sin dueño.
-// Todavía falta: tarjeta de lugar, reglas (qué bandera despierta a la criatura) y el guion opcional.
+// Todavía falta: tarjeta de lugar, los objetos del mapa y el guion opcional.
 import type { DefMapa, EstadoLampara, PuntoAparicion } from '../mundo/datos/TiposMapa';
 import type { Documento } from '../narrativa/Documentos';
 import type { Objetivo } from '../narrativa/Objetivos';
 import type { LineaTranscripcion } from '../narrativa/Transcripciones';
+
+/** Las banderas de la historia a las que el motor reacciona, sin saber de qué piso ni de qué apartamento son. */
+export interface ReglasPiso {
+  /** La bandera que despierta a la criatura: desde ahí puede salir de las paredes, y se desbloquea el señuelo de la grabadora. */
+  readonly despiertaCon: string;
+  /** La bandera que revela cómo imita: desde ahí su imitación llega a la etapa 3 (repite tu ritmo al detenerte). */
+  readonly imitacionCompletaCon: string;
+}
 
 /** Qué luces cambian cuando se marca una bandera de progreso. */
 export interface CambioDeLuz {
@@ -27,6 +35,7 @@ export interface PaquetePiso {
   readonly objetivos: readonly Objetivo[];
   readonly documentos: Readonly<Record<string, Documento>>;
   readonly transcripciones: Readonly<Record<string, readonly LineaTranscripcion[]>>;
+  readonly reglas: ReglasPiso;
   /** El punto de control (de `mapa.puntosControl`) con el que empieza una partida nueva. */
   readonly puntoInicial: string;
   /** Qué banderas crean un punto de control: bandera → nombre del punto donde se reaparece. */

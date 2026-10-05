@@ -23,15 +23,6 @@ interface Excepcion {
 }
 
 const EXCEPCIONES: Record<string, Excepcion> = {
-  // Paso 5: las banderas 'medido:401' (la criatura despierta, el señuelo se activa) pasan a ser reglas.
-  'src/nucleo/Juego.ts': { menciones: 2, hastaElPaso: 5 },
-  // Paso 5: las banderas 'medido:401' y 'medido:403' pasan a ser reglas del paquete.
-  'src/jugador/Grabadora.ts': { menciones: 1, hastaElPaso: 5 },
-  'src/ia/estados/EstadoAcechando.ts': { menciones: 1, hastaElPaso: 5 },
-  'src/director/eventos/PasosEco.ts': { menciones: 1, hastaElPaso: 5 },
-  'src/director/eventos/SiluetaFugaz.ts': { menciones: 1, hastaElPaso: 5 },
-  'src/director/eventos/RespiracionDetras.ts': { menciones: 1, hastaElPaso: 5 },
-  'src/director/eventos/RadioEncendida.ts': { menciones: 1, hastaElPaso: 5 },
   // Paso 6: el guion (cintas, apagón, final) es un módulo del piso.
   'src/narrativa/Guion.ts': { menciones: 7, hastaElPaso: 6 },
   'src/narrativa/SecuenciaFinal.ts': { menciones: 1, hastaElPaso: 6 },

@@ -93,7 +93,7 @@ export class Grabadora {
 
   /** El señuelo se desbloquea tras la primera medición (ya tengo pasos grabados). */
   puedeUsarSenuelo(ctx: ContextoJuego): boolean {
-    return ctx.progreso.tiene('medido:401') && !this.colocada && !this.midiendo;
+    return ctx.progreso.criaturaDespierta && !this.colocada && !this.midiendo;
   }
 
   iniciarMedicion(punto: PuntoMedicion, ctx: ContextoJuego): void {

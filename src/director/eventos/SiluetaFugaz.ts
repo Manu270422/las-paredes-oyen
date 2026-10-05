@@ -24,7 +24,7 @@ export const siluetaFugaz: EventoTerror = {
   enfriamiento: 120,
   maxUsos: 3,
   duracion: 6,
-  requiere: ['medido:401'],
+  requiereDespierta: true,
   puedeOcurrir: (ctx) => ctx.entidad.estado === 'paredes' && buscarPunto(ctx) !== null,
   ejecutar(ctx) {
     const p = buscarPunto(ctx);

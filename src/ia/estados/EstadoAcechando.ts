@@ -28,7 +28,7 @@ export class EstadoAcechando implements EstadoIA {
     // Con cuerpo, siempre al menos da el paso de más. La repetición de ritmo
     // llega después de que la grabadora del 403 me mostró "mis pasos estando quieto".
     entidad.imitador.iniciar(ctx, {
-      etapa: ctx.progreso.tiene('medido:403') ? 3 : 2,
+      etapa: ctx.progreso.imitacionCompleta ? 3 : 2,
       fuente: () => ({ x: entidad.posicion.x, z: entidad.posicion.z }),
       conCuerpo: true,
       duracion: 60,

@@ -204,7 +204,7 @@ export class Juego {
     this.entidad = new Entidad(this.escena, this.nivel.rejilla);
     this.ambiente = new AmbienteSonoro(this.audio);
     this.audio.consultaOclusion = this.nivel.consultaOclusion;
-    this.progreso = new Progreso(this.bus, this.piso.objetivos);
+    this.progreso = new Progreso(this.bus, this.piso.objetivos, this.piso.reglas);
     this.memoria = new MemoriaMundo();
     this.director = new DirectorTerror();
     this.director.conectar(this.bus);
@@ -400,7 +400,7 @@ export class Juego {
     this.jugador.teletransportar(punto.x, punto.y, punto.angulo);
     const guarida = this.piso.mapa.guaridaEntidad;
     this.entidad.reiniciar(guarida.x * CONFIG.celda, guarida.y * CONFIG.celda, ctx);
-    this.entidad.puedeManifestarse = this.progreso.tiene('medido:401');
+    this.entidad.puedeManifestarse = this.progreso.criaturaDespierta;
     this.director.reiniciar(this.memoria.muertesSinProgreso);
     this.director.activo = this.progreso.tiene('leyo:orden_trabajo');
     this.guion.reiniciar(ctx);
@@ -558,7 +558,7 @@ export class Juego {
     if (e.linterna) this.linterna.alternar(ctx);
     if (e.senuelo) {
       if (this.grabadora.puedeUsarSenuelo(ctx)) this.grabadora.colocarSenuelo(ctx);
-      else if (!this.progreso.tiene('medido:401')) this.bus.emit('subtitulo', { texto: 'Todavía no he grabado nada.', duracion: 2 });
+      else if (!this.progreso.criaturaDespierta) this.bus.emit('subtitulo', { texto: 'Todavía no he grabado nada.', duracion: 2 });
     }
 
     this.tiempoJugado += dt;
