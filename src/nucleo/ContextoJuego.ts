@@ -18,6 +18,7 @@ import type { Progreso } from '../narrativa/Progreso';
 import type { MemoriaMundo } from '../director/MemoriaMundo';
 import type { DirectorTerror } from '../director/DirectorTerror';
 import type { Renderizador } from '../render/Renderizador';
+import type { PaquetePiso } from '../pisos/TiposPiso';
 
 /** Lo que la lógica del juego puede pedirle a la interfaz. */
 export interface PuenteUI {
@@ -33,6 +34,8 @@ export interface ContextoJuego {
   readonly ambiente: AmbienteSonoro;
   readonly renderizador: Renderizador;
   readonly escena: Scene;
+  /** El piso que se está jugando: mapa, objetivos, documentos y cintas. */
+  readonly piso: PaquetePiso;
   readonly camara: PerspectiveCamera;
   readonly nivel: Nivel;
   readonly jugador: Jugador;

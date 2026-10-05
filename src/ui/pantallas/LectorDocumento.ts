@@ -1,6 +1,6 @@
 // Aquí está el lector de documentos: muestra la hoja con su tipografía
 // propia y permite pasar páginas con flechas, botones, mando o deslizando.
-import { DOCUMENTOS } from '../../narrativa/Documentos';
+import type { Documento } from '../../narrativa/Documentos';
 import { crearBoton } from '../componentes/Boton';
 import { sonarUI } from '../componentes/SonidoUI';
 import { Pantalla } from './Pantalla';
@@ -17,7 +17,7 @@ export class LectorDocumento extends Pantalla {
   private alCerrar: () => void = () => undefined;
   private inicioToqueX: number | null = null;
 
-  constructor() {
+  constructor(private readonly buscar: (id: string) => Documento | undefined) {
     super('lector');
     this.hoja = document.createElement('div');
     this.hoja.className = 'lector__hoja';
@@ -57,7 +57,7 @@ export class LectorDocumento extends Pantalla {
   }
 
   abrir(id: string, alCerrar: () => void): void {
-    const doc = DOCUMENTOS[id];
+    const doc = this.buscar(id);
     if (!doc) return;
     this.alCerrar = alCerrar;
     this.paginas = doc.paginas;

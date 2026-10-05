@@ -16,6 +16,7 @@ import { MenuPausa } from './pantallas/MenuPausa';
 import { PantallaAjustes } from './pantallas/PantallaAjustes';
 import { PantallaDocumentos } from './pantallas/PantallaDocumentos';
 import { LectorDocumento } from './pantallas/LectorDocumento';
+import type { Documento } from '../narrativa/Documentos';
 import { PantallaMuerte, type DatosMuerte } from './pantallas/PantallaMuerte';
 import type { PuenteTelemetria } from './PuenteTelemetria';
 import { PantallaFin, type EstadisticasFin } from './pantallas/PantallaFin';
@@ -26,6 +27,8 @@ import { conectarSonidoUI, type TipoSonidoUI } from './componentes/SonidoUI';
 import { navegar } from './NavegacionMando';
 
 export interface AccionesUI {
+  /** Un documento del piso que se juega (para el lector y la lista). */
+  documento(id: string): Documento | undefined;
   hayPartida(): boolean;
   continuar(): void;
   nuevaPartida(): void;
@@ -47,7 +50,7 @@ export class GestorUI {
   private readonly pausa: MenuPausa;
   private readonly ajustesPantalla: PantallaAjustes;
   private readonly documentos: PantallaDocumentos;
-  private readonly lector = new LectorDocumento();
+  private readonly lector: LectorDocumento;
   private readonly muerte: PantallaMuerte;
   private readonly fin: PantallaFin;
   private readonly creditos: PantallaCreditos;
@@ -80,6 +83,7 @@ export class GestorUI {
       salirAlMenu: () => void this.confirmarSalir(),
     });
     this.ajustesPantalla = new PantallaAjustes(ajustes, raiz, () => this.cerrarActual(), acciones.telemetria);
+    this.lector = new LectorDocumento((id) => acciones.documento(id));
     this.documentos = new PantallaDocumentos(
       () => acciones.documentosLeidos(),
       (id) => {
@@ -87,6 +91,7 @@ export class GestorUI {
         this.lector.abrir(id, () => this.cerrarActual());
       },
       () => this.cerrarActual(),
+      (id) => acciones.documento(id),
     );
     this.muerte = new PantallaMuerte(
       () => acciones.reiniciarPunto(),

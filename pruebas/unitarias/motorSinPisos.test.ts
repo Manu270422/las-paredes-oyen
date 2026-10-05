@@ -93,6 +93,14 @@ describe('El motor no conoce el contenido de un piso', () => {
     expect(Object.keys(EXCEPCIONES).filter((a) => !existentes.has(a))).toEqual([]);
   });
 
+  it('los objetivos, documentos y cintas se leen de ctx.piso: nadie fuera de src/pisos/ importa los datos globales', () => {
+    // Los TIPOS (import type) sí se pueden importar; los DATOS (OBJETIVOS, DOCUMENTOS, TRANSCRIPCIONES) no.
+    const infractores = delMotor
+      .filter((ruta) => /^import\s+\{[^}]*\b(OBJETIVOS|DOCUMENTOS|TRANSCRIPCIONES)\b[^}]*\}\s+from/m.test(sinComentarios(readFileSync(ruta, 'utf8'))))
+      .map(relativa);
+    expect(infractores).toEqual([]);
+  });
+
   it('nada fuera de src/pisos/ importa la carpeta de un piso: se pide por el catálogo', () => {
     const infractores = delMotor
       .filter((ruta) => /from\s+['"][^'"]*pisos\/piso\d+/.test(sinComentarios(readFileSync(ruta, 'utf8'))))

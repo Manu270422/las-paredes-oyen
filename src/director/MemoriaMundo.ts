@@ -11,6 +11,13 @@ interface RegistroHabitacion {
   ultimaSalida: number;
 }
 
+/** Lo que se guarda en la partida y se muestra en la pantalla final. */
+export interface EstadisticasPartida {
+  persecuciones: number;
+  muertes: number;
+  sustos: number;
+}
+
 export class MemoriaMundo {
   habitacionActual: string | null = null;
   private readonly registro = new Map<string, RegistroHabitacion>();
@@ -29,6 +36,16 @@ export class MemoriaMundo {
   readonly consejosVistos = new Set<string>();
   /** Muertes seguidas sin alcanzar un punto de control nuevo: el director afloja con esto. */
   muertesSinProgreso = 0;
+
+  get estadisticas(): EstadisticasPartida {
+    return { persecuciones: this.persecuciones, muertes: this.muertes, sustos: this.sustos };
+  }
+
+  restaurarEstadisticas(e: EstadisticasPartida): void {
+    this.persecuciones = e.persecuciones;
+    this.muertes = e.muertes;
+    this.sustos = e.sustos;
+  }
 
   reiniciarSesion(): void {
     this.habitacionActual = null;

@@ -8,7 +8,6 @@
 // Todo se basa en condiciones y banderas, así funciona igual al cargar partida.
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
 import type { AccionesGuion } from './AccionesGuion';
-import { TRANSCRIPCIONES } from './Transcripciones';
 import { ejecutarSecuenciaFinal } from './SecuenciaFinal';
 import { muroCercano } from '../director/eventos/Ayudas';
 import { CONFIG } from '../config/ConfiguracionJuego';
@@ -124,7 +123,7 @@ export class Guion {
    * captó de verdad durante la medición (la segunda realidad).
    */
   private reproducirTranscripcion(id: string, ctx: ContextoJuego, alTerminar: () => void): void {
-    const guion = TRANSCRIPCIONES[id] ?? [];
+    const guion = ctx.piso.transcripciones[id] ?? [];
     const lineas = [...guion, ...ctx.grabadora.captura.lineas(guion)].sort((a, b) => a.t - b.t);
     let final = 0;
     for (const linea of lineas) final = Math.max(final, linea.t);

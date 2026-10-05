@@ -128,6 +128,7 @@ export class Juego {
       this.ajustes,
       this.entrada,
       {
+        documento: (id) => this.piso.documentos[id],
         hayPartida: () => this.guardado.hayPartida(),
         continuar: () => this.comenzar(this.guardado.cargar(), 'continuar'),
         nuevaPartida: () => this.nuevaPartida(),
@@ -194,7 +195,7 @@ export class Juego {
     // Luz ambiente mínima: solo para intuir siluetas. Todo lo demás es linterna y lámparas.
     this.escena.add(new HemisphereLight(0x2a3242, 0x0d0a08, 0.22));
 
-    this.nivel = new Nivel(this.piso.mapa, this.materiales, this.perfil.lucesMaximas);
+    this.nivel = new Nivel(this.piso.mapa, this.materiales, this.perfil.lucesMaximas, this.piso.documentos);
     this.escena.add(this.nivel.grupo);
     this.escena.add(this.jugador.camara);
     this.linterna = new Linterna(this.escena, this.perfil, crearCookieLinterna());
@@ -203,7 +204,7 @@ export class Juego {
     this.entidad = new Entidad(this.escena, this.nivel.rejilla);
     this.ambiente = new AmbienteSonoro(this.audio);
     this.audio.consultaOclusion = this.nivel.consultaOclusion;
-    this.progreso = new Progreso(this.bus);
+    this.progreso = new Progreso(this.bus, this.piso.objetivos);
     this.memoria = new MemoriaMundo();
     this.director = new DirectorTerror();
     this.director.conectar(this.bus);
@@ -223,6 +224,7 @@ export class Juego {
       ambiente: this.ambiente,
       renderizador: this.renderizador,
       escena: this.escena,
+      piso: this.piso,
       camara: this.jugador.camara,
       nivel: this.nivel,
       jugador: this.jugador,
@@ -387,11 +389,7 @@ export class Juego {
     this.progreso.importar(datos?.progreso ?? null);
     this.puntoControl = datos?.puntoControl ?? this.piso.puntoInicial;
     this.tiempoJugado = datos?.tiempoJugado ?? this.tiempoJugado;
-    if (datos) {
-      this.memoria.persecuciones = datos.estadisticas.persecuciones;
-      this.memoria.muertes = datos.estadisticas.muertes;
-      this.memoria.sustos = datos.estadisticas.sustos;
-    }
+    if (datos) this.memoria.restaurarEstadisticas(datos.estadisticas);
     this.memoria.reiniciarSesion();
     this.nivel.restablecer(ctx);
     this.grabadora.reiniciar();
@@ -419,7 +417,7 @@ export class Juego {
       progreso: this.progreso.exportar(),
       bateria: Math.max(0.35, this.linterna.bateria),
       tiempoJugado: this.tiempoJugado,
-      estadisticas: { persecuciones: this.memoria.persecuciones, muertes: this.memoria.muertes, sustos: this.memoria.sustos },
+      estadisticas: this.memoria.estadisticas,
     });
   }
 
@@ -479,8 +477,7 @@ export class Juego {
   /** Guardo solo las estadísticas nuevas sin mover el punto de control. */
   private guardarPartidaEstadisticas(): void {
     const datos = this.guardado.cargar();
-    if (!datos) return;
-    this.guardado.guardar({ ...datos, estadisticas: { persecuciones: this.memoria.persecuciones, muertes: this.memoria.muertes, sustos: this.memoria.sustos } });
+    if (datos) this.guardado.guardar({ ...datos, estadisticas: this.memoria.estadisticas });
   }
 
   private terminarDemo(): void {

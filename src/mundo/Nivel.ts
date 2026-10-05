@@ -8,6 +8,7 @@ import type { BibliotecaMateriales } from '../render/Materiales';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
 import type { Interactuable } from '../interaccion/Interactuable';
 import { InteractuablePuerta } from '../interaccion/objetos/InteractuablePuerta';
+import type { Documento as DatosDocumento } from '../narrativa/Documentos';
 import { Documento } from '../interaccion/objetos/Documento';
 import { Recogible } from '../interaccion/objetos/Recogible';
 import { PuntoMedicion } from '../interaccion/objetos/PuntoMedicion';
@@ -52,6 +53,8 @@ export class Nivel {
     readonly def: DefMapa,
     materiales: BibliotecaMateriales,
     lucesMaximas: number,
+    /** Los documentos del piso: el tipo de cada uno decide su modelo 3D. */
+    documentos: Readonly<Record<string, DatosDocumento>>,
   ) {
     this.grupo.name = 'nivel';
     this.rejilla = new Rejilla(def.rejilla);
@@ -91,7 +94,7 @@ export class Nivel {
       let objeto: Interactuable;
       switch (d.tipo) {
         case 'documento':
-          objeto = new Documento(d);
+          objeto = new Documento(d, documentos);
           break;
         case 'recogible':
           objeto = new Recogible(d);

@@ -1,6 +1,6 @@
 // Aquí está la lista de documentos leídos (desde la pausa), para releerlos.
 // En un juego basado en pistas, poder releer es respeto por el jugador.
-import { DOCUMENTOS } from '../../narrativa/Documentos';
+import type { Documento } from '../../narrativa/Documentos';
 import { crearBoton } from '../componentes/Boton';
 import { Pantalla } from './Pantalla';
 
@@ -11,6 +11,7 @@ export class PantallaDocumentos extends Pantalla {
     private readonly leidos: () => readonly string[],
     private readonly abrir: (id: string) => void,
     alCerrar: () => void,
+    private readonly buscar: (id: string) => Documento | undefined,
   ) {
     super('panel');
     const caja = document.createElement('div');
@@ -40,7 +41,7 @@ export class PantallaDocumentos extends Pantalla {
       return;
     }
     for (const id of ids) {
-      const doc = DOCUMENTOS[id];
+      const doc = this.buscar(id);
       if (doc) this.lista.appendChild(crearBoton(doc.titulo, () => this.abrir(id)));
     }
   }

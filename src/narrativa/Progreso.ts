@@ -3,7 +3,7 @@
 // se deriva de estas banderas, así cargar una partida es trivial y robusto.
 import type { BusEventos } from '../nucleo/BusEventos';
 import type { MapaEventos } from '../nucleo/Eventos';
-import { OBJETIVOS, type Objetivo } from './Objetivos';
+import type { Objetivo } from './Objetivos';
 
 export interface DatosProgreso {
   banderas: string[];
@@ -17,7 +17,11 @@ export class Progreso {
   private documentos: string[] = [];
   private objetivoAnterior: string | null = null;
 
-  constructor(private readonly bus: BusEventos<MapaEventos>) {}
+  constructor(
+    private readonly bus: BusEventos<MapaEventos>,
+    /** Los objetivos del piso que se juega, en orden. */
+    private readonly objetivos: readonly Objetivo[],
+  ) {}
 
   tiene(bandera: string): boolean {
     return this.banderas.has(bandera);
@@ -50,7 +54,7 @@ export class Progreso {
   }
 
   objetivoActual(): Objetivo | null {
-    return OBJETIVOS.find((o) => !this.banderas.has(o.bandera)) ?? null;
+    return this.objetivos.find((o) => !this.banderas.has(o.bandera)) ?? null;
   }
 
   private revisarObjetivo(): void {
