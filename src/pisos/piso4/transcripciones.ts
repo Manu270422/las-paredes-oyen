@@ -2,21 +2,8 @@
 // medición. La idea central: lo que grabo no es lo que oí. Al reproducir,
 // aparece algo que no estaba (o que estaba y no escuché).
 // Estas son las líneas de la HISTORIA (siempre iguales). Lo que la cinta captó
-// de verdad en cada medición lo agrega CapturaGrabadora (jugador/).
-import type { IdSonido } from '../audio/TiposAudio';
-
-export interface LineaTranscripcion {
-  /** Segundos desde que empieza la reproducción. */
-  t: number;
-  texto: string;
-  /** Sonido que acompaña a la línea (reproducido "desde la grabadora"). */
-  sonido?: IdSonido;
-  volumen?: number;
-  /** Cuántas veces suena, separadas 0.36 s (los tres golpes). */
-  repeticiones?: number;
-  /** Captado a través del muro: suena apagado. */
-  dentroPared?: boolean;
-}
+// de verdad en cada medición lo agrega CapturaGrabadora (jugador/), que es del motor.
+import type { LineaTranscripcion } from '../../narrativa/TiposNarrativa';
 
 export const TRANSCRIPCIONES: Record<string, LineaTranscripcion[]> = {
   '401': [

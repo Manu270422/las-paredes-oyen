@@ -1,6 +1,6 @@
 // Aquí está el lector de documentos: muestra la hoja con su tipografía
 // propia y permite pasar páginas con flechas, botones, mando o deslizando.
-import type { Documento } from '../../narrativa/Documentos';
+import type { Documento } from '../../narrativa/TiposNarrativa';
 import { crearBoton } from '../componentes/Boton';
 import { sonarUI } from '../componentes/SonidoUI';
 import { Pantalla } from './Pantalla';

@@ -6,9 +6,7 @@
 // cada campo entra cuando el motor ya lo lee de aquí, para no dejar datos sin dueño.
 // Todavía falta: la tarjeta de lugar (Tarea 3).
 import type { DefMapa, EstadoLampara, PuntoAparicion } from '../mundo/datos/TiposMapa';
-import type { Documento } from '../narrativa/Documentos';
-import type { Objetivo } from '../narrativa/Objetivos';
-import type { LineaTranscripcion } from '../narrativa/Transcripciones';
+import type { Documento, LineaTranscripcion, Objetivo } from '../narrativa/TiposNarrativa';
 import type { AccionesGuion } from '../narrativa/AccionesGuion';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
 

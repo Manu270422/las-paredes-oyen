@@ -2,11 +2,9 @@
 // src/ FUERA de src/pisos/ nombra un apartamento del Piso 4 (401, 402, 403: en el código,
 // no en los comentarios) o importa la carpeta de un piso directamente.
 //
-// Es una MATRACA: hoy el motor todavía tiene menciones (A1 está en curso), así que cada una
-// está en EXCEPCIONES con el paso de A1 que la elimina. El número debe coincidir EXACTO:
-//   - si agregas una mención nueva, la prueba falla (la lista no puede crecer);
-//   - si quitas una, también falla, para obligarte a bajar la cifra aquí.
-// Al terminar el paso 8, EXCEPCIONES queda vacía y se borra.
+// Fue una MATRACA durante A1: cada mención que quedaba estaba en una lista de excepciones que solo podía
+// bajar. Con el paso 8 (los datos del Piso 4 en su carpeta) la lista quedó vacía y se borró: hoy el motor
+// tiene CERO menciones y cualquiera nueva hace fallar la prueba.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,21 +12,6 @@ import { describe, expect, it } from 'vitest';
 
 const RAIZ = fileURLToPath(new URL('../..', import.meta.url));
 const SRC = join(RAIZ, 'src');
-
-interface Excepcion {
-  /** Cuántas menciones de 401/402/403 hay hoy en el código de ese archivo. */
-  menciones: number;
-  /** El paso de A1 (docs/propuestas/A1-pisos-como-paquetes.md) que las elimina. */
-  hastaElPaso: number;
-}
-
-const EXCEPCIONES: Record<string, Excepcion> = {
-  // Paso 8: los datos del Piso 4 se mueven físicamente a src/pisos/piso4/.
-  'src/mundo/datos/MapaPiso4.ts': { menciones: 59, hastaElPaso: 8 },
-  'src/narrativa/Documentos.ts': { menciones: 17, hastaElPaso: 8 },
-  'src/narrativa/Objetivos.ts': { menciones: 12, hastaElPaso: 8 },
-  'src/narrativa/Transcripciones.ts': { menciones: 4, hastaElPaso: 8 },
-};
 
 function archivosDe(carpeta: string): string[] {
   return readdirSync(carpeta).flatMap((nombre) => {
@@ -51,28 +34,19 @@ const relativa = (ruta: string) => relative(RAIZ, ruta).split(sep).join('/');
 const delMotor = archivosDe(SRC).filter((r) => !relativa(r).startsWith('src/pisos/'));
 
 describe('El motor no conoce el contenido de un piso', () => {
-  const menciones = new Map<string, number>();
-  for (const ruta of delMotor) {
-    const n = (sinComentarios(readFileSync(ruta, 'utf8')).match(/40[123]/g) ?? []).length;
-    if (n > 0) menciones.set(relativa(ruta), n);
-  }
-
-  it('no hay menciones nuevas de 401, 402 o 403 fuera de las excepciones (la lista no crece)', () => {
-    const nuevas = [...menciones].filter(([archivo]) => !(archivo in EXCEPCIONES)).map(([archivo, n]) => `${archivo}: ${n}`);
-    expect(nuevas, 'archivos del motor que nombran un apartamento y no están en EXCEPCIONES').toEqual([]);
+  it('ningún archivo del motor nombra 401, 402 o 403 en su código', () => {
+    const menciones = delMotor
+      .map((ruta) => ({ archivo: relativa(ruta), n: (sinComentarios(readFileSync(ruta, 'utf8')).match(/40[123]/g) ?? []).length }))
+      .filter((x) => x.n > 0)
+      .map((x) => `${x.archivo}: ${x.n}`);
+    expect(menciones, 'archivos del motor que nombran un apartamento').toEqual([]);
   });
 
-  it('cada excepción coincide EXACTO con la realidad (si bajó, hay que bajar la cifra aquí)', () => {
-    const desajustes = Object.entries(EXCEPCIONES)
-      .map(([archivo, e]) => ({ archivo, esperadas: e.menciones, reales: menciones.get(archivo) ?? 0 }))
-      .filter((x) => x.esperadas !== x.reales)
-      .map((x) => `${x.archivo}: la lista dice ${x.esperadas}, el código tiene ${x.reales}`);
-    expect(desajustes).toEqual([]);
-  });
-
-  it('todas las excepciones apuntan a archivos que existen', () => {
-    const existentes = new Set(delMotor.map(relativa));
-    expect(Object.keys(EXCEPCIONES).filter((a) => !existentes.has(a))).toEqual([]);
+  it('la prueba mira de verdad: el motor tiene muchos archivos y el piso sí nombra sus apartamentos', () => {
+    expect(delMotor.length).toBeGreaterThan(100);
+    const delPiso = archivosDe(join(SRC, 'pisos'));
+    const enElPiso = delPiso.reduce((n, ruta) => n + (sinComentarios(readFileSync(ruta, 'utf8')).match(/40[123]/g) ?? []).length, 0);
+    expect(enElPiso).toBeGreaterThan(50);
   });
 
   it('los objetivos, documentos y cintas se leen de ctx.piso: nadie fuera de src/pisos/ importa los datos globales', () => {

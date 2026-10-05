@@ -2,7 +2,7 @@
 // lo que no duplica del guion y lo que nunca descarta (la presencia).
 import { describe, expect, it } from 'vitest';
 import { CapturaGrabadora } from '../../src/jugador/CapturaGrabadora';
-import type { LineaTranscripcion } from '../../src/narrativa/Transcripciones';
+import type { LineaTranscripcion } from '../../src/narrativa/TiposNarrativa';
 import { crearContextoFalso } from './contextoFalso';
 
 function preparar(entidad: { fisica: boolean; distancia: number } = { fisica: false, distancia: 20 }) {

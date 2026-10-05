@@ -14,7 +14,7 @@
 // 4. La cinta es honesta: si no pasó nada, no inventa nada.
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
 import type { IdSonido, OpcionesSonido } from '../audio/TiposAudio';
-import type { LineaTranscripcion } from '../narrativa/Transcripciones';
+import type { LineaTranscripcion } from '../narrativa/TiposNarrativa';
 import { distancia2D, normalizarAngulo } from '../utilidades/Matematicas';
 
 /** Hasta dónde oye el micrófono los sonidos del mundo (m). */

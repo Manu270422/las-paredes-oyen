@@ -5,7 +5,7 @@ import { MemoriaMundo } from '../../src/director/MemoriaMundo';
 import { BusEventos } from '../../src/nucleo/BusEventos';
 import type { MapaEventos } from '../../src/nucleo/Eventos';
 import { Progreso } from '../../src/narrativa/Progreso';
-import type { Objetivo } from '../../src/narrativa/Objetivos';
+import type { Objetivo } from '../../src/narrativa/TiposNarrativa';
 import { PISO_INICIAL } from '../../src/pisos/catalogo';
 
 const OBJETIVOS_FALSOS: Objetivo[] = [

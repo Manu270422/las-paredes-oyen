@@ -6,15 +6,7 @@
 // Lo que nadie dijo no se fue a ningún lado. Se quedó en las paredes, oyendo.
 // "Las paredes oyen": ¿es una criatura, o es la culpa del edificio entero?
 // No lo respondo. Dejo que el jugador decida.
-
-export type TipoDocumento = 'orden' | 'diario' | 'nota' | 'cinta' | 'carta';
-
-export interface Documento {
-  id: string;
-  titulo: string;
-  tipo: TipoDocumento;
-  paginas: string[];
-}
+import type { Documento } from '../../narrativa/TiposNarrativa';
 
 export const DOCUMENTOS: Record<string, Documento> = {
   orden_trabajo: {

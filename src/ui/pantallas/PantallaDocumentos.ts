@@ -1,6 +1,6 @@
 // Aquí está la lista de documentos leídos (desde la pausa), para releerlos.
 // En un juego basado en pistas, poder releer es respeto por el jugador.
-import type { Documento } from '../../narrativa/Documentos';
+import type { Documento } from '../../narrativa/TiposNarrativa';
 import { crearBoton } from '../componentes/Boton';
 import { Pantalla } from './Pantalla';
 

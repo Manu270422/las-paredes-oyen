@@ -3,7 +3,7 @@
 // se deriva de estas banderas, así cargar una partida es trivial y robusto.
 import type { BusEventos } from '../nucleo/BusEventos';
 import type { MapaEventos } from '../nucleo/Eventos';
-import type { Objetivo } from './Objetivos';
+import type { Objetivo } from './TiposNarrativa';
 import type { ReglasPiso } from '../pisos/TiposPiso';
 
 export interface DatosProgreso {

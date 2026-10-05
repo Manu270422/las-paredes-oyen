@@ -10,7 +10,7 @@ import {
   PlaneGeometry,
   TorusGeometry,
 } from 'three';
-import type { TipoDocumento } from '../../narrativa/Documentos';
+import type { TipoDocumento } from '../../narrativa/TiposNarrativa';
 
 const cache = new Map<string, MeshStandardMaterial>();
 function mat(nombre: string, color: number, rugosidad = 0.8, metalico = 0, emisivo = 0): MeshStandardMaterial {

@@ -14,9 +14,6 @@ import { PISOS } from '../../src/pisos/catalogo';
 
 const RAIZ = fileURLToPath(new URL('../..', import.meta.url));
 
-/** Los datos del Piso 4 todavía viven fuera de src/pisos/ (se mudan en el paso 8 de A1). */
-const DATOS_POR_MUDAR = ['src/mundo/datos/MapaPiso4.ts', 'src/narrativa/Documentos.ts', 'src/narrativa/Objetivos.ts', 'src/narrativa/Transcripciones.ts'];
-
 /** archivo → { palabra → cuántas veces aparece entre comillas }. Todas son vocabulario del motor, no contenido. */
 const COINCIDENCIAS: Record<string, Record<string, number>> = {
   // Ids de SONIDO ('llave' = girar una llave, 'tablero' = palanca del tablero eléctrico).
@@ -27,6 +24,7 @@ const COINCIDENCIAS: Record<string, Record<string, number>> = {
   'src/mundo/PoolLuces.ts': { emergencia: 1 },
   // Tipo de DOCUMENTO ('orden' de trabajo es una forma de papel, como 'diario' o 'cinta').
   'src/interaccion/objetos/Modelos.ts': { orden: 1 },
+  'src/narrativa/TiposNarrativa.ts': { orden: 1 },
   // Forma 3D de un recogible ('pilas' es un modelo; el objeto del Piso 4 también se llama así).
   'src/interaccion/objetos/Recogible.ts': { pilas: 1 },
   // 'tablero': el sonido de la palanca y la CAUSA de ruido de un tablero, y el TIPO de interactuable.
@@ -80,7 +78,7 @@ describe('El motor no escribe a mano nombres del contenido de un piso', () => {
   const nombres = nombresDelContenido();
   const motor = archivosDe(join(RAIZ, 'src'))
     .map(relativa)
-    .filter((r) => !r.startsWith('src/pisos/') && !DATOS_POR_MUDAR.includes(r));
+    .filter((r) => !r.startsWith('src/pisos/'));
 
   const encontrados: Record<string, Record<string, number>> = {};
   for (const archivo of motor) {

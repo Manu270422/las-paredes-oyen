@@ -1,13 +1,7 @@
 // Aquí defino la cadena de objetivos del vertical slice. Cada objetivo se
 // completa con una bandera de progreso. Los mantengo cortos y diegéticos:
 // son las tareas de un técnico de sonido, no "misiones" de videojuego.
-
-export interface Objetivo {
-  id: string;
-  texto: string;
-  /** Bandera que lo completa. */
-  bandera: string;
-}
+import type { Objetivo } from '../../narrativa/TiposNarrativa';
 
 export const OBJETIVOS: readonly Objetivo[] = [
   { id: 'orden', texto: 'Lee la orden de trabajo en la escalera', bandera: 'leyo:orden_trabajo' },

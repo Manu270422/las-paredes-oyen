@@ -5,7 +5,7 @@
 1. **Cada cosa en su lugar**: una carpeta por responsabilidad, un archivo por concepto.
 2. **Comunicación por eventos** (`nucleo/BusEventos.ts` + `nucleo/Eventos.ts`): el jugador emite `ruido`; la criatura, la grabadora y el HUD reaccionan sin conocerse.
 3. **Contexto compartido** (`nucleo/ContextoJuego.ts`): referencias a todos los sistemas para eventos, estados de IA e interactuables.
-4. **Niveles como datos** (`mundo/datos/`): el mapa es una rejilla de texto + listas de habitaciones, puertas, luces, muebles e interactuables.
+4. **Pisos como paquetes** (`pisos/`): un piso es una carpeta con su mapa (rejilla de texto + habitaciones, puertas, luces, muebles e interactuables), objetivos, documentos, cintas, reglas y un guion opcional. El motor no nombra ningún piso; solo `pisos/catalogo.ts` los conoce.
 5. **Estado derivado de banderas** (`narrativa/Progreso.ts`): puertas, luces y objetos se restauran leyendo banderas. Guardar = serializar banderas.
 6. **Tiempo de juego, no reloj real** (`nucleo/Programador.ts`): los sustos programados se congelan al pausar.
 7. **Nada temporal queda colgado** (`Programador.limpiarDespues`): una suscripción o efecto que debe durar N segundos registra su *limpieza*, que se ejecuta al vencer **o** al cancelar todo (muerte, menú, recarga). Antes, un eco del director podía quedar escuchando pasos para siempre.
@@ -30,7 +30,7 @@ LasParedesOyen/
    ├─ audio/                   Motor, fuentes 3D, reverberación, ambiente, biblioteca
    │  └─ sintesis/             Sintetizador y recetas de los 39 sonidos
    ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, colisiones
-   │  └─ datos/                Tipos de mapa y el Piso 4
+   │  └─ datos/                Tipos de mapa (la forma; los mapas viven en cada piso)
    ├─ jugador/                 Jugador, cámara, respiración, corazón, linterna, grabadora
    ├─ interaccion/             Sistema de interacción e interactuables
    │  └─ objetos/              Puerta, documento, recogible, medición, tablero, radio, modelos
@@ -38,7 +38,9 @@ LasParedesOyen/
    │  └─ estados/              Paredes, investigando (con encuentro), cazando, acechando, retirada
    ├─ director/                Director de terror, memoria del mundo, visibilidad
    │  └─ eventos/              13 eventos dinámicos + catálogo
-   ├─ narrativa/               Documentos, objetivos, progreso, guion, transcripciones, final, explicaciones de muerte
+   ├─ narrativa/               Progreso, acciones del guion, tipos de documento/objetivo/cinta, explicaciones de muerte
+   ├─ pisos/                   Catálogo de pisos y la forma de un paquete (TiposPiso)
+   │  └─ piso4/                El Piso 4: mapa, objetivos, documentos, cintas, guion y secuencia final
    ├─ telemetria/              Telemetría LOCAL de playtesting: recolector, almacén, resumen, reacción, vigilancia, ?telemetria=1
    ├─ guardado/                Sistema de guardado versionado
    ├─ ui/                      Gestor de UI, íconos, navegación con mando
@@ -90,7 +92,7 @@ cargador (`guardado/Versionado.ts` + `guardado/AlmacenVersionado.ts`):
 
 | Clave | Qué es | Versión | Se borra |
 |---|---|---|---|
-| `partida` | Punto de control, banderas, batería, tiempo (`guardado/SistemaGuardado.ts`) | 1 | Al terminar o con "Nueva partida" |
+| `partida` | Piso, punto de control, banderas, batería, tiempo (`guardado/SistemaGuardado.ts`) | 2 (migra desde v1: toda v1 es del Piso 4) | Al terminar o con "Nueva partida" |
 | `ajustes` | Ajustes del jugador (`config/Ajustes.ts`) | 1 (migra desde v0, sin versión) | Nunca |
 | `perfil` | Mejores marcas y totales de toda la vida (`guardado/Perfil.ts`) | 1 | Nunca |
 | `telemetria` | Sesiones de prueba (`telemetria/`) | 1 por sesión | Desde Ajustes → Pruebas |
@@ -104,6 +106,19 @@ Reglas del cargador:
 - Los ajustes solo aceptan claves conocidas con el tipo correcto: un valor raro vuelve al valor por defecto.
 - El perfil premia jugar bien, no jugar más: mejor tiempo y menos muertes en una partida terminada, sin rachas.
 
+## Pisos como paquetes (Sprint 4, A1)
+
+Un piso = una carpeta en `src/pisos/` que exporta un `PaquetePiso` (`pisos/TiposPiso.ts`): `mapa`, `objetivos`, `documentos`,
+`transcripciones`, `objetos` recogibles, `puntoInicial` y `puntosControl` (bandera → punto), `luzPorBandera`, `reglas`
+(`directorDesde`, `despiertaCon`, `imitacionCompletaCon`), `menu` y un `guion` opcional (lo que no es dato). El juego lo
+recibe del catálogo y lo deja en `ctx.piso`; la partida guarda su `id`.
+
+Dos pruebas lo vigilan (`pruebas/unitarias/`):
+- `motorSinPisos`: ningún archivo fuera de `src/pisos/` escribe 401, 402 o 403 en su código ni importa la carpeta de un piso.
+- `motorSinContenido`: ningún archivo del motor escribe entre comillas un id o una bandera de un paquete del catálogo.
+  Las palabras que también son vocabulario del motor (`'pasillo'` como reverberación, `'orden'` como tipo de papel…)
+  están declaradas archivo por archivo con su cuenta exacta.
+
 ## Estados de la aplicación
 
 `cargando → inicio (gesto: audio + pantalla completa) → menú ⇄ jugando ⇄ pausa / documento → muerte | fin`
@@ -114,7 +129,7 @@ Reglas del cargador:
 |---|---|
 | Perfiles / nube | `guardado/` (formato versionado con migraciones; el perfil ya existe localmente) |
 | Logros / estadísticas | Suscriptores del bus (`bandera`, `entidad-estado`) |
-| Contenido adicional | Nuevos `mundo/datos/*.ts` + eventos en `director/eventos/` |
+| Contenido adicional | Una carpeta nueva en `pisos/` + su línea en `pisos/catalogo.ts` (A1) |
 | Cooperativo | El bus y las banderas ya separan "qué pasó" de "quién lo muestra"; faltaría red (WebRTC) |
 | Audio grabado real | **Ya implementado**: una línea en `public/audio/manifiesto.json` por `IdSonido` (reemplaza o suma variantes, con ganancia) |
 | Modelos 3D | Reemplazar `ia/ModeloEntidad.ts` y `mundo/Muebles.ts` por glTF |

@@ -16,7 +16,7 @@ import { MenuPausa } from './pantallas/MenuPausa';
 import { PantallaAjustes } from './pantallas/PantallaAjustes';
 import { PantallaDocumentos } from './pantallas/PantallaDocumentos';
 import { LectorDocumento } from './pantallas/LectorDocumento';
-import type { Documento } from '../narrativa/Documentos';
+import type { Documento } from '../narrativa/TiposNarrativa';
 import { PantallaMuerte, type DatosMuerte } from './pantallas/PantallaMuerte';
 import type { PuenteTelemetria } from './PuenteTelemetria';
 import { PantallaFin, type EstadisticasFin } from './pantallas/PantallaFin';

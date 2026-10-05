@@ -4,7 +4,7 @@ import { Group } from 'three';
 import { CONFIG } from '../../config/ConfiguracionJuego';
 import type { ContextoJuego } from '../../nucleo/ContextoJuego';
 import type { DefInteractuable } from '../../mundo/datos/TiposMapa';
-import type { Documento as DatosDocumento } from '../../narrativa/Documentos';
+import type { Documento as DatosDocumento } from '../../narrativa/TiposNarrativa';
 import { crearZonaToque, vincular, type Interactuable } from '../Interactuable';
 import { modeloDocumento } from './Modelos';
 import { GRADOS } from '../../utilidades/Matematicas';

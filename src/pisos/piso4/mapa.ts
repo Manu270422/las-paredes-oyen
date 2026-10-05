@@ -10,7 +10,7 @@
 // - Cuarto de servicio (este): callejón sin salida con el tablero eléctrico.
 // - Entre el 401 y el 403 hay tres celdas de muro macizo: "el hueco",
 //   un espacio que no debería existir (reservado para la siguiente fase).
-import type { DefMapa } from './TiposMapa';
+import type { DefMapa } from '../../mundo/datos/TiposMapa';
 
 export const MAPA_PISO_4: DefMapa = {
   nombre: 'Edificio Almendros — Piso 4',
