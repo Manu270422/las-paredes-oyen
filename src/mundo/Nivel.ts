@@ -142,8 +142,9 @@ export class Nivel {
     return this.muebles.find((m) => m.id === id);
   }
 
-  puntoControl(nombre: string): PuntoAparicion {
-    return this.def.puntosControl[nombre] ?? this.def.puntosControl.escalera;
+  /** El punto de control con ese nombre; si no existe (una partida vieja), el de respaldo (el inicial del piso). */
+  puntoControl(nombre: string, respaldo: string): PuntoAparicion {
+    return this.def.puntosControl[nombre] ?? this.def.puntosControl[respaldo];
   }
 
   /** Reúno las cajas de colisión cercanas a un punto (muros, jambas, puertas cerradas, muebles). */

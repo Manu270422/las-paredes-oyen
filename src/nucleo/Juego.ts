@@ -38,21 +38,12 @@ import { BucleJuego } from './BucleJuego';
 import { SecuenciaMuerte, type SalidaMuerte } from './SecuenciaMuerte';
 import { mostrarSusto } from './Susto';
 import type { ContextoJuego } from './ContextoJuego';
-import { amortiguar, normalizarAngulo } from '../utilidades/Matematicas';
+import { amortiguar, GRADOS, normalizarAngulo } from '../utilidades/Matematicas';
 
 type EstadoApp = 'cargando' | 'inicio' | 'menu' | 'jugando' | 'pausa' | 'documento' | 'muerte' | 'fin';
 
 /** Cómo empiezo a jugar: una partida nueva, continuar la guardada o reintentar tras morir. */
 type OrigenPartida = 'nueva' | 'continuar' | 'reintento';
-
-/** Banderas que crean un punto de control (y dónde reaparezco). */
-const PUNTOS_CONTROL: Record<string, string> = {
-  'leyo:orden_trabajo': 'escalera',
-  'medido:401': 'sala401',
-  'medido:403': 'sala403',
-  tablero_activado: 'servicio',
-  'objeto:llave_402': 'estudio403',
-};
 
 export class Juego {
   private readonly bus = new BusEventos<MapaEventos>();
@@ -106,7 +97,7 @@ export class Juego {
   private estado: EstadoApp = 'cargando';
   private estadoAntesDePausa: EstadoApp = 'jugando';
   private soloMirar = false;
-  private puntoControl = 'escalera';
+  private puntoControl = this.piso.puntoInicial;
   private tiempoJugado = 0;
   private temporizadorLento = 0;
   private interferencia = 0;
@@ -265,7 +256,7 @@ export class Juego {
       if (ruido.origen === 'jugador') this.grabadora.alRuidoJugador(ruido, this.ctx);
     });
     this.bus.on('bandera', ({ nombre }) => {
-      const punto = PUNTOS_CONTROL[nombre];
+      const punto = this.piso.puntosControl[nombre];
       if (punto) {
         // Avancé en la historia: el alivio por muertes seguidas se reinicia.
         this.memoria.muertesSinProgreso = 0;
@@ -325,7 +316,8 @@ export class Juego {
     this.progreso.importar(null);
     this.nivel.restablecer(this.ctx);
     this.entidad.reiniciar(this.piso.mapa.guaridaEntidad.x * CONFIG.celda, this.piso.mapa.guaridaEntidad.y * CONFIG.celda, this.ctx);
-    this.jugador.teletransportar(4.4, 10.5, -90);
+    const { x, y, angulo } = this.piso.menu.camara;
+    this.jugador.teletransportar(x, y, angulo);
     this.linterna.reiniciar(1);
     this.linterna.encendida = true;
     this.director.activo = false;
@@ -393,7 +385,7 @@ export class Juego {
     this.interferencia = 0;
 
     this.progreso.importar(datos?.progreso ?? null);
-    this.puntoControl = datos?.puntoControl ?? 'escalera';
+    this.puntoControl = datos?.puntoControl ?? this.piso.puntoInicial;
     this.tiempoJugado = datos?.tiempoJugado ?? this.tiempoJugado;
     if (datos) {
       this.memoria.persecuciones = datos.estadisticas.persecuciones;
@@ -405,8 +397,8 @@ export class Juego {
     this.grabadora.reiniciar();
     this.linterna.reiniciar(datos?.bateria ?? 1);
     // Si retomo más adelante en la historia, llego con la linterna encendida.
-    this.linterna.encendida = this.puntoControl !== 'escalera';
-    const punto = this.nivel.puntoControl(this.puntoControl);
+    this.linterna.encendida = this.puntoControl !== this.piso.puntoInicial;
+    const punto = this.nivel.puntoControl(this.puntoControl, this.piso.puntoInicial);
     this.jugador.teletransportar(punto.x, punto.y, punto.angulo);
     const guarida = this.piso.mapa.guaridaEntidad;
     this.entidad.reiniciar(guarida.x * CONFIG.celda, guarida.y * CONFIG.celda, ctx);
@@ -634,8 +626,9 @@ export class Juego {
   private actualizarMenuFondo(dt: number): void {
     this.tiempoMenu += dt;
     const camara = this.jugador.camara;
-    camara.position.set(4.4 * CONFIG.celda, 1.55 + Math.sin(this.tiempoMenu * 0.6) * 0.012, 10.5 * CONFIG.celda);
-    camara.rotation.set(Math.sin(this.tiempoMenu * 0.23) * 0.02 - 0.03, -Math.PI / 2 + Math.sin(this.tiempoMenu * 0.17) * 0.05, 0);
+    const { camara: vista, figura } = this.piso.menu;
+    camara.position.set(vista.x * CONFIG.celda, 1.55 + Math.sin(this.tiempoMenu * 0.6) * 0.012, vista.y * CONFIG.celda);
+    camara.rotation.set(Math.sin(this.tiempoMenu * 0.23) * 0.02 - 0.03, vista.angulo * GRADOS + Math.sin(this.tiempoMenu * 0.17) * 0.05, 0);
     this.linterna.actualizar(dt, Infinity, this.ctx);
     this.linterna.bateria = 1;
     this.nivel.actualizar(dt, null, camara.position.x, camara.position.z);
@@ -648,8 +641,8 @@ export class Juego {
         modelo.fijarVisible(false);
         this.temporizadorMenu = 20 + Math.random() * 25;
       } else {
-        modelo.raiz.position.set(15.5 * CONFIG.celda, 0, 10.5 * CONFIG.celda);
-        modelo.raiz.rotation.y = -Math.PI / 2;
+        modelo.raiz.position.set(figura.x * CONFIG.celda, 0, figura.y * CONFIG.celda);
+        modelo.raiz.rotation.y = figura.angulo * GRADOS;
         modelo.forzarPose('quieto');
         modelo.fijarVisible(true);
         this.temporizadorMenu = 1.8;

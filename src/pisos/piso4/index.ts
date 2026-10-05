@@ -15,4 +15,16 @@ export const PISO_4: PaquetePiso = {
   objetivos: OBJETIVOS,
   documentos: DOCUMENTOS,
   transcripciones: TRANSCRIPCIONES,
+  puntoInicial: 'escalera',
+  puntosControl: {
+    'leyo:orden_trabajo': 'escalera',
+    'medido:401': 'sala401',
+    'medido:403': 'sala403',
+    tablero_activado: 'servicio',
+    'objeto:llave_402': 'estudio403',
+  },
+  menu: {
+    camara: { x: 4.4, y: 10.5, angulo: -90 },
+    figura: { x: 15.5, y: 10.5, angulo: -90 },
+  },
 };

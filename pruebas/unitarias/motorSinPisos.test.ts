@@ -19,12 +19,12 @@ interface Excepcion {
   /** Cuántas menciones de 401/402/403 hay hoy en el código de ese archivo. */
   menciones: number;
   /** El paso de A1 (docs/propuestas/A1-pisos-como-paquetes.md) que las elimina. */
-  hastaElPaso: number | 'por decidir';
+  hastaElPaso: number;
 }
 
 const EXCEPCIONES: Record<string, Excepcion> = {
-  // Paso 2: puntos de control y cámara del menú pasan al paquete. Paso 5: reglas ("despierta con").
-  'src/nucleo/Juego.ts': { menciones: 8, hastaElPaso: 5 },
+  // Paso 5: las banderas 'medido:401' (la criatura despierta, el señuelo se activa) pasan a ser reglas.
+  'src/nucleo/Juego.ts': { menciones: 2, hastaElPaso: 5 },
   // Paso 4: luces por bandera como datos (hoy nombra la lámpara del 402).
   'src/mundo/Nivel.ts': { menciones: 1, hastaElPaso: 4 },
   // Paso 5: las banderas 'medido:401' y 'medido:403' pasan a ser reglas del paquete.
@@ -42,10 +42,10 @@ const EXCEPCIONES: Record<string, Excepcion> = {
   'src/narrativa/Documentos.ts': { menciones: 17, hastaElPaso: 8 },
   'src/narrativa/Objetivos.ts': { menciones: 12, hastaElPaso: 8 },
   'src/narrativa/Transcripciones.ts': { menciones: 4, hastaElPaso: 8 },
-  // Los objetos del mapa (la llave del 402) son una unión fija de tipos y un modelo 3D por id:
-  // hay que decidir si pasan a datos del paquete. No está en el plan de 8 pasos todavía.
-  'src/mundo/datos/TiposMapa.ts': { menciones: 1, hastaElPaso: 'por decidir' },
-  'src/interaccion/objetos/Recogible.ts': { menciones: 4, hastaElPaso: 'por decidir' },
+  // Paso 5: los objetos del mapa (la llave del 402) pasan a ser datos del paquete: el id del objeto
+  // deja de ser una unión fija de tipos y su modelo y texto salen de ahí (decidido por el dueño).
+  'src/mundo/datos/TiposMapa.ts': { menciones: 1, hastaElPaso: 5 },
+  'src/interaccion/objetos/Recogible.ts': { menciones: 4, hastaElPaso: 5 },
 };
 
 function archivosDe(carpeta: string): string[] {
