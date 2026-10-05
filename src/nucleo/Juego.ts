@@ -15,7 +15,8 @@ import { crearCookieLinterna } from '../render/texturas/CookieLinterna';
 import { MotorAudio } from '../audio/MotorAudio';
 import { AmbienteSonoro } from '../audio/AmbienteSonoro';
 import { Nivel } from '../mundo/Nivel';
-import { MAPA_PISO_4 } from '../mundo/datos/MapaPiso4';
+import { PISO_INICIAL } from '../pisos/catalogo';
+import type { PaquetePiso } from '../pisos/TiposPiso';
 import { Jugador } from '../jugador/Jugador';
 import { Linterna } from '../jugador/Linterna';
 import { Grabadora } from '../jugador/Grabadora';
@@ -59,6 +60,8 @@ export class Juego {
   private readonly ajustes = new GestorAjustes();
   private readonly pantalla = new GestorPantalla();
   private readonly dispositivo = detectarDispositivo();
+  /** El piso que se está jugando, como paquete de datos (mapa, objetivos, documentos, cintas). */
+  private readonly piso: PaquetePiso = PISO_INICIAL;
   private readonly guardado = new SistemaGuardado();
   /** Mejores marcas y totales del jugador: sobrevive a todas las partidas. */
   private readonly perfilGuardado = new Perfil();
@@ -200,7 +203,7 @@ export class Juego {
     // Luz ambiente mínima: solo para intuir siluetas. Todo lo demás es linterna y lámparas.
     this.escena.add(new HemisphereLight(0x2a3242, 0x0d0a08, 0.22));
 
-    this.nivel = new Nivel(MAPA_PISO_4, this.materiales, this.perfil.lucesMaximas);
+    this.nivel = new Nivel(this.piso.mapa, this.materiales, this.perfil.lucesMaximas);
     this.escena.add(this.nivel.grupo);
     this.escena.add(this.jugador.camara);
     this.linterna = new Linterna(this.escena, this.perfil, crearCookieLinterna());
@@ -321,7 +324,7 @@ export class Juego {
   private prepararMenuFondo(): void {
     this.progreso.importar(null);
     this.nivel.restablecer(this.ctx);
-    this.entidad.reiniciar(MAPA_PISO_4.guaridaEntidad.x * CONFIG.celda, MAPA_PISO_4.guaridaEntidad.y * CONFIG.celda, this.ctx);
+    this.entidad.reiniciar(this.piso.mapa.guaridaEntidad.x * CONFIG.celda, this.piso.mapa.guaridaEntidad.y * CONFIG.celda, this.ctx);
     this.jugador.teletransportar(4.4, 10.5, -90);
     this.linterna.reiniciar(1);
     this.linterna.encendida = true;
@@ -405,7 +408,7 @@ export class Juego {
     this.linterna.encendida = this.puntoControl !== 'escalera';
     const punto = this.nivel.puntoControl(this.puntoControl);
     this.jugador.teletransportar(punto.x, punto.y, punto.angulo);
-    const guarida = MAPA_PISO_4.guaridaEntidad;
+    const guarida = this.piso.mapa.guaridaEntidad;
     this.entidad.reiniciar(guarida.x * CONFIG.celda, guarida.y * CONFIG.celda, ctx);
     this.entidad.puedeManifestarse = this.progreso.tiene('medido:401');
     this.director.reiniciar(this.memoria.muertesSinProgreso);
