@@ -80,7 +80,7 @@ export class HUD {
       this.subtitulos.mostrar(`[${s.descripcion} ${direccion(s.x, s.z)}]`, 2.6, true);
     });
     bus.on('objetivo', (o) => this.objetivo.mostrar(o.texto, o.nuevo));
-    bus.on('tarjeta', (t) => this.tarjeta.mostrar(t.titulo, t.subtitulo));
+    bus.on('tarjeta', (t) => this.tarjeta.mostrar(t.titulo, t.subtitulo, t.estilo));
     bus.on('pista', (p) => this.pistas.agregar(p.texto));
   }
 

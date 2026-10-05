@@ -167,6 +167,18 @@
   text-shadow: 0 0 20px #000;
 }
 
+/* La discreta: dice dónde entré sin tapar el centro (donde puede estar la criatura). */
+.tarjeta--discreta {
+  top: 74%;
+  transition-duration: 0.7s;
+}
+
+.tarjeta--discreta h2 {
+  font-size: clamp(15px, 0.5rem + 2vmin, 26px);
+  letter-spacing: 0.18em;
+  color: #cfc7b6;
+}
+
 .tarjeta p {
   margin: var(--espacio-s) 0 0;
   font-size: var(--texto-s);

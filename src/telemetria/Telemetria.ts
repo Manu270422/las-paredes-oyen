@@ -288,7 +288,7 @@ export class Telemetria {
     bus.on('susto', (s) => this.registrar('susto', { origen: s.origen }));
     bus.on('bandera', ({ nombre }) => {
       // Las pistas y lo recogido tienen su propio registro; aquí solo el progreso de la historia.
-      if (nombre.startsWith('pista:') || nombre.startsWith('recogido:')) return;
+      if (nombre.startsWith('pista:') || nombre.startsWith('recogido:') || nombre.startsWith('lugar:')) return;
       this.registrar('bandera', { nombre, bateria: r2(this.ctx?.linterna.bateria ?? 0) });
     });
     bus.on('momento-guion', ({ id }) => {

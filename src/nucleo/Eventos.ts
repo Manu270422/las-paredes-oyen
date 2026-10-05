@@ -3,6 +3,9 @@
 import type { AcabadoPiso } from '../mundo/datos/TiposMapa';
 import type { FaseDirector, RasgoJugador } from '../director/TiposDirector';
 
+/** 'cine': grande y centrada (por defecto). 'discreta': pequeña, abajo y breve. */
+export type EstiloTarjeta = 'cine' | 'discreta';
+
 export type OrigenRuido = 'jugador' | 'puerta' | 'grabadora' | 'entorno' | 'radio';
 
 /**
@@ -65,8 +68,8 @@ export interface MapaEventos {
   'jugador-atrapado': { x: number; z: number; motivo: MotivoCaza; enPared: boolean };
   'fin-demo': { tiempo: number };
   documento: { id: string };
-  /** Tarjeta grande de lugar y hora (estilo cine). */
-  tarjeta: { titulo: string; subtitulo: string };
+  /** Tarjeta de lugar: grande y de cine (lugar y hora), o discreta (al entrar a un apartamento). */
+  tarjeta: { titulo: string; subtitulo: string; estilo?: EstiloTarjeta };
   /** El director lanzó un evento de terror (x/z si ocurrió en un punto concreto). */
   'evento-director': { id: string; intensidad: number; fase: FaseDirector; x?: number; z?: number; carga?: number };
   'director-fase': { fase: FaseDirector };

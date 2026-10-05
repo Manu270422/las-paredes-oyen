@@ -23,6 +23,7 @@ import { Grabadora } from '../jugador/Grabadora';
 import { Entidad } from '../ia/Entidad';
 import { SistemaInteraccion } from '../interaccion/SistemaInteraccion';
 import { Progreso } from '../narrativa/Progreso';
+import { conectarAnuncioLugares } from '../narrativa/AnuncioLugares';
 import { MemoriaMundo } from '../director/MemoriaMundo';
 import { DirectorTerror } from '../director/DirectorTerror';
 import { SistemaGuardado, type DatosPartida } from '../guardado/SistemaGuardado';
@@ -116,8 +117,7 @@ export class Juego {
     aplicarParametroTelemetria(this.ajustes);
     this.perfil = PERFILES[this.calidadElegida()];
     this.renderizador = new Renderizador(this.lienzo, this.perfil);
-    this.renderizador.brillo = this.ajustes.valores.brillo;
-    this.renderizador.reducirDestellos = this.ajustes.valores.reducirDestellos;
+    Object.assign(this.renderizador, { brillo: this.ajustes.valores.brillo, reducirDestellos: this.ajustes.valores.reducirDestellos });
     this.entrada = new GestorEntrada(this.lienzo, this.raizUI, this.ajustes, this.dispositivo.esTactil);
     document.documentElement.dataset.modoEntrada = this.entrada.modo;
     this.jugador = new Jugador(1);
@@ -208,6 +208,7 @@ export class Juego {
     this.memoria = new MemoriaMundo();
     this.director = new DirectorTerror();
     this.director.conectar(this.bus, this.piso.reglas.directorDesde);
+    conectarAnuncioLugares(this.bus, this.piso, this.nivel, this.progreso);
     this.guion = this.piso.guion?.({
       mostrarSusto: () => mostrarSusto(this.ctx, 'final'),
       fundido: (aNegro, segundos) => this.ui.hud.fundir(aNegro, segundos),
@@ -285,8 +286,7 @@ export class Juego {
 
     this.ajustes.suscribir((valores, clave) => {
       this.audio.aplicarVolumenes(valores);
-      this.renderizador.brillo = valores.brillo;
-      this.renderizador.reducirDestellos = valores.reducirDestellos;
+      Object.assign(this.renderizador, { brillo: valores.brillo, reducirDestellos: valores.reducirDestellos });
       if (clave === 'calidad' || clave === null) {
         this.perfil = PERFILES[this.calidadElegida()];
         this.renderizador.aplicarPerfil(this.perfil);
