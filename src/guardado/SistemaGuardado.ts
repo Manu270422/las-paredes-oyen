@@ -8,10 +8,12 @@ import { borrar, escribirJSON } from '../utilidades/Almacenamiento';
 import { leerVersionado } from './AlmacenVersionado';
 import type { Migracion } from './Versionado';
 
-export const VERSION_PARTIDA = 1;
+export const VERSION_PARTIDA = 2;
 
 export interface DatosPartida {
   version: typeof VERSION_PARTIDA;
+  /** El id del piso (paquete) de esta partida: 'piso4'. */
+  piso: string;
   puntoControl: string;
   progreso: DatosProgreso;
   bateria: number;
@@ -20,8 +22,12 @@ export interface DatosPartida {
   estadisticas: { persecuciones: number; muertes: number; sustos: number };
 }
 
-/** Pasos para subir partidas viejas a la versión actual (vacío: la v1 es la primera). */
-const MIGRACIONES: readonly Migracion[] = [];
+/** Pasos para subir partidas viejas a la versión actual. */
+const MIGRACIONES: readonly Migracion[] = [
+  // v1 → v2: la partida dice de qué piso es. Toda partida v1 es del Piso 4 (el único que existía
+  // hasta el Sprint 4): ese id aquí es un hecho histórico, no una regla del motor.
+  { desde: 1, migrar: (v1) => ({ ...v1, piso: 'piso4' }) },
+];
 
 const CLAVE = 'partida';
 
@@ -29,6 +35,7 @@ function esPartida(d: Record<string, unknown>): d is Record<string, unknown> & D
   const e = d.estadisticas as Record<string, unknown> | undefined;
   return (
     d.version === VERSION_PARTIDA &&
+    typeof d.piso === 'string' &&
     typeof d.puntoControl === 'string' &&
     typeof d.progreso === 'object' &&
     d.progreso !== null &&

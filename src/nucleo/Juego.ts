@@ -405,14 +405,13 @@ export class Juego {
     this.director.activo = this.progreso.tiene(this.piso.reglas.directorDesde);
     this.guion?.reiniciar(ctx);
     this.ambiente.iniciarViento(2 * CONFIG.celda, 12 * CONFIG.celda);
-    const efectos = this.renderizador.efectos;
-    efectos.susto = 0;
-    efectos.interferencia = 0;
+    Object.assign(this.renderizador.efectos, { susto: 0, interferencia: 0 });
     this.progreso.anunciarObjetivo();
   }
 
   private guardarPartida(): void {
     this.guardado.guardar({
+      piso: this.piso.id,
       puntoControl: this.puntoControl,
       progreso: this.progreso.exportar(),
       bateria: Math.max(0.35, this.linterna.bateria),

@@ -55,6 +55,7 @@ describe('cargarVersionado', () => {
 
 describe('SistemaGuardado', () => {
   const partida: Omit<DatosPartida, 'version' | 'fecha'> = {
+    piso: 'piso4',
     puntoControl: 'sala401',
     progreso: { banderas: ['medido:401'], inventario: [], documentos: [] },
     bateria: 0.8,
@@ -68,9 +69,18 @@ describe('SistemaGuardado', () => {
     expect(g.cargar()).toMatchObject({ ...partida, version: VERSION_PARTIDA });
   });
 
-  it('una partida publicada hoy (v1) sigue cargando', () => {
-    sembrar('partida', { ...partida, version: 1, fecha: 1 });
-    expect(new SistemaGuardado().cargar()?.puntoControl).toBe('sala401');
+  it('una partida v1 (la que tienen hoy los probadores, sin piso) sube a v2 como Piso 4 y se guarda migrada', () => {
+    const { piso: _sinPiso, ...v1 } = partida;
+    sembrar('partida', { ...v1, version: 1, fecha: 1 });
+    const cargada = new SistemaGuardado().cargar();
+    expect(cargada).toMatchObject({ version: 2, piso: 'piso4', puntoControl: 'sala401', estadisticas: partida.estadisticas });
+    expect(guardado('partida'), 'queda guardada ya en el formato nuevo').toMatchObject({ version: 2, piso: 'piso4' });
+  });
+
+  it('una partida v2 sin piso es dañada (no se inventa el piso)', () => {
+    const { piso: _sinPiso, ...v2SinPiso } = partida;
+    sembrar('partida', { ...v2SinPiso, version: 2, fecha: 1 });
+    expect(new SistemaGuardado().cargar()).toBeNull();
   });
 
   it('una partida de una versión más nueva no se carga, ni se borra, ni se pisa', () => {

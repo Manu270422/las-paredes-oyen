@@ -95,7 +95,7 @@ test('los datos de la versión publicada sobreviven a la actualización y el per
     volumen: window.__juego!.ctx.ajustes.valores.volumenMaestro,
   }), PREFIJO);
   expect(guardado.perfil).toMatchObject({ version: 1, muertesTotales: 1 });
-  expect(guardado.partida).toMatchObject({ version: 1, puntoControl: 'sala401' });
+  expect(guardado.partida, 'la partida v1 quedó migrada a v2, del Piso 4').toMatchObject({ version: 2, piso: 'piso4', puntoControl: 'sala401' });
   expect(guardado.volumen).toBe(0.37);
   await expect(page.getByRole('button', { name: 'Continuar', exact: true })).toBeVisible();
   expect(errores, 'errores de consola').toEqual([]);
