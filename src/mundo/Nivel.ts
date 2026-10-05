@@ -8,7 +8,7 @@ import type { BibliotecaMateriales } from '../render/Materiales';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
 import type { Interactuable } from '../interaccion/Interactuable';
 import { InteractuablePuerta } from '../interaccion/objetos/InteractuablePuerta';
-import type { Documento as DatosDocumento } from '../narrativa/Documentos';
+import type { PaquetePiso } from '../pisos/TiposPiso';
 import { Documento } from '../interaccion/objetos/Documento';
 import { Recogible } from '../interaccion/objetos/Recogible';
 import { PuntoMedicion } from '../interaccion/objetos/PuntoMedicion';
@@ -49,13 +49,15 @@ export class Nivel {
   private readonly cajasTemporales: CajaColision[] = [];
   private readonly pool: PoolLuces;
 
+  private readonly def: DefMapa;
+
   constructor(
-    readonly def: DefMapa,
+    private readonly piso: PaquetePiso,
     materiales: BibliotecaMateriales,
     lucesMaximas: number,
-    /** Los documentos del piso: el tipo de cada uno decide su modelo 3D. */
-    documentos: Readonly<Record<string, DatosDocumento>>,
   ) {
+    const def = piso.mapa;
+    this.def = def;
     this.grupo.name = 'nivel';
     this.rejilla = new Rejilla(def.rejilla);
 
@@ -94,7 +96,7 @@ export class Nivel {
       let objeto: Interactuable;
       switch (d.tipo) {
         case 'documento':
-          objeto = new Documento(d, documentos);
+          objeto = new Documento(d, piso.documentos);
           break;
         case 'recogible':
           objeto = new Recogible(d);
@@ -178,6 +180,14 @@ export class Nivel {
     for (const l of this.lamparas) if (l.circuito === circuito) l.fijarEstado(estado);
   }
 
+  /** Aplico los cambios de luz que el paquete del piso asocia a una bandera de progreso. */
+  aplicarLuzDe(bandera: string): void {
+    const cambio = this.piso.luzPorBandera[bandera];
+    if (!cambio) return;
+    for (const [circuito, estado] of Object.entries(cambio.circuitos ?? {})) this.fijarCircuito(circuito, estado);
+    for (const [id, estado] of Object.entries(cambio.lamparas ?? {})) this.lampara(id)?.fijarEstado(estado);
+  }
+
   lampara(id: string): Lampara | undefined {
     return this.lamparas.find((l) => l.id === id);
   }
@@ -200,13 +210,6 @@ export class Nivel {
     for (const mueble of this.muebles) mueble.restablecer();
     for (const i of this.interactuables) i.restablecer?.(ctx);
 
-    if (p.tiene('tablero_activado')) {
-      this.fijarCircuito('general', 'encendida');
-      // La lámpara del 402 sigue rota: allí nunca hay luz.
-      this.lampara('lampara402')?.fijarEstado('rota');
-    }
-    if (p.tiene('apagon_pasillo')) {
-      for (const l of this.lamparas) if (l.id.startsWith('pasillo')) l.fijarEstado('rota');
-    }
+    for (const bandera of Object.keys(this.piso.luzPorBandera)) if (p.tiene(bandera)) this.aplicarLuzDe(bandera);
   }
 }

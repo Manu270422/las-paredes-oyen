@@ -4,12 +4,19 @@
 //
 // El tipo CRECE con la migración (A1, ver docs/propuestas/A1-pisos-como-paquetes.md):
 // cada campo entra cuando el motor ya lo lee de aquí, para no dejar datos sin dueño.
-// Todavía falta: tarjeta de lugar, reglas (qué bandera despierta a la criatura), luces por
-// bandera y el guion opcional.
-import type { DefMapa, PuntoAparicion } from '../mundo/datos/TiposMapa';
+// Todavía falta: tarjeta de lugar, reglas (qué bandera despierta a la criatura) y el guion opcional.
+import type { DefMapa, EstadoLampara, PuntoAparicion } from '../mundo/datos/TiposMapa';
 import type { Documento } from '../narrativa/Documentos';
 import type { Objetivo } from '../narrativa/Objetivos';
 import type { LineaTranscripcion } from '../narrativa/Transcripciones';
+
+/** Qué luces cambian cuando se marca una bandera de progreso. */
+export interface CambioDeLuz {
+  /** Un circuito entero: todas sus lámparas pasan a ese estado. */
+  readonly circuitos?: Readonly<Record<string, EstadoLampara>>;
+  /** Lámparas sueltas por id (se aplican después de los circuitos: pueden hacer una excepción). */
+  readonly lamparas?: Readonly<Record<string, EstadoLampara>>;
+}
 
 export interface PaquetePiso {
   /** Identificador estable ('piso4'): es la clave del catálogo y, más adelante, de la partida guardada. */
@@ -24,6 +31,11 @@ export interface PaquetePiso {
   readonly puntoInicial: string;
   /** Qué banderas crean un punto de control: bandera → nombre del punto donde se reaparece. */
   readonly puntosControl: Readonly<Record<string, string>>;
+  /**
+   * Las luces que cambian con una bandera. Se aplican al marcarla y al restaurar una partida,
+   * en el orden en que están escritas (por eso una bandera posterior puede romper lo que otra encendió).
+   */
+  readonly luzPorBandera: Readonly<Record<string, CambioDeLuz>>;
   /** El fondo del menú: se dibuja sobre el piso real, con alguien de pie al fondo. */
   readonly menu: {
     /** Dónde está la cámara (en celdas) y hacia dónde mira (grados). */

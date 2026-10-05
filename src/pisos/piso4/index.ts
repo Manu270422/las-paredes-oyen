@@ -23,6 +23,12 @@ export const PISO_4: PaquetePiso = {
     tablero_activado: 'servicio',
     'objeto:llave_402': 'estudio403',
   },
+  luzPorBandera: {
+    // El tablero devuelve la luz a todo el piso... menos al 402, donde nunca hay luz.
+    tablero_activado: { circuitos: { general: 'encendida' }, lamparas: { lampara402: 'rota' } },
+    // El apagón del pasillo: las cinco lámparas revientan (el guion las revienta una a una hacia el jugador).
+    apagon_pasillo: { lamparas: { pasillo1: 'rota', pasillo2: 'rota', pasillo3: 'rota', pasillo4: 'rota', pasillo5: 'rota' } },
+  },
   menu: {
     camara: { x: 4.4, y: 10.5, angulo: -90 },
     figura: { x: 15.5, y: 10.5, angulo: -90 },

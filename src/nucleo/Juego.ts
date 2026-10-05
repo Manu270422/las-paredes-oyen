@@ -195,7 +195,7 @@ export class Juego {
     // Luz ambiente mínima: solo para intuir siluetas. Todo lo demás es linterna y lámparas.
     this.escena.add(new HemisphereLight(0x2a3242, 0x0d0a08, 0.22));
 
-    this.nivel = new Nivel(this.piso.mapa, this.materiales, this.perfil.lucesMaximas, this.piso.documentos);
+    this.nivel = new Nivel(this.piso, this.materiales, this.perfil.lucesMaximas);
     this.escena.add(this.nivel.grupo);
     this.escena.add(this.jugador.camara);
     this.linterna = new Linterna(this.escena, this.perfil, crearCookieLinterna());

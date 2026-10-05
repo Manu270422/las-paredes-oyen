@@ -108,8 +108,7 @@ export class Guion {
         break;
       case 'tablero_activado':
         this.tiempoTablero = 0;
-        ctx.nivel.fijarCircuito('general', 'encendida');
-        ctx.nivel.lampara('lampara402')?.fijarEstado('rota');
+        ctx.nivel.aplicarLuzDe(nombre);
         ctx.bus.emit('subtitulo', { texto: 'La luz vuelve. Por un momento, el edificio parece solo un edificio.', duracion: 4 });
         break;
       case 'medido:402':
@@ -149,8 +148,10 @@ export class Guion {
   /** Las lámparas del pasillo revientan una a una, desde la más lejana hacia mí. */
   private apagon(ctx: ContextoJuego): void {
     const j = ctx.jugador.posicion;
+    // Las lámparas que revientan son las que el paquete rompe con esta bandera.
+    const reventadas = ctx.piso.luzPorBandera.apagon_pasillo?.lamparas ?? {};
     const lamparas = ctx.nivel.lamparas
-      .filter((l) => l.id.startsWith('pasillo'))
+      .filter((l) => l.id in reventadas)
       .sort((a, b) => b.posicion.distanceTo(j) - a.posicion.distanceTo(j));
     ctx.director.bloquear(20);
     lamparas.forEach((lampara, i) => {

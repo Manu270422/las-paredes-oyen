@@ -43,3 +43,26 @@ describe.each(PISOS.map((p) => [p.id, p] as const))('Paquete %s', (_id, piso) =>
     expect(new Set(banderas).size).toBe(banderas.length);
   });
 });
+
+describe.each(PISOS.map((p) => [p.id, p] as const))('Luces por bandera de %s', (_id, piso) => {
+  const idsLamparas = new Set(piso.mapa.lamparas.map((l) => l.id));
+  const circuitos = new Set(piso.mapa.lamparas.map((l) => l.circuito));
+
+  it('cada lámpara que nombra existe en el mapa', () => {
+    const rotas = Object.entries(piso.luzPorBandera).flatMap(([bandera, cambio]) =>
+      Object.keys(cambio.lamparas ?? {})
+        .filter((id) => !idsLamparas.has(id))
+        .map((id) => `${bandera} → lámpara ${id}`),
+    );
+    expect(rotas).toEqual([]);
+  });
+
+  it('cada circuito que nombra tiene al menos una lámpara', () => {
+    const rotos = Object.entries(piso.luzPorBandera).flatMap(([bandera, cambio]) =>
+      Object.keys(cambio.circuitos ?? {})
+        .filter((c) => !circuitos.has(c))
+        .map((c) => `${bandera} → circuito ${c}`),
+    );
+    expect(rotos).toEqual([]);
+  });
+});
