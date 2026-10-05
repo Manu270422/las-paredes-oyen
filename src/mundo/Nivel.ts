@@ -18,6 +18,7 @@ import { construirGeometria } from './ConstructorGeometria';
 import { Rejilla, type ConsultaPuertaCerrada } from './Rejilla';
 import { Puerta } from './Puerta';
 import { Lampara } from './Lampara';
+import { colgarPlaca, pintarRotulo } from './Letreros';
 import { PoolLuces } from './PoolLuces';
 import { crearMueble, type Mueble } from './Muebles';
 import type { CajaColision } from './Colisiones';
@@ -79,6 +80,14 @@ export class Nivel {
       this.grupo.add(puerta.pivote);
       this.interactuables.push(new InteractuablePuerta(puerta));
     }
+
+    // Los letreros: la placa de cada apartamento cuelga de la hoja de su puerta (se mueve con ella).
+    for (const d of piso.placas ?? []) {
+      const puerta = this.puertas.find((p) => p.id === d.puerta);
+      if (!puerta) throw new Error(`La placa "${d.texto}" nombra la puerta "${d.puerta}", que no existe.`);
+      colgarPlaca(d, puerta);
+    }
+    for (const d of piso.rotulos ?? []) this.grupo.add(pintarRotulo(d));
 
     for (const d of def.lamparas) {
       const lampara = new Lampara(d);

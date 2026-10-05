@@ -49,6 +49,15 @@ export const PISO_4: PaquetePiso = {
     // El apagón del pasillo: las cinco lámparas revientan (el guion las revienta una a una hacia el jugador).
     apagon_pasillo: { lamparas: { pasillo1: 'rota', pasillo2: 'rota', pasillo3: 'rota', pasillo4: 'rota', pasillo5: 'rota' } },
   },
+  // Los números en la cara de pasillo de cada puerta. Sin ellos, la llave del 402 (que está en el 403)
+  // confundía: no había cómo saber en qué apartamento estabas.
+  placas: [
+    { puerta: 'p401', texto: '401', lugar: 'Apartamento 401' },
+    { puerta: 'p403', texto: '403', lugar: 'Apartamento 403' },
+    { puerta: 'p402', texto: '402', lugar: 'Apartamento 402' },
+  ],
+  // El "4" pintado en la pared norte de la escalera, bajo la luz de emergencia: se lee siempre, en rojo.
+  rotulos: [{ texto: '4', x: 2.45, y: 8, altura: 1.6, rot: 0, alto: 0.45 }],
   guion: (acciones) => new GuionPiso4(acciones),
   menu: {
     camara: { x: 4.4, y: 10.5, angulo: -90 },

@@ -1,7 +1,7 @@
 // La geometría de la hoja de la puerta (las 4 orientaciones): colgada del borde de su celda,
 // abierta queda pegada a la jamba sin sobresalir, y su colisión no estorba el vano.
 // Antes la bisagra estaba a mitad del túnel y la hoja abierta sobresalía 28 cm en el aire.
-import { Box3, type BoxGeometry, type CylinderGeometry, type Mesh, MeshStandardMaterial } from 'three';
+import { Box3, type BoxGeometry, type CylinderGeometry, type Mesh, MeshStandardMaterial, Object3D, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { CONFIG } from '../../src/config/ConfiguracionJuego';
 import type { Direccion } from '../../src/mundo/datos/TiposMapa';
@@ -31,7 +31,28 @@ function cajaHoja(p: Puerta): Box3 {
 
 const celdaDe = (p: Puerta) => ({ x0: p.gx * C, x1: (p.gx + 1) * C, z0: p.gy * C, z1: (p.gy + 1) * C });
 
+/** Hacia dónde apunta cada dirección del mapa, en metros del mundo (y del mapa = z). */
+const HACIA: Record<Direccion, Vector3> = { n: new Vector3(0, 0, -1), s: new Vector3(0, 0, 1), e: new Vector3(1, 0, 0), o: new Vector3(-1, 0, 0) };
+
 describe.each(CASOS)('Puerta que abre hacia $abreHacia', ({ abreHacia, pasoEnZ }) => {
+  it('lo colgado en la cara de empuje (la placa) queda fuera de la hoja, del lado del pasillo, mirando hacia él', () => {
+    const p = crear(abreHacia, pasoEnZ);
+    const placa = new Object3D();
+    p.colgarEnCaraDeEmpuje(placa, 1.55, 0.006);
+    p.pivote.updateWorldMatrix(true, true);
+    const pos = placa.getWorldPosition(new Vector3());
+    const abre = HACIA[abreHacia];
+    // Mira al lado contrario al que abre la puerta.
+    expect(placa.getWorldDirection(new Vector3()).dot(abre)).toBeCloseTo(-1, 6);
+    // Apoyada en la cara: fuera de la hoja (media hoja + medio grosor de la placa), no hundida ni en el aire.
+    const hacia = pos.clone().sub(p.puntoInteraccion()).dot(abre);
+    expect(hacia).toBeCloseTo(-(0.045 / 2 + 0.003 + 0.001), 4);
+    // A la altura pedida y centrada en el ancho del vano.
+    expect(pos.y).toBeCloseTo(1.55, 6);
+    const lateral = pasoEnZ ? pos.x - p.centro.x : pos.z - p.centro.z;
+    expect(Math.abs(lateral)).toBeLessThan(0.02);
+  });
+
   it('cerrada, queda a ras del borde de su celda, a 3 cm, sin salirse', () => {
     const p = crear(abreHacia, pasoEnZ);
     const c = celdaDe(p);

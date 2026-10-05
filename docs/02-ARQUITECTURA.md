@@ -29,7 +29,7 @@ LasParedesOyen/
    │  └─ texturas/             Generador procedural, recetas, cookie de la linterna
    ├─ audio/                   Motor, fuentes 3D, reverberación, ambiente, biblioteca
    │  └─ sintesis/             Sintetizador y recetas de los 39 sonidos
-   ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, colisiones
+   ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, letreros, colisiones
    │  └─ datos/                Tipos de mapa (la forma; los mapas viven en cada piso)
    ├─ jugador/                 Jugador, cámara, respiración, corazón, linterna, grabadora
    ├─ interaccion/             Sistema de interacción e interactuables

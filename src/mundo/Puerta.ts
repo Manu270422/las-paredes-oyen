@@ -9,7 +9,7 @@
 // de ese lado, como una puerta de edificio. Al abrir, gira DENTRO del túnel y
 // termina pegada a la jamba, sin sobresalir. Antes la bisagra estaba a mitad
 // del túnel y la hoja abierta sobresalía 28 cm hacia el cuarto, en el aire.
-import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial, Vector3 } from 'three';
+import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial, type Object3D, Vector3 } from 'three';
 import { CONFIG } from '../config/ConfiguracionJuego';
 import type { CajaColision } from './Colisiones';
 import type { DefPuerta } from './datos/TiposMapa';
@@ -45,6 +45,7 @@ export class Puerta {
   private objetivo = 0;
   private rapidez = VELOCIDAD.normal;
   private readonly sentido: number;
+  private readonly altoHoja: number;
   private readonly rotacionBase: number;
   /** Los límites de mi celda en el eje por donde se cruza (para la colisión de la hoja cerrada). */
   private readonly minPaso: number;
@@ -67,6 +68,7 @@ export class Puerta {
     const alto = CONFIG.alturaPuerta - 0.02;
     const relleno = (C - CONFIG.anchoVano) / 2;
     this.sentido = def.abreHacia === 's' || def.abreHacia === 'o' ? -1 : 1;
+    this.altoHoja = alto;
 
     // Mi hoja de madera, con el origen en la bisagra (por eso la desplazo medio ancho). El
     // desplazamiento en el grosor la deja separada de la jamba cuando está abierta.
@@ -187,6 +189,18 @@ export class Puerta {
     const hasta = haciaMax ? this.maxPaso : this.planoHoja + GROSOR_COLISION;
     if (this.pasoEnZ) return { minX: this.gx * C, maxX: (this.gx + 1) * C, minZ: desde, maxZ: hasta };
     return { minX: desde, maxX: hasta, minZ: this.gy * C, maxZ: (this.gy + 1) * C };
+  }
+
+  /**
+   * Cuelgo algo en la cara de la hoja que se EMPUJA para abrir (la contraria a "abreHacia"): en un
+   * apartamento es la cara del pasillo. Queda centrado en el ancho, con su centro a `altura` metros del
+   * piso y mirando hacia afuera de esa cara (su +Z). Va con la hoja: si la puerta se abre, se va con ella.
+   * `grosor` es el del objeto, para apoyarlo en la cara sin que se hunda.
+   */
+  colgarEnCaraDeEmpuje(objeto: Object3D, altura: number, grosor: number): void {
+    objeto.position.set(0, altura - this.altoHoja / 2, this.sentido * (GROSOR_HOJA / 2 + grosor / 2 + 0.001));
+    objeto.rotation.y = this.sentido > 0 ? 0 : Math.PI;
+    this.hoja.add(objeto);
   }
 
   /**

@@ -1,6 +1,7 @@
 // Coherencia de los paquetes de piso: lo que un piso declara tiene que existir en su propio mapa.
 // Vale para TODOS los pisos del catálogo, así el próximo piso se valida solo.
 import { describe, expect, it } from 'vitest';
+import type { Direccion } from '../../src/mundo/datos/TiposMapa';
 import { Rejilla } from '../../src/mundo/Rejilla';
 import { PISOS } from '../../src/pisos/catalogo';
 
@@ -110,6 +111,55 @@ describe.each(PISOS.map((p) => [p.id, p] as const))('Luces por bandera de %s', (
         .filter((c) => !circuitos.has(c))
         .map((c) => `${bandera} → circuito ${c}`),
     );
+    expect(rotos).toEqual([]);
+  });
+});
+
+describe.each(PISOS.map((p) => [p.id, p] as const))('Placas y rótulos de %s', (_id, piso) => {
+  const rejilla = new Rejilla(piso.mapa.rejilla);
+  const PASO: Record<Direccion, readonly [number, number]> = { n: [0, -1], s: [0, 1], e: [1, 0], o: [-1, 0] };
+  const cuartoEn = (x: number, y: number) => piso.mapa.habitaciones.find((h) => x >= h.x0 && x <= h.x1 && y >= h.y0 && y <= h.y1);
+  const placas = piso.placas ?? [];
+
+  it('cada placa cuelga de una puerta que existe, y ninguna puerta tiene dos', () => {
+    const puertas = new Set(piso.mapa.puertas.map((p) => p.id));
+    expect(placas.filter((p) => !puertas.has(p.puerta)).map((p) => p.puerta), 'puertas que no existen').toEqual([]);
+    expect(new Set(placas.map((p) => p.puerta)).size).toBe(placas.length);
+  });
+
+  it('cada placa mira a un cuarto de paso y su puerta da al apartamento que dice', () => {
+    // La placa va en la cara que se EMPUJA (contraria a abreHacia): ese lado tiene que ser el pasillo.
+    const rotas = placas.flatMap((placa) => {
+      const puerta = piso.mapa.puertas.find((p) => p.id === placa.puerta);
+      if (!puerta?.abreHacia) return [`${placa.puerta}: sin puerta o sin hacia dónde abre`];
+      const [dx, dy] = PASO[puerta.abreHacia];
+      const fuera = cuartoEn(puerta.x - dx, puerta.y - dy);
+      const dentro = cuartoEn(puerta.x + dx, puerta.y + dy);
+      const errores: string[] = [];
+      if (!fuera?.paso) errores.push(`${placa.puerta}: la placa mira a "${fuera?.id ?? 'nada'}", que no es un cuarto de paso`);
+      if (dentro?.apartamento !== placa.texto) errores.push(`${placa.puerta}: da a "${dentro?.id ?? 'nada'}", no al ${placa.texto}`);
+      return errores;
+    });
+    expect(rotas).toEqual([]);
+  });
+
+  it('todo apartamento del mapa tiene su placa', () => {
+    const apartamentos = new Set(piso.mapa.habitaciones.flatMap((h) => (h.apartamento ? [h.apartamento] : [])));
+    const conPlaca = new Set(placas.map((p) => p.texto));
+    expect([...apartamentos].filter((a) => !conPlaca.has(a))).toEqual([]);
+  });
+
+  it('cada rótulo está pintado SOBRE la cara de un muro (±2 cm), mirando hacia un lugar transitable', () => {
+    // A 2 cm hacia atrás tiene que haber muro y a 2 cm hacia adelante, aire: si no, está hundido en el
+    // muro (no se ve) o flotando lejos de él.
+    const margen = 0.02 / 1.3;
+    const rotos = (piso.rotulos ?? []).flatMap((r) => {
+      const ang = (r.rot * Math.PI) / 180;
+      const [fx, fy] = [Math.sin(ang), Math.cos(ang)];
+      const detras = rejilla.esMuro(Math.floor(r.x - fx * margen), Math.floor(r.y - fy * margen));
+      const delante = rejilla.esTransitable(Math.floor(r.x + fx * margen), Math.floor(r.y + fy * margen));
+      return detras && delante ? [] : [`"${r.texto}" en (${r.x}, ${r.y}): muro detrás ${detras}, libre delante ${delante}`];
+    });
     expect(rotos).toEqual([]);
   });
 });

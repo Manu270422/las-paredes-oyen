@@ -54,6 +54,30 @@ export interface CambioDeLuz {
   readonly lamparas?: Readonly<Record<string, EstadoLampara>>;
 }
 
+/** Una placa con el número en la puerta de un apartamento. Va en la cara que se empuja (la del pasillo). */
+export interface DefPlaca {
+  /** El id de la puerta (del mapa) de la que cuelga. */
+  readonly puerta: string;
+  /** Lo que está grabado: el número del apartamento (el mismo `apartamento` de sus cuartos en el mapa). */
+  readonly texto: string;
+  /** La tarjeta discreta al cruzar por primera vez a ese apartamento ("Apartamento 401"). Sin ella, no hay tarjeta. */
+  readonly lugar?: string;
+}
+
+/** Algo pintado en un muro con plantilla: el número del piso en la escalera. */
+export interface DefRotulo {
+  readonly texto: string;
+  /** El punto del muro en CELDAS (sobre la cara del muro). */
+  readonly x: number;
+  readonly y: number;
+  /** Altura del centro de lo pintado sobre el piso, en metros. */
+  readonly altura: number;
+  /** Hacia dónde mira, en grados (0 = hacia +y del mapa; la misma regla que `rot` de los interactuables). */
+  readonly rot: number;
+  /** Cuánto mide de alto la cifra pintada, en metros. */
+  readonly alto: number;
+}
+
 export interface PaquetePiso {
   /** Identificador estable ('piso4'): es la clave del catálogo y, más adelante, de la partida guardada. */
   readonly id: string;
@@ -75,6 +99,10 @@ export interface PaquetePiso {
    * en el orden en que están escritas (por eso una bandera posterior puede romper lo que otra encendió).
    */
   readonly luzPorBandera: Readonly<Record<string, CambioDeLuz>>;
+  /** Las placas con el número de cada apartamento (orientación: no perderse sin romper el miedo). */
+  readonly placas?: readonly DefPlaca[];
+  /** Lo pintado en los muros (el número del piso en la escalera). */
+  readonly rotulos?: readonly DefRotulo[];
   /** El guion del piso (opcional): recibe lo que puede pedirle al juego (fundidos, susto, final). */
   readonly guion?: (acciones: AccionesGuion) => GuionPiso;
   /** El fondo del menú: se dibuja sobre el piso real, con alguien de pie al fondo. */
