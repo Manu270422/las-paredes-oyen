@@ -1,7 +1,7 @@
 // Aquí defino qué es "algo con lo que puedo interactuar": una puerta,
 // un documento, unas pilas, el tablero... Todos cumplen este contrato
 // y el SistemaInteraccion los trata igual.
-import { Mesh, MeshBasicMaterial, SphereGeometry, type Object3D } from 'three';
+import { Mesh, MeshBasicMaterial, SphereGeometry, type Object3D, type Vector3 } from 'three';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
 
 export interface Interactuable {
@@ -10,6 +10,13 @@ export interface Interactuable {
   readonly objeto: Object3D;
   /** Si es false, no se puede enfocar (por ejemplo, ya lo recogí). */
   readonly activo: boolean;
+  /**
+   * La celda del mapa donde está el objeto, si ocupa una (una puerta). El chequeo "¿hay un muro en
+   * medio?" no la cuenta como obstáculo: el objeto está dentro de ella y no puede taparse a sí mismo.
+   */
+  readonly celdaPropia?: { readonly gx: number; readonly gy: number };
+  /** Dónde mirarlo (si no es el origen de `objeto`): el cono de asistencia apunta aquí. */
+  puntoInteraccion?(destino: Vector3): Vector3;
   /** Texto de la acción que muestro en pantalla. */
   texto(ctx: ContextoJuego): string;
   interactuar(ctx: ContextoJuego): void;

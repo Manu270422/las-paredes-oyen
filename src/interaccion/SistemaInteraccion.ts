@@ -30,7 +30,7 @@ export class SistemaInteraccion {
     return null;
   }
 
-  private visibleSinMuros(ctx: ContextoJuego, punto: Vector3): boolean {
+  private visibleSinMuros(ctx: ContextoJuego, punto: Vector3, dueno: Interactuable): boolean {
     const camara = ctx.camara.position;
     // Acorto el segmento un poco para que el propio muro donde está pegado el objeto no lo bloquee.
     const dx = punto.x - camara.x;
@@ -40,11 +40,16 @@ export class SistemaInteraccion {
     const f = (largo - 0.22) / largo;
     // La celda donde está el propio objeto no cuenta como obstáculo. Sin esto, una puerta CERRADA
     // se bloqueaba a sí misma (su hoja está dentro de su celda) y nunca se podía abrir.
+    // Primero la celda que el objeto declara (una puerta sabe cuál es la suya: no depende de dónde
+    // cayó el rayo) y, de respaldo, la celda del punto golpeado.
     const celda = ctx.nivel.rejilla.celda;
     const propioGx = Math.floor(punto.x / celda);
     const propioGy = Math.floor(punto.z / celda);
-    const puertaCerrada = (gx: number, gy: number): boolean =>
-      gx === propioGx && gy === propioGy ? false : ctx.nivel.consultaPuertaCerrada(gx, gy);
+    const declarada = dueno.celdaPropia;
+    const puertaCerrada = (gx: number, gy: number): boolean => {
+      if (declarada && gx === declarada.gx && gy === declarada.gy) return false;
+      return gx === propioGx && gy === propioGy ? false : ctx.nivel.consultaPuertaCerrada(gx, gy);
+    };
     return ctx.nivel.rejilla.hayLineaDeVision(camara.x, camara.z, camara.x + dx * f, camara.z + dz * f, puertaCerrada);
   }
 
@@ -57,7 +62,7 @@ export class SistemaInteraccion {
     const impactos = this.rayo.intersectObjects(objetos, true);
     for (const impacto of impactos) {
       const dueno = this.buscarDueno(impacto.object);
-      if (dueno && dueno.activo && this.visibleSinMuros(ctx, impacto.point)) {
+      if (dueno && dueno.activo && this.visibleSinMuros(ctx, impacto.point, dueno)) {
         elegido = dueno;
         break;
       }
@@ -68,12 +73,13 @@ export class SistemaInteraccion {
       ctx.camara.getWorldDirection(this.adelante);
       let mejorAngulo = CONO_ASISTENCIA;
       for (const candidato of candidatos) {
-        candidato.objeto.getWorldPosition(this.temporal);
+        if (candidato.puntoInteraccion) candidato.puntoInteraccion(this.temporal);
+        else candidato.objeto.getWorldPosition(this.temporal);
         const distancia = this.temporal.distanceTo(ctx.camara.position);
         if (distancia > CONFIG.distanciaInteraccion) continue;
         const direccion = this.temporal.clone().sub(ctx.camara.position).normalize();
         const angulo = direccion.angleTo(this.adelante);
-        if (angulo < mejorAngulo && this.visibleSinMuros(ctx, this.temporal)) {
+        if (angulo < mejorAngulo && this.visibleSinMuros(ctx, this.temporal, candidato)) {
           mejorAngulo = angulo;
           elegido = candidato;
         }

@@ -59,7 +59,8 @@ test('los datos de la versión publicada sobreviven a la actualización y el per
     await P.caminar([[7.5, 7.6], [7.5, 8.4]]);
     const puerta = ctx.nivel.puertas.find((p) => p.id === 'p401')!;
     if (!puerta.abierta) {
-      P.mirarA(puerta.centro.x, 1.2, puerta.centro.z);
+      const hoja = puerta.puntoInteraccion();
+      P.mirarA(hoja.x, hoja.y, hoja.z);
       await P.esperarJuego(0.3);
       await P.pulsar('KeyE');
       const limite = performance.now() + 5000;

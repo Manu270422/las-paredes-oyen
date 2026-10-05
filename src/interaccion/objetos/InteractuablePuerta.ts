@@ -1,7 +1,7 @@
 // Aquí conecto la puerta con el jugador: abrir, cerrar, cerradura y llave.
 // Regla de diseño: agachado abro y cierro despacio y casi sin ruido. De pie,
 // la bisagra cruje y la criatura lo oye. Cada puerta es una decisión.
-import type { Object3D } from 'three';
+import type { Object3D, Vector3 } from 'three';
 import { CONFIG } from '../../config/ConfiguracionJuego';
 import type { ContextoJuego } from '../../nucleo/ContextoJuego';
 import type { Puerta } from '../../mundo/Puerta';
@@ -11,11 +11,17 @@ export class InteractuablePuerta implements Interactuable {
   readonly id: string;
   readonly objeto: Object3D;
   readonly activo = true;
+  readonly celdaPropia: { readonly gx: number; readonly gy: number };
 
   constructor(readonly puerta: Puerta) {
     this.id = puerta.id;
     this.objeto = puerta.pivote;
     vincular(puerta.pivote, this);
+    this.celdaPropia = { gx: puerta.gx, gy: puerta.gy };
+  }
+
+  puntoInteraccion(destino: Vector3): Vector3 {
+    return this.puerta.puntoInteraccion(destino);
   }
 
   texto(ctx: ContextoJuego): string {

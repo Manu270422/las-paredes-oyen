@@ -2,6 +2,13 @@
 // Las puertas son centrales en el terror: abrir lento (agachado) casi no
 // suena; abrir normal cruje; la criatura también las abre... y a veces
 // una puerta que dejé cerrada aparece abierta.
+//
+// Cómo está colocada (la celda de una puerta es un túnel de 1.3 m sin muro):
+// la bisagra va en el BORDE de la celda del lado contrario a hacia donde abre
+// ("abreHacia"), a 3 cm hacia adentro. Cerrada, la hoja queda a ras del muro
+// de ese lado, como una puerta de edificio. Al abrir, gira DENTRO del túnel y
+// termina pegada a la jamba, sin sobresalir. Antes la bisagra estaba a mitad
+// del túnel y la hoja abierta sobresalía 28 cm hacia el cuarto, en el aire.
 import { BoxGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial, Vector3 } from 'three';
 import { CONFIG } from '../config/ConfiguracionJuego';
 import type { CajaColision } from './Colisiones';
@@ -10,7 +17,15 @@ import { amortiguar } from '../utilidades/Matematicas';
 
 export type FormaMovimiento = 'lento' | 'normal' | 'golpe';
 
-const ANGULO_ABIERTA = Math.PI * 0.52;
+/** Exactamente 90°: la hoja abierta queda paralela a la jamba (con más ángulo se clavaba en el muro). */
+const ANGULO_ABIERTA = Math.PI / 2;
+const GROSOR_HOJA = 0.045;
+/** Distancia del plano de la hoja al borde de la celda. Con menos, un rayo podría caer en la celda vecina. */
+const MARGEN_BORDE = 0.03;
+/** La hoja abierta queda a 1 mm de la jamba (media hoja + 1 mm): sin atravesarla ni parpadeo de profundidad. */
+const DESPLAZAMIENTO = GROSOR_HOJA / 2 + 0.001;
+/** Cuánto sobresale la caja de colisión del plano de la hoja hacia el túnel. */
+const GROSOR_COLISION = 0.04;
 const VELOCIDAD: Record<FormaMovimiento, number> = { lento: 1.4, normal: 5, golpe: 14 };
 
 export class Puerta {
@@ -31,6 +46,11 @@ export class Puerta {
   private rapidez = VELOCIDAD.normal;
   private readonly sentido: number;
   private readonly rotacionBase: number;
+  /** Los límites de mi celda en el eje por donde se cruza (para la colisión de la hoja cerrada). */
+  private readonly minPaso: number;
+  private readonly maxPaso: number;
+  /** Dónde está el plano de la hoja cerrada, en ese mismo eje. */
+  private readonly planoHoja: number;
   private readonly estadoInicial: { abierta: boolean; llave: string | null };
 
   constructor(def: DefPuerta, pasoEnZ: boolean, madera: MeshStandardMaterial) {
@@ -46,12 +66,14 @@ export class Puerta {
     const ancho = CONFIG.anchoVano - 0.02;
     const alto = CONFIG.alturaPuerta - 0.02;
     const relleno = (C - CONFIG.anchoVano) / 2;
+    this.sentido = def.abreHacia === 's' || def.abreHacia === 'o' ? -1 : 1;
 
-    // Mi hoja de madera, con el origen en la bisagra (por eso la desplazo medio ancho).
-    this.hoja = new Mesh(new BoxGeometry(ancho, alto, 0.045), madera);
+    // Mi hoja de madera, con el origen en la bisagra (por eso la desplazo medio ancho). El
+    // desplazamiento en el grosor la deja separada de la jamba cuando está abierta.
+    this.hoja = new Mesh(new BoxGeometry(ancho, alto, GROSOR_HOJA), madera);
     this.hoja.castShadow = true;
     this.hoja.receiveShadow = true;
-    this.hoja.position.set(ancho / 2, alto / 2, 0);
+    this.hoja.position.set(ancho / 2, alto / 2, this.sentido * DESPLAZAMIENTO);
 
     // La perilla metálica a ambos lados.
     const metal = new MeshStandardMaterial({ color: 0x8a7a5a, metalness: 0.8, roughness: 0.35 });
@@ -62,14 +84,19 @@ export class Puerta {
 
     this.pivote.add(this.hoja);
 
-    // Coloco la bisagra en un extremo del vano y oriento la hoja.
+    // Bisagra en el borde contrario a hacia donde abre; la jamba de la bisagra es la oeste (o la norte).
+    const borde = this.sentido > 0 ? 1 : 0;
     if (pasoEnZ) {
-      this.pivote.position.set(def.x * C + relleno, 0, this.centro.z);
-      this.sentido = def.abreHacia === 's' ? -1 : 1;
+      this.minPaso = def.y * C;
+      this.maxPaso = (def.y + 1) * C;
+      this.planoHoja = borde ? this.maxPaso - MARGEN_BORDE : this.minPaso + MARGEN_BORDE;
+      this.pivote.position.set(def.x * C + relleno, 0, this.planoHoja - this.sentido * DESPLAZAMIENTO);
     } else {
-      this.pivote.position.set(this.centro.x, 0, def.y * C + relleno);
+      this.minPaso = def.x * C;
+      this.maxPaso = (def.x + 1) * C;
+      this.planoHoja = borde ? this.minPaso + MARGEN_BORDE : this.maxPaso - MARGEN_BORDE;
+      this.pivote.position.set(this.planoHoja + this.sentido * DESPLAZAMIENTO, 0, def.y * C + relleno);
       this.pivote.rotation.y = -Math.PI / 2;
-      this.sentido = def.abreHacia === 'o' ? -1 : 1;
     }
     this.rotacionBase = this.pivote.rotation.y;
     this.restablecer();
@@ -126,14 +153,27 @@ export class Puerta {
     this.aplicarRotacion();
   }
 
-  /** Si está casi cerrada bloquea el paso: devuelvo una caja delgada en el centro del vano. */
+  /**
+   * Si está casi cerrada bloquea el paso: una caja delgada en el plano de la hoja, pegada al borde de
+   * mi celda. Abierta no estorba: la hoja queda pegada a la jamba y el vano queda libre.
+   */
   cajaColision(): CajaColision | null {
     if (this.angulo > 0.55) return null;
     const C = CONFIG.celda;
-    const grosor = 0.07;
-    if (this.pasoEnZ) {
-      return { minX: this.gx * C, maxX: (this.gx + 1) * C, minZ: this.centro.z - grosor, maxZ: this.centro.z + grosor };
-    }
-    return { minX: this.centro.x - grosor, maxX: this.centro.x + grosor, minZ: this.gy * C, maxZ: (this.gy + 1) * C };
+    // El lado de la bisagra es el del borde; la caja llega hasta él.
+    const haciaMax = this.sentido > 0 === this.pasoEnZ;
+    const desde = haciaMax ? this.planoHoja - GROSOR_COLISION : this.minPaso;
+    const hasta = haciaMax ? this.maxPaso : this.planoHoja + GROSOR_COLISION;
+    if (this.pasoEnZ) return { minX: this.gx * C, maxX: (this.gx + 1) * C, minZ: desde, maxZ: hasta };
+    return { minX: desde, maxX: hasta, minZ: this.gy * C, maxZ: (this.gy + 1) * C };
+  }
+
+  /**
+   * El punto donde hay que mirar para interactuar con esta puerta: el centro de la hoja AHORA
+   * (cerrada o abierta, o a medio camino). Lo usan el cono de asistencia y las pruebas.
+   */
+  puntoInteraccion(destino = new Vector3()): Vector3 {
+    this.pivote.updateWorldMatrix(true, true);
+    return this.hoja.getWorldPosition(destino);
   }
 }

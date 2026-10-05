@@ -58,7 +58,8 @@ test.describe.serial('Piso 4 caminando', () => {
       // Por el pasillo hasta la puerta del 401, cerrada: se abre con E.
       await P.caminar([[3.6, 10.5], [7.5, 10.5]]);
       const puerta = ctx.nivel.puertas.find((p) => p.id === 'p401')!;
-      P.mirarA(puerta.centro.x, 1.2, puerta.centro.z);
+      const hoja = puerta.puntoInteraccion();
+      P.mirarA(hoja.x, hoja.y, hoja.z);
       await P.esperarJuego(0.3);
       const enfocadoPuerta = J.interaccion.enfocado?.id ?? null;
       await P.pulsar('KeyE');
