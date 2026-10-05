@@ -31,10 +31,6 @@ const EXCEPCIONES: Record<string, Excepcion> = {
   'src/narrativa/Documentos.ts': { menciones: 17, hastaElPaso: 8 },
   'src/narrativa/Objetivos.ts': { menciones: 12, hastaElPaso: 8 },
   'src/narrativa/Transcripciones.ts': { menciones: 4, hastaElPaso: 8 },
-  // Paso 5: los objetos del mapa (la llave del 402) pasan a ser datos del paquete: el id del objeto
-  // deja de ser una unión fija de tipos y su modelo y texto salen de ahí (decidido por el dueño).
-  'src/mundo/datos/TiposMapa.ts': { menciones: 1, hastaElPaso: 5 },
-  'src/interaccion/objetos/Recogible.ts': { menciones: 4, hastaElPaso: 5 },
 };
 
 function archivosDe(carpeta: string): string[] {

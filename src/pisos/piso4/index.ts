@@ -17,6 +17,23 @@ export const PISO_4: PaquetePiso = {
   transcripciones: TRANSCRIPCIONES,
   // Medir el 401 despierta a la criatura (y desbloquea el señuelo); medir el 403 revela su imitación completa.
   reglas: { despiertaCon: 'medido:401', imitacionCompletaCon: 'medido:403' },
+  objetos: {
+    pilas: {
+      modelo: 'pilas',
+      texto: 'Recoger pilas',
+      mensaje: 'Pilas. La linterna durará un poco más.',
+      duracionMensaje: 2.5,
+      recargaLinterna: 0.5,
+    },
+    // La llave que abre el 402. Está en el estudio del 403: el mismo id lo pide la puerta del 402 en el mapa.
+    llave_402: {
+      modelo: 'llave',
+      texto: 'Tomar la llave del 402',
+      mensaje: 'Una llave con una etiqueta de cartón: «402».',
+      duracionMensaje: 3,
+      guardaEnInventario: true,
+    },
+  },
   puntoInicial: 'escalera',
   puntosControl: {
     'leyo:orden_trabajo': 'escalera',

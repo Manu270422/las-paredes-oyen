@@ -44,6 +44,28 @@ describe.each(PISOS.map((p) => [p.id, p] as const))('Paquete %s', (_id, piso) =>
   });
 });
 
+describe.each(PISOS.map((p) => [p.id, p] as const))('Objetos recogibles de %s', (_id, piso) => {
+  const recogibles = piso.mapa.interactuables.filter((i) => i.tipo === 'recogible');
+
+  it('todo recogible del mapa entrega un objeto que el paquete declara', () => {
+    const rotos = recogibles.filter((i) => !i.objeto || !(i.objeto in piso.objetos)).map((i) => `${i.id} → ${String(i.objeto)}`);
+    expect(rotos).toEqual([]);
+  });
+
+  it('toda llave que pide una puerta es un objeto que se guarda en el inventario y que está en el mapa', () => {
+    const llaves = piso.mapa.puertas.flatMap((p) => (p.llave ? [p.llave] : []));
+    const sinObjeto = llaves.filter((l) => !piso.objetos[l]?.guardaEnInventario);
+    expect(sinObjeto, 'llaves que ninguna declaración guarda en el inventario').toEqual([]);
+    const entregados = new Set(recogibles.map((i) => i.objeto));
+    expect(llaves.filter((l) => !entregados.has(l)), 'llaves que no están en ningún lugar del mapa (la puerta no se podría abrir)').toEqual([]);
+  });
+
+  it('no hay objetos declarados que nadie recoja', () => {
+    const entregados = new Set(recogibles.map((i) => i.objeto));
+    expect(Object.keys(piso.objetos).filter((id) => !entregados.has(id))).toEqual([]);
+  });
+});
+
 describe.each(PISOS.map((p) => [p.id, p] as const))('Reglas de %s', (_id, piso) => {
   it('las banderas que despiertan a la criatura y revelan su imitación son banderas que el piso realmente otorga', () => {
     const otorgadas = new Set(piso.objetivos.map((o) => o.bandera));

@@ -99,7 +99,7 @@ export class Nivel {
           objeto = new Documento(d, piso.documentos);
           break;
         case 'recogible':
-          objeto = new Recogible(d);
+          objeto = new Recogible(d, piso.objetos);
           break;
         case 'medicion': {
           const punto = new PuntoMedicion(d);

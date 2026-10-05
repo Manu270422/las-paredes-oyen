@@ -95,8 +95,8 @@ export interface DefInteractuable {
   rot?: number;
   /** Documento que abre (tipo documento). */
   documento?: string;
-  /** Objeto que entrega (tipo recogible). */
-  objeto?: 'pilas' | 'llave_402';
+  /** Id del objeto que entrega (tipo recogible): una clave de `objetos` del paquete del piso. */
+  objeto?: string;
   /** Apartamento que se mide (tipo medicion). */
   apartamento?: string;
 }

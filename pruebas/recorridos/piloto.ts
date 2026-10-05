@@ -10,7 +10,7 @@ import type { ContextoJuego } from '../../src/nucleo/ContextoJuego';
 export interface JuegoExpuesto {
   readonly estado: string;
   readonly ctx: ContextoJuego;
-  readonly interaccion: { readonly enfocado: { readonly id: string } | null };
+  readonly interaccion: { readonly enfocado: { readonly id: string; texto(ctx: ContextoJuego): string } | null };
 }
 
 export interface Piloto {

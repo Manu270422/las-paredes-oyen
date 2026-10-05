@@ -4,11 +4,26 @@
 //
 // El tipo CRECE con la migración (A1, ver docs/propuestas/A1-pisos-como-paquetes.md):
 // cada campo entra cuando el motor ya lo lee de aquí, para no dejar datos sin dueño.
-// Todavía falta: tarjeta de lugar, los objetos del mapa y el guion opcional.
+// Todavía falta: tarjeta de lugar y el guion opcional.
 import type { DefMapa, EstadoLampara, PuntoAparicion } from '../mundo/datos/TiposMapa';
 import type { Documento } from '../narrativa/Documentos';
 import type { Objetivo } from '../narrativa/Objetivos';
 import type { LineaTranscripcion } from '../narrativa/Transcripciones';
+
+/** Un objeto que se recoge del piso (unas pilas, una llave): qué es, cómo se ve y qué pasa al tomarlo. */
+export interface DefObjetoRecogible {
+  /** Su forma 3D (las que existen en interaccion/objetos/Modelos.ts). */
+  readonly modelo: 'pilas' | 'llave';
+  /** Lo que dice el indicador al mirarlo. */
+  readonly texto: string;
+  /** El subtítulo al tomarlo, y cuántos segundos se queda. */
+  readonly mensaje: string;
+  readonly duracionMensaje: number;
+  /** Cuánta batería devuelve a la linterna (fracción de 0 a 1). */
+  readonly recargaLinterna?: number;
+  /** Se guarda en el inventario con su id (las puertas con llave piden ese id). */
+  readonly guardaEnInventario?: boolean;
+}
 
 /** Las banderas de la historia a las que el motor reacciona, sin saber de qué piso ni de qué apartamento son. */
 export interface ReglasPiso {
@@ -36,6 +51,8 @@ export interface PaquetePiso {
   readonly documentos: Readonly<Record<string, Documento>>;
   readonly transcripciones: Readonly<Record<string, readonly LineaTranscripcion[]>>;
   readonly reglas: ReglasPiso;
+  /** Los objetos que se recogen, por id: el mapa solo dice dónde está cada uno y de cuál es. */
+  readonly objetos: Readonly<Record<string, DefObjetoRecogible>>;
   /** El punto de control (de `mapa.puntosControl`) con el que empieza una partida nueva. */
   readonly puntoInicial: string;
   /** Qué banderas crean un punto de control: bandera → nombre del punto donde se reaparece. */
