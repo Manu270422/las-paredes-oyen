@@ -69,6 +69,8 @@ export interface MapaEventos {
   'jugador-atrapado': { x: number; z: number; motivo: MotivoCaza; enPared: boolean };
   'fin-demo': { tiempo: number };
   documento: { id: string };
+  /** El jugador vio un rastro (sangre vieja, lápiz, rayas) de cerca y con luz, por primera vez en el piso. */
+  'rastro-visto': { id: string };
   /** La dificultad cambió en plena partida: desde Ajustes, o aceptando la oferta de bajar tras morir seguido. */
   'dificultad-cambiada': { de: IdDificultad; a: IdDificultad; motivo: 'ajustes' | 'oferta' };
   /** Tarjeta de lugar: grande y de cine (lugar y hora), o discreta (al entrar a un apartamento). */

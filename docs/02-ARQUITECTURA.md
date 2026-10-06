@@ -26,10 +26,10 @@ LasParedesOyen/
    ├─ entrada/                 Acciones, teclado/ratón, mando, controles táctiles, glifos
    ├─ render/                  Renderizador, postprocesado, materiales
    │  ├─ shaders/              GLSL del postprocesado
-   │  └─ texturas/             Generador procedural, recetas, cookie de la linterna
+   │  └─ texturas/             Generador procedural, recetas, cookie de la linterna, pintor de rastros
    ├─ audio/                   Motor, fuentes 3D, reverberación, ambiente, biblioteca
    │  └─ sintesis/             Sintetizador y recetas de los 39 sonidos
-   ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, letreros, colisiones
+   ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, letreros, rastros, colisiones
    │  └─ datos/                Tipos de mapa (la forma; los mapas viven en cada piso)
    ├─ jugador/                 Jugador, cámara, respiración, corazón, linterna, grabadora
    ├─ interaccion/             Sistema de interacción e interactuables
@@ -135,6 +135,31 @@ La rejilla de un mapa tiene cuatro caracteres: `#` muro, `.` piso, `P` puerta y 
   del hueco: es superficie igual. Por eso el director de Normal sigue idéntico al golden master de gate1.
 - Pruebas: `huecoEscalera.test.ts` (rejilla, navegación, reglas y marco), `paquetesDePiso.test.ts` (nada del mapa cae
   dentro de un hueco) y el recorrido `escalera.spec.ts` (empujar contra la boca no mete al jugador en el hueco).
+
+## Rastros (sangre narrativa)
+
+Un piso declara sus `rastros` como **datos** (`DefRastro` en `pisos/TiposPiso.ts`): `charco` en el piso; `mano`, `estatura`
+y `conteo` en un muro (con `rot`, `altura`, `ancho` y `alto`). No brillan ni salen en la interfaz: sin linterna casi no se ven.
+
+- `render/texturas/PintorRastros.ts` (lógica pura, sin navegador) pinta cada tipo píxel a píxel con el ruido de
+  `utilidades/Ruido.ts`, con densidad fija en píxeles por metro y semilla sacada del `id`: el mismo rastro sale siempre
+  igual. El borde del cuadro queda transparente (nunca se ve el rectángulo).
+- `render/texturas/TexturasRastros.ts` lo pasa a `CanvasTexture`. Lo único que necesita navegador son las letras a lápiz
+  de la estatura: van en una capa aparte, **debajo** de la mancha y el restregado (`ponerDebajo`).
+- `mundo/Rastros.ts`: `ponerRastro` crea el plano (4 mm separado de la superficie, `polygonOffset`, sin escribir
+  profundidad) y `VigiaRastros` avisa por el bus `rastro-visto` la primera vez que el jugador ve cada uno: a menos de
+  4,5 m, a menos de 32° del centro de la vista, con línea de visión (las puertas cerradas tapan) y con la linterna o una
+  lámpara encendida encima. La telemetría lo guarda en `rastrosVistos` del resumen.
+- **Costo de carga** (se pintan al construir el nivel): la escala sigue `tamanoTextura` del perfil de calidad (`baja` →
+  mitad de píxeles por lado). En mi PC, los cuatro del Piso 4 tardan ~440 ms a escala completa y ~75 ms a media; el charco
+  es el más caro (~300 ms). En un móvil todavía no está medido.
+- `Ruido.red` se salta los módulos cuando el periodo es múltiplo de 256 (`& 255` da lo mismo, también con negativos). La
+  salida es idéntica bit a bit (`ruido.test.ts` lo compara contra la versión con módulos): no cambia ninguna textura.
+- Pruebas: `rastros.test.ts` (cada rastro de muro pegado a un muro en todo su ancho y con aire delante, los charcos sobre
+  celdas que se pisan, todo dentro de su cuadro, el pintor determinista y con borde transparente) y el recorrido
+  `rastros.spec.ts`: camina hasta cada uno, lo mira con la linterna y cuenta cuántos píxeles cambian al quitarlo contra
+  cuántos deberían cambiar (área del cuadro en pantalla × parte pintada). Debe superar 0,3 con linterna y verse menos
+  sin ella. Comprobado que falla si los rastros quedan detrás de la superficie (bajan a 0).
 
 ## Estados de la aplicación
 

@@ -86,6 +86,7 @@ export function resumirSesion(sesion: SesionTelemetria): ResumenSesion {
     },
     imitaciones: contarPor(ev, 'imitacion', 'etapa'),
     marcasObservador: de('marca-observador').length,
+    rastrosVistos: de('rastro-visto').map((e) => String(e.datos?.id)),
     estresMedio: promedio(curva.map((m) => m.estres)),
     estresMaximo: redondear(Math.max(0, ...curva.map((m) => m.estres))),
     fpsMedio: promedio(curva.map((m) => m.fps)),

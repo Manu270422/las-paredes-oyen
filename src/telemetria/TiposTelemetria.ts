@@ -96,6 +96,8 @@ export interface ResumenSesion {
   encuentros: { iniciados: number; superados: number; fallidos: number };
   imitaciones: Record<string, number>;
   marcasObservador: number;
+  /** Qué rastros vio el jugador (de cerca y con luz), en orden: si nadie los encuentra, no cuentan nada. */
+  rastrosVistos: string[];
   estresMedio: number;
   estresMaximo: number;
   fpsMedio: number;

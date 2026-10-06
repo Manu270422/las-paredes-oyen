@@ -78,6 +78,63 @@ export interface DefRotulo {
   readonly alto: number;
 }
 
+/** Los tipos de rastro que sé pintar. */
+export type TipoRastro = DefRastro['tipo'];
+
+/**
+ * Lo común de todo rastro: lo que quedó de algo que pasó en el piso (sangre vieja, lápiz, rayas).
+ * Cada uno cuenta un pedazo de la historia sin una sola palabra en pantalla.
+ */
+interface DefRastroBase {
+  /** Identificador estable: la malla se llama `rastro:<id>` y la telemetría avisa la primera vez que se ve. */
+  readonly id: string;
+  /** El punto en CELDAS: en un muro, sobre la cara del muro (como un rótulo); en el piso, el centro del rastro. */
+  readonly x: number;
+  readonly y: number;
+  /**
+   * Hacia dónde mira, en grados (la regla de `rot`: 0 = hacia +y del mapa). En el piso es hacia dónde apunta
+   * la parte de ARRIBA del dibujo (por ejemplo, la puerta hacia la que va un arrastre).
+   */
+  readonly rot: number;
+  /** Cuánto mide el cuadro del rastro, en metros (lo que cae fuera del dibujo es transparente). */
+  readonly ancho: number;
+  readonly alto: number;
+}
+
+/** Una mancha vieja en el piso que alguien quiso limpiar, con un arrastre hacia arriba del dibujo. */
+export interface DefCharco extends DefRastroBase {
+  readonly tipo: 'charco';
+}
+
+/** Una mano que se apoyó en el muro y bajó arrastrándose (hacia la izquierda del dibujo). */
+export interface DefMano extends DefRastroBase {
+  readonly tipo: 'mano';
+  /** Altura del centro del cuadro sobre el piso, en metros. */
+  readonly altura: number;
+  /** Si va al revés (una mano que bajaba hacia la derecha). */
+  readonly espejo?: boolean;
+}
+
+/** Las rayas de lápiz de la estatura de un niño, con lo que le escribieron al lado. */
+export interface DefEstatura extends DefRastroBase {
+  readonly tipo: 'estatura';
+  readonly altura: number;
+  /** Cada raya: a qué altura del piso (en metros) y lo que dice al lado (vacío: una raya sin nada). */
+  readonly marcas: readonly { readonly altura: number; readonly texto: string }[];
+  /** A qué altura quedó la mancha oscura que alguien restregó (sin ella, solo el lápiz). */
+  readonly mancha?: number;
+}
+
+/** Rayas de conteo hechas con algo duro sobre la pintura, de cinco en cinco. */
+export interface DefConteo extends DefRastroBase {
+  readonly tipo: 'conteo';
+  readonly altura: number;
+  /** Cuántas rayas. La última quedó a medias. */
+  readonly cuenta: number;
+}
+
+export type DefRastro = DefCharco | DefMano | DefEstatura | DefConteo;
+
 export interface PaquetePiso {
   /** Identificador estable ('piso4'): es la clave del catálogo y, más adelante, de la partida guardada. */
   readonly id: string;
@@ -105,6 +162,8 @@ export interface PaquetePiso {
   readonly placas?: readonly DefPlaca[];
   /** Lo pintado en los muros (el número del piso en la escalera). */
   readonly rotulos?: readonly DefRotulo[];
+  /** Los rastros de lo que pasó (sangre vieja, lápiz, rayas): la historia contada sin texto. */
+  readonly rastros?: readonly DefRastro[];
   /** El piso que sigue en la historia, aunque todavía no exista: el final dice "Próximamente: Piso 3". */
   readonly siguiente?: { readonly id: string; readonly nombre: string };
   /** El guion del piso (opcional): recibe lo que puede pedirle al juego (fundidos, susto, final). */

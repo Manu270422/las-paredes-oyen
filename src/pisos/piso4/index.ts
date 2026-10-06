@@ -60,6 +60,41 @@ export const PISO_4: PaquetePiso = {
   ],
   // El "4" pintado en la pared norte de la escalera, bajo la luz de emergencia: se lee siempre, en rojo.
   rotulos: [{ texto: '4', x: 2.45, y: 8, altura: 1.6, rot: 0, alto: 0.45 }],
+  // Lo que pasó en el 402, contado sin palabras. Ninguno brilla ni sale en la interfaz: casi no se ven sin
+  // la linterna, y cada uno está donde el jugador ya va a mirar (la reja, la puerta, la mesita, la silla).
+  rastros: [
+    // Al entrar al 402: alguien limpió un charco con un trapo y no pudo con todo. El arrastre sale hacia la
+    // puerta (al norte) y llega casi al umbral: lo que sangraba aquí lo sacaron por donde entra el jugador,
+    // que lo tiene a los pies apenas abre.
+    { tipo: 'charco', id: 'charco_402', x: 14.5, y: 12.69, rot: 180, ancho: 1.3, alto: 1.75 },
+    // En el muro oeste del descanso, justo antes de la reja: una mano que se apoyó y se fue arrastrando hacia
+    // abajo, hacia la reja del tramo que baja. Lo bajaron por aquí. Queda a la espalda del jugador al
+    // empezar: con la luz roja apenas se adivina; la linterna la descubre al darse vuelta.
+    { tipo: 'mano', id: 'mano_escalera', x: 1, y: 10.55, rot: 90, altura: 0.95, ancho: 1.0, alto: 0.9 },
+    // En el dormitorio, junto a la mesita de la carta: las rayas de estatura del niño. Alguien restregó la
+    // pared y no se fue. La última raya no tiene número, y encima hay una mancha que nadie pudo quitar.
+    {
+      tipo: 'estatura',
+      id: 'estatura_andres',
+      x: 11.5,
+      y: 17,
+      rot: 0,
+      altura: 1.15,
+      ancho: 0.52,
+      alto: 0.6,
+      mancha: 1.23,
+      marcas: [
+        { altura: 1.02, texto: 'Andrés 4 años' },
+        { altura: 1.09, texto: '5' },
+        { altura: 1.15, texto: '6' },
+        { altura: 1.21, texto: '7 años' },
+        { altura: 1.27, texto: '' },
+      ],
+    },
+    // En el cuarto, frente a la silla que mira la pared: a la altura de los ojos de un niño sentado, días
+    // contados con la uña en el yeso. Treinta y siete. El último quedó a medias.
+    { tipo: 'conteo', id: 'conteo_402', x: 18.2, y: 19, rot: 180, altura: 0.95, ancho: 0.55, alto: 0.24, cuenta: 37 },
+  ],
   // Bajando: el siguiente es el Piso 3 (todavía no existe; el final lo dice).
   siguiente: { id: 'piso3', nombre: 'Piso 3' },
   guion: (acciones) => new GuionPiso4(acciones),

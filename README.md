@@ -382,8 +382,8 @@ Todo vive en `pruebas/`. Ni `npm run build` ni el despliegue en Vercel las carga
 
 | Comando | Qué prueba | Tiempo |
 |---|---|---|
-| `npm run test:unit` | Lógica pura con Vitest: memoria de tensión, alivio, respiración, la cinta de la grabadora, explicaciones de muerte, sistema de dificultad y migración de telemetría | ~3 s |
-| `npm run test:e2e` | El juego real con Playwright (30 recorridos): interfaz, guardado, pantalla de dificultad, guardado por dificultad, oferta de bajar un escalón y accesibilidad | ~3 min |
+| `npm run test:unit` | Lógica pura con Vitest: memoria de tensión, alivio, respiración, la cinta de la grabadora, explicaciones de muerte, sistema de dificultad, migración de telemetría, el hueco de la escalera y los rastros | ~3 s |
+| `npm run test:e2e` | El juego real con Playwright (32 recorridos): interfaz, guardado, pantalla de dificultad, guardado por dificultad, oferta de bajar un escalón, accesibilidad, la escalera y los rastros (que se vean con la linterna) | ~20 min |
 
 **Navegador para `test:e2e`:** por defecto usa el **Google Chrome que ya tienes instalado** (no descarga nada).
 Para usar otro:
@@ -434,6 +434,8 @@ en los [issues del repositorio](https://github.com/Manu270422/las-paredes-oyen/i
 - [x] **Sistema de dificultad**: Historia · Normal · Difícil · Pesadilla — puntos de control por dificultad, cambio en plena partida sin penalización, Pesadilla no guarda ni borra otras partidas (Sprint 4)
 - [x] **Accesibilidad visual**: sin sustos fuertes (sin cara, sin grito ni destello) y ayuda visual del aire (borde rojo + subtítulo antes del jadeo), independientes de la dificultad (Sprint 4)
 - [x] **Telemetría v2**: dificultad y versión de compilación en cada sesión; migración automática de sesiones v1 (Sprint 4)
+- [x] **Escalera visible**: el hueco con sus tramos, la reja con cadena del que baja y la oscuridad del fondo
+- [x] **Sangre narrativa**: rastros de lo que pasó que solo descubre la linterna; cuentan la historia sin una palabra en pantalla
 - [ ] **Playtesting** con al menos cinco personas (una en celular) y ajuste con esos datos
 - [ ] **Calidad visual**: El Inquilino en glTF con esqueleto, sin perder sus 12 poses por segundo
 - [ ] **Nuevos espacios**: *el hueco* entre el 401 y el 403, el piso 3, el cuarto de bombas y la azotea

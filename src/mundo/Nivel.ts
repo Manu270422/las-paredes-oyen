@@ -20,6 +20,7 @@ import { Rejilla, type ConsultaPuertaCerrada } from './Rejilla';
 import { Puerta } from './Puerta';
 import { Lampara } from './Lampara';
 import { colgarPlaca, pintarRotulo } from './Letreros';
+import { ponerRastro, VigiaRastros } from './Rastros';
 import { PoolLuces } from './PoolLuces';
 import { crearMueble, type Mueble } from './Muebles';
 import type { CajaColision } from './Colisiones';
@@ -34,6 +35,8 @@ export class Nivel {
   readonly interactuables: Interactuable[] = [];
   readonly puntosMedicion: PuntoMedicion[] = [];
   radio: Radio | null = null;
+  /** Avisa la primera vez que el jugador ve cada rastro del piso (para la telemetría). */
+  readonly vigiaRastros: VigiaRastros;
 
   /** La uso en toda consulta de visión y sonido: ¿hay una puerta cerrada en esta celda? */
   readonly consultaPuertaCerrada: ConsultaPuertaCerrada = (gx, gy) => {
@@ -91,6 +94,9 @@ export class Nivel {
       colgarPlaca(d, puerta);
     }
     for (const d of piso.rotulos ?? []) this.grupo.add(pintarRotulo(d));
+    // Los rastros de lo que pasó: sangre vieja, lápiz, rayas. Se descubren con la linterna.
+    for (const d of piso.rastros ?? []) this.grupo.add(ponerRastro(d, materiales.detalle));
+    this.vigiaRastros = new VigiaRastros(piso.rastros ?? [], this.rejilla, this.lamparas, this.consultaPuertaCerrada);
 
     for (const d of def.lamparas) {
       const lampara = new Lampara(d);
@@ -210,6 +216,7 @@ export class Nivel {
     for (const lampara of this.lamparas) lampara.actualizar(dt);
     this.pool.actualizar(this.lamparas, jugadorX, jugadorZ);
     if (ctx) this.radio?.actualizar(dt, ctx);
+    if (ctx) this.vigiaRastros.actualizar(dt, ctx);
   }
 
   /** Dejo el mundo como corresponde a las banderas de progreso actuales. */

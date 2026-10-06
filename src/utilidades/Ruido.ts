@@ -15,6 +15,9 @@ export class Ruido2D {
 
   /** Leo el valor de la red en una esquina entera, envolviendo según el periodo. */
   private red(ix: number, iy: number, periodo: number): number {
+    // Si el periodo es múltiplo de 256, envolver por él y luego por la tabla es lo mismo que el `& 255` solo
+    // (también con negativos: -1 & 255 = 255). Me salto los cuatro módulos: es la llamada más repetida al pintar.
+    if ((periodo & 255) === 0) return this.tabla[(iy & 255) * 256 + (ix & 255)];
     const x = ((ix % periodo) + periodo) % periodo;
     const y = ((iy % periodo) + periodo) % periodo;
     return this.tabla[(y & 255) * 256 + (x & 255)];

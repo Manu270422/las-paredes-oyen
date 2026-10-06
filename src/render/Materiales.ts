@@ -50,9 +50,16 @@ const DEFINICIONES: Record<IdMaterial, DefMaterial> = {
 export class BibliotecaMateriales {
   private readonly materiales = new Map<IdMaterial, MeshStandardMaterial>();
   private readonly texturas = new Map<IdTextura, ConjuntoTexturas>();
+  private detalleTexturas = { tamano: 512, anisotropia: 4 };
+
+  /** Con qué detalle se generaron las texturas (del perfil de calidad): lo que se pinte aparte lo sigue. */
+  get detalle(): { readonly tamano: number; readonly anisotropia: number } {
+    return this.detalleTexturas;
+  }
 
   /** Genero todas las texturas y materiales. Reporto el progreso de 0 a 1. */
   async generar(tamano: number, anisotropia: number, alProgreso: (p: number) => void): Promise<void> {
+    this.detalleTexturas = { tamano, anisotropia };
     const ids = Object.keys(RECETAS) as IdTextura[];
     for (let i = 0; i < ids.length; i++) {
       this.texturas.set(ids[i], generarConjunto(RECETAS[ids[i]], tamano, anisotropia));

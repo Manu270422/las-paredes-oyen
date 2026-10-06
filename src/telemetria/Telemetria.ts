@@ -317,6 +317,7 @@ export class Telemetria {
       this.observarReaccion(id);
     });
     bus.on('documento', ({ id }) => this.registrar('documento', { id }));
+    bus.on('rastro-visto', ({ id }) => this.registrar('rastro-visto', { id }));
     bus.on('pista', ({ id }) => this.registrar('pista', { id }));
     bus.on('dificultad-cambiada', ({ de, a, motivo }) => this.registrar('dificultad', { de, a, motivo }));
     bus.on('grabadora', ({ accion }) => this.registrar('grabadora', { accion, bateria: r2(this.ctx?.linterna.bateria ?? 0) }));
