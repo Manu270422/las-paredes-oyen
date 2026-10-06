@@ -65,15 +65,17 @@ export class PantallaFin extends Pantalla {
     this.exportar.textContent = 'Exportar registro de la prueba';
     const m = e.marcas;
     // Sin fanfarria: la marca es un dato más, dicho en voz baja.
-    const mejor: [string, string] =
-      m.finales <= 1 ? [reloj(m.mejorTiempo), 'Tu primera vez hasta el final'] : m.nuevoMejorTiempo ? [reloj(m.mejorTiempo), 'Tu mejor tiempo. Nunca saliste tan rápido'] : [reloj(m.mejorTiempo), 'Tu mejor tiempo'];
+    const frase = m.finales <= 1 ? 'Tu primera vez hasta el final' : m.nuevoMejorTiempo ? 'Tu mejor tiempo. Nunca saliste tan rápido' : 'Tu mejor tiempo';
+    // Si la marca es este mismo tiempo (la primera vez, o al batirla), no repito el número: la frase va con "Tiempo".
+    const tiempo = reloj(e.tiempo);
+    const repetida = reloj(m.mejorTiempo) === tiempo;
     const datos: Array<[string, string]> = [
-      [reloj(e.tiempo), 'Tiempo'],
+      [tiempo, repetida ? `Tiempo · ${frase.charAt(0).toLowerCase()}${frase.slice(1)}` : 'Tiempo'],
       [e.dificultad, 'Dificultad'],
       [String(e.cambiosMundo), 'Cosas que cambiaron'],
       [String(e.persecuciones), 'Veces que te cazó'],
       [String(e.muertes), 'Veces que te oyó'],
-      mejor,
+      ...(repetida ? [] : [[reloj(m.mejorTiempo), frase] as [string, string]]),
     ];
     this.lista.replaceChildren(
       ...datos.map(([valor, nombre]) => {

@@ -17,6 +17,10 @@ test('sin telemetría, la pantalla final no muestra "Exportar registro de la pru
   await expect(page.locator('.fin__estadisticas')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Exportar registro de la prueba' })).toBeHidden();
   await expect(page.getByRole('button', { name: 'Volver al menú' })).toBeVisible();
+  // La primera vez la marca ES este tiempo: no se repite el número, la frase va junto a "Tiempo".
+  const datos = await page.locator('.fin__estadisticas li').allTextContents();
+  expect(datos.some((d) => d.includes('Tiempo · tu primera vez hasta el final'))).toBe(true);
+  expect(datos.filter((d) => d.startsWith(datos[0].match(/^\d+:\d\d/)![0])), 'el tiempo aparece una sola vez').toHaveLength(1);
   // "Jugar otra vez" empieza una partida nueva desde el final, sin pasar por el menú.
   await page.getByRole('button', { name: 'Jugar otra vez' }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando', null, { timeout: 10_000 });
