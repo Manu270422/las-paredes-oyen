@@ -25,12 +25,17 @@ let materialCanto: MeshStandardMaterial | null = null;
 
 /** Cuelgo la placa de la hoja de su puerta, en la cara del pasillo. Se llama "placa:<texto>". */
 export function colgarPlaca(def: DefPlaca, puerta: Puerta): Mesh {
-  materialCanto ??= new MeshStandardMaterial({ color: 0x6e5a38, metalness: 0.3, roughness: 0.6 });
+  // El canto es latón oscuro, del tono de la cara: café rojizo se leía como una línea roja al verla de lado.
+  materialCanto ??= new MeshStandardMaterial({ color: 0x4f4226, metalness: 0.4, roughness: 0.6 });
+  const texturas = texturaPlaca(def.texto, PLACA.alto / PLACA.ancho, PLACA.cifras / PLACA.alto);
+  // Rugosidad y metal salen del mapa de material: el latón brilla y el surco de las cifras es mate. El
+  // latón queda con metal a medias: el juego no tiene mapa de entorno y un metal puro se vería negro.
   const frente = new MeshStandardMaterial({
-    map: texturaPlaca(def.texto, PLACA.alto / PLACA.ancho, PLACA.cifras / PLACA.alto),
-    // Metal a medias a propósito: el juego no tiene mapa de entorno y un metal puro se vería negro.
-    metalness: 0.5,
-    roughness: 0.45,
+    map: texturas.color,
+    roughnessMap: texturas.material,
+    metalnessMap: texturas.material,
+    roughness: 1,
+    metalness: 1,
   });
   // Las caras de la caja van en orden +X, -X, +Y, -Y, +Z, -Z: el frente es la +Z.
   const placa = new Mesh(new BoxGeometry(PLACA.ancho, PLACA.alto, PLACA.grosor), [

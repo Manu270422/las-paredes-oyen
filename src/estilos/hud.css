@@ -46,6 +46,10 @@
   letter-spacing: 0.06em;
   color: var(--color-texto);
   text-shadow: 0 1px 6px #000, 0 0 2px #000;
+  /* Un fondo oscuro translúcido: de cerca el texto caía sobre la placa iluminada de una puerta y se pisaba con ella. */
+  padding: 0.3em 0.7em;
+  border-radius: 4px;
+  background: rgba(4, 4, 6, 0.6);
   opacity: 0;
   transition: opacity 150ms ease;
   white-space: nowrap;

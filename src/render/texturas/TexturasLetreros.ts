@@ -1,7 +1,7 @@
 // Aquí pinto en un lienzo los letreros de un piso: la placa de latón con el número de un apartamento y
 // la cifra pintada con plantilla en un muro. NO brillan (nada de texto luminoso flotando): son colores
 // para un material normal, así que solo se leen cuando les llega luz, sobre todo la de la linterna.
-import { CanvasTexture, SRGBColorSpace } from 'three';
+import { CanvasTexture, NoColorSpace, SRGBColorSpace } from 'three';
 import { Ruido2D } from '../../utilidades/Ruido';
 
 /** Letra de las cifras: una de palo seco del sistema (cambia un poco entre Android, iPhone y Windows). */
@@ -20,9 +20,9 @@ function crearLienzo(ancho: number, alto: number): { lienzo: HTMLCanvasElement; 
   return { lienzo, c };
 }
 
-function textura(lienzo: HTMLCanvasElement): CanvasTexture {
+function textura(lienzo: HTMLCanvasElement, esColor = true): CanvasTexture {
   const t = new CanvasTexture(lienzo);
-  t.colorSpace = SRGBColorSpace;
+  t.colorSpace = esColor ? SRGBColorSpace : NoColorSpace;
   t.anisotropy = ANISOTROPIA;
   return t;
 }
@@ -73,17 +73,30 @@ const suave = (a: number, b: number, x: number) => {
   return t * t * (3 - 2 * t);
 };
 
-const LATON: Rgb = [150, 116, 62];
+const LATON: Rgb = [146, 113, 61];
 const LATON_OSCURO: Rgb = [86, 76, 50];
 const RANURA = 'rgb(30, 24, 16)';
 const BRILLO_LATON = 'rgb(214, 184, 124)';
+
+/** Rugosidad (canal verde) y metal (canal azul) del latón y del surco de las cifras, de 0 a 255. */
+const MATERIAL_LATON = 'rgb(0, 115, 128)';
+const MATERIAL_SURCO = 'rgb(0, 255, 255)';
+
+/** Las dos texturas de una placa: el color y el mapa de material (rugosidad en verde, metal en azul). */
+export interface TexturasPlaca {
+  color: CanvasTexture;
+  material: CanvasTexture;
+}
 
 /**
  * La placa de latón gastado de un apartamento: oxidada en manchas, más sucia hacia los bordes (donde
  * nadie limpia), con dos tornillos y el número GRABADO (oscuro, con el canto de abajo brillando).
  * `proporcion` es alto / ancho de la placa; `fraccionCifras`, qué parte del alto ocupan las cifras.
+ *
+ * El surco de las cifras es mugre MATE y sin metal (mapa de material): así el reflejo de la linterna de
+ * cerca cae sobre el latón y no sobre los números. Antes compartían material y de cerca se veían grises.
  */
-export function texturaPlaca(texto: string, proporcion: number, fraccionCifras: number): CanvasTexture {
+export function texturaPlaca(texto: string, proporcion: number, fraccionCifras: number): TexturasPlaca {
   const W = 512;
   const H = Math.round(W * proporcion);
   const { lienzo, c } = crearLienzo(W, H);
@@ -153,7 +166,13 @@ export function texturaPlaca(texto: string, proporcion: number, fraccionCifras: 
     }
   }
   c.putImageData(final, 0, 0);
-  return textura(lienzo);
+
+  // 6. El mapa de material: el mismo trazo de las cifras, mate y sin metal, sobre el latón.
+  const material = crearLienzo(W, H);
+  material.c.fillStyle = MATERIAL_LATON;
+  material.c.fillRect(0, 0, W, H);
+  trazarCifras(material.c, texto, W / 2, H / 2, H * fraccionCifras, W * 0.68, [{ dx: 0, dy: 0, color: MATERIAL_SURCO }]);
+  return { color: textura(lienzo), material: textura(material.lienzo, false) };
 }
 
 /**
