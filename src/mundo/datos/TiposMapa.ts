@@ -127,4 +127,6 @@ export interface DefMapa {
   puntosControl: Readonly<Record<string, PuntoAparicion>>;
   /** Dónde espera la criatura al empezar (dentro de las paredes). */
   guaridaEntidad: { x: number; y: number };
+  /** De dónde sopla el viento (el hueco de una escalera): un sonido en bucle en ese punto, en celdas. */
+  viento?: { x: number; y: number };
 }

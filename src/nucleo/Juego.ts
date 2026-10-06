@@ -404,7 +404,7 @@ export class Juego {
     this.director.reiniciar(this.memoria.muertesSinProgreso);
     this.director.activo = this.progreso.tiene(this.piso.reglas.directorDesde);
     this.guion?.reiniciar(ctx);
-    this.ambiente.iniciarViento(2 * CONFIG.celda, 12 * CONFIG.celda);
+    if (this.piso.mapa.viento) this.ambiente.iniciarViento(this.piso.mapa.viento.x * CONFIG.celda, this.piso.mapa.viento.y * CONFIG.celda);
     Object.assign(this.renderizador.efectos, { susto: 0, interferencia: 0 });
     this.progreso.anunciarObjetivo();
   }

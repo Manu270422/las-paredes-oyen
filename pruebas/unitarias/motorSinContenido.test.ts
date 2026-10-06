@@ -94,6 +94,13 @@ describe('El motor no escribe a mano nombres del contenido de un piso', () => {
     expect(encontrados).toEqual(COINCIDENCIAS);
   });
 
+  it('el motor no escribe posiciones del mapa a mano (un número por CONFIG.celda): son datos del piso', () => {
+    // Así se coló el viento de la escalera (2, 12) en Juego.ts hasta el Sprint 4.
+    const aMano = /\b\d+(\.\d+)?\s*\*\s*CONFIG\.celda\b|\bCONFIG\.celda\s*\*\s*\d/;
+    const infractores = motor.filter((archivo) => aMano.test(sinComentarios(readFileSync(join(RAIZ, archivo), 'utf8'))));
+    expect(infractores).toEqual([]);
+  });
+
   it('el catálogo declara nombres (la prueba no está vacía)', () => {
     expect(nombres.size).toBeGreaterThan(30);
   });

@@ -161,4 +161,7 @@ export const MAPA_PISO_4: DefMapa = {
   },
 
   guaridaEntidad: { x: 14, y: 4.5 },
+
+  // El viento sube por el hueco de la escalera, en su esquina sur (junto a la baranda).
+  viento: { x: 2, y: 12 },
 };

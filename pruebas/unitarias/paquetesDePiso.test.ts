@@ -34,6 +34,13 @@ describe.each(PISOS.map((p) => [p.id, p] as const))('Paquete %s', (_id, piso) =>
     expect(rotos).toEqual([]);
   });
 
+  it('el viento (si lo hay) sopla desde un punto junto a una celda transitable', () => {
+    const v = piso.mapa.viento;
+    if (!v) return;
+    const vecinas = [[0, 0], [-1, 0], [0, -1], [-1, -1]].map(([dx, dy]) => transitable(v.x + dx * 0.01, v.y + dy * 0.01));
+    expect(vecinas.some(Boolean), `el viento en (${v.x}, ${v.y}) está dentro de un muro`).toBe(true);
+  });
+
   it('la cámara del menú y la figura del fondo están en celdas transitables', () => {
     expect(transitable(piso.menu.camara.x, piso.menu.camara.y), 'cámara del menú').toBe(true);
     expect(transitable(piso.menu.figura.x, piso.menu.figura.y), 'figura del menú').toBe(true);
