@@ -2,6 +2,7 @@
 // Antes elegía una pista al azar (que muchas veces no tenía nada que ver con
 // lo que me mató). Ahora el juego me dice lo que ELLA oyó, y el consejo solo
 // aparece la primera vez por cada causa. Morir enseña, pero sin sermones.
+import { NOMBRE_DIFICULTAD, type IdDificultad } from '../../config/Dificultad';
 import { crearBoton } from '../componentes/Boton';
 import { Pantalla } from './Pantalla';
 
@@ -17,12 +18,15 @@ export class PantallaMuerte extends Pantalla {
   private readonly linea: HTMLParagraphElement;
   private readonly consejo: HTMLParagraphElement;
   private readonly reintentar: HTMLButtonElement;
+  private readonly oferta: HTMLDivElement;
 
   constructor(
     reintentar: () => void,
     menu: () => void,
     /** En Pesadilla no hay punto de control: el botón dice que se empieza de nuevo. */
     private readonly desdeCero: () => boolean,
+    /** Tras 3 muertes seguidas: a cuál se ofrece bajar (o null), y qué pasa si se acepta (bajar y reintentar). */
+    private readonly ofertaBajar: { ofrecida(): IdDificultad | null; aceptar(id: IdDificultad): void },
   ) {
     super('muerte');
     this.titulo = document.createElement('h2');
@@ -35,7 +39,10 @@ export class PantallaMuerte extends Pantalla {
     acciones.className = 'muerte__acciones';
     this.reintentar = crearBoton('Reintentar', reintentar, { clase: 'boton--contorno boton--principal' });
     acciones.append(this.reintentar, crearBoton('Menú principal', menu, { clase: 'boton--contorno' }));
-    this.elemento.append(this.titulo, this.linea, this.consejo, acciones);
+    // La oferta de bajar un escalón: debajo, en voz baja. Nunca se baja sola.
+    this.oferta = document.createElement('div');
+    this.oferta.className = 'muerte__oferta';
+    this.elemento.append(this.titulo, this.linea, this.consejo, acciones, this.oferta);
     this.alVolver = menu;
   }
 
@@ -45,5 +52,14 @@ export class PantallaMuerte extends Pantalla {
     this.consejo.textContent = datos.consejo ?? '';
     this.consejo.hidden = datos.consejo === null;
     this.reintentar.textContent = this.desdeCero() ? 'Empezar de nuevo' : 'Reintentar';
+    const destino = this.ofertaBajar.ofrecida();
+    this.oferta.replaceChildren();
+    this.oferta.hidden = destino === null;
+    if (destino) {
+      const nota = document.createElement('p');
+      nota.className = 'muerte__pista';
+      nota.textContent = 'Puedes volver a subirla en Ajustes.';
+      this.oferta.append(crearBoton(`Probar en ${NOMBRE_DIFICULTAD[destino]} desde aquí`, () => this.ofertaBajar.aceptar(destino), { clase: 'boton--contorno' }), nota);
+    }
   }
 }

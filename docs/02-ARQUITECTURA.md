@@ -95,7 +95,7 @@ cargador (`guardado/Versionado.ts` + `guardado/AlmacenVersionado.ts`):
 | `partida` | Piso, punto de control, banderas, batería, tiempo, estadísticas (`guardado/SistemaGuardado.ts`) | 5 (v1 → v2: toda v1 es del Piso 4; v2 → v3: "Cosas que cambiaron" empieza en 0; v3 → v4: la dificultad, Normal; v4 → v5: dificultad inicial y más baja jugada) | Al terminar o con "Nueva partida". **Pesadilla no guarda ni borra**: la de otra dificultad queda intacta |
 | `ajustes` | Ajustes del jugador (`config/Ajustes.ts`), con la dificultad preferida (la última elegida) | 1 (migra desde v0, sin versión; las claves nuevas toman su valor por defecto) | Nunca |
 | `perfil` | Mejores marcas, totales y pisos completados con su dificultad más alta (`guardado/Perfil.ts`) | 2 (v1 → v2: si llegó al final, completó el Piso 4 en Normal) | Nunca |
-| `telemetria` | Sesiones de prueba (`telemetria/`) | 1 por sesión | Desde Ajustes → Pruebas |
+| `telemetria` | Sesiones de prueba (`telemetria/`), con la dificultad y la versión de la compilación | 2 por sesión (las v1 se migran: Normal, compilación "desconocida") | Desde Ajustes → Pruebas |
 
 Reglas del cargador:
 - **Sin versión = v0.** Cada cambio de formato agrega un paso `{ desde: N, migrar }` en `MIGRACIONES`; los datos suben

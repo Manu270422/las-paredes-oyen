@@ -232,7 +232,7 @@ export class PantallaAjustes extends Pantalla {
         return;
       }
     }
-    d.cambiarEnCurso(id);
+    d.cambiarEnCurso(id, 'ajustes');
     this.ajustes.cambiar('dificultad', id);
     this.dibujar();
   }

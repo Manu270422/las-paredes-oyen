@@ -3,6 +3,7 @@
 // y de vez en cuando, algo de pie al fondo.
 import { NOMBRE_DIFICULTAD, type IdDificultad } from '../../config/Dificultad';
 import { crearBoton } from '../componentes/Boton';
+import { COMPILACION } from '../../config/Compilacion';
 import { Pantalla } from './Pantalla';
 
 export interface AccionesMenuPrincipal {
@@ -33,7 +34,8 @@ export class MenuPrincipal extends Pantalla {
     this.opciones.setAttribute('aria-label', 'Menú principal');
     const pie = document.createElement('footer');
     pie.className = 'menu__pie';
-    pie.innerHTML = '<span>Usa audífonos</span><span>Vertical slice · v0.1</span>';
+    pie.innerHTML = '<span>Usa audífonos</span><span class="menu__version"></span>';
+    pie.querySelector('.menu__version')!.textContent = `Versión ${COMPILACION}`;
     this.elemento.append(cabecera, this.opciones, pie);
   }
 

@@ -4,14 +4,26 @@
 import { borrar, escribirJSON, leerJSON } from '../utilidades/Almacenamiento';
 import type { SesionTelemetria } from './TiposTelemetria';
 
+/**
+ * Subo una sesión vieja al formato actual. v1 → v2: el entorno dice la dificultad y la compilación; antes de la
+ * Tarea 4 solo existía el juego de siempre (Normal) y no se anotaba la versión. Así ninguna sesión se pierde.
+ */
+function migrarSesion(s: unknown): SesionTelemetria | null {
+  if (typeof s !== 'object' || s === null) return null;
+  const sesion = s as { version?: unknown; entorno?: Record<string, unknown> };
+  if (sesion.version === 2) return s as SesionTelemetria;
+  if (sesion.version !== 1 || typeof sesion.entorno !== 'object' || sesion.entorno === null) return null;
+  return { ...(sesion as object), version: 2, entorno: { dificultad: 'normal', compilacion: 'desconocida', ...sesion.entorno } } as SesionTelemetria;
+}
+
 const CLAVE = 'telemetria';
 /** Sesiones que conservo como máximo (las más viejas se descartan). */
 const MAXIMO_SESIONES = 12;
 
 export class AlmacenTelemetria {
   cargar(): SesionTelemetria[] {
-    const datos = leerJSON<SesionTelemetria[]>(CLAVE);
-    return Array.isArray(datos) ? datos.filter((s) => s?.version === 1) : [];
+    const datos = leerJSON<unknown[]>(CLAVE);
+    return Array.isArray(datos) ? datos.map(migrarSesion).filter((s): s is SesionTelemetria => s !== null) : [];
   }
 
   /** Guardo (o actualizo) una sesión. Devuelvo false si el navegador no me dejó guardar. */

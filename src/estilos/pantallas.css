@@ -511,6 +511,15 @@
   line-height: 1.5;
 }
 
+/* La oferta de bajar un escalón tras morir seguido: secundaria y en voz baja. */
+.muerte__oferta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espacio-s);
+  margin-top: var(--espacio-s);
+}
+
 .muerte__acciones,
 .fin__acciones {
   display: flex;

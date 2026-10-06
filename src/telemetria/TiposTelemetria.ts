@@ -6,6 +6,7 @@
 // - Es opcional y viene apagado: se activa en Ajustes → Pruebas o con ?telemetria=1.
 import type { ModoEntrada } from '../entrada/AccionesEntrada';
 import type { NivelCalidad } from '../config/PerfilesCalidad';
+import type { IdDificultad } from '../config/Dificultad';
 
 export type ValorDato = string | number | boolean | null;
 
@@ -42,13 +43,17 @@ export interface EntornoSesion {
   /** Proporción de la pantalla (ancho/alto) redondeada. */
   aspecto: number;
   hrtf: boolean;
+  /** La dificultad con la que empezó la sesión (los cambios quedan como eventos "dificultad"). */
+  dificultad: IdDificultad;
+  /** La versión de la compilación (package.json + commit), o "+local". "desconocida" en sesiones viejas. */
+  compilacion: string;
 }
 
 /** Cómo terminó la sesión. */
 export type FinSesion = 'fin' | 'menu' | 'cierre' | 'en-curso';
 
 export interface SesionTelemetria {
-  version: 1;
+  version: 2;
   id: string;
   /** Fecha y hora de inicio (ISO). */
   inicio: string;

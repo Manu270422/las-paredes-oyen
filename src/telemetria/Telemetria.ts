@@ -17,6 +17,7 @@ import type { MapaEventos } from '../nucleo/Eventos';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
 import type { GestorAjustes } from '../config/Ajustes';
 import type { PuenteTelemetria } from '../ui/PuenteTelemetria';
+import { COMPILACION } from '../config/Compilacion';
 import { AlmacenTelemetria } from './AlmacenTelemetria';
 import { ReaccionPendiente } from './ReaccionJugador';
 import { VigilanciaEvento } from './VigilanciaEvento';
@@ -109,12 +110,13 @@ export class Telemetria {
   // CICLO DE LA SESIÓN
   // ---------------------------------------------------------------------------
   /** Empieza (o retoma) una partida: reintentar tras morir es la MISMA sesión de prueba; empezar o continuar abre una nueva. */
-  empezarPartida(reintento: boolean, ctx: ContextoJuego, punto: string, entorno: EntornoSesion): void {
+  empezarPartida(reintento: boolean, ctx: ContextoJuego, punto: string, entorno: Omit<EntornoSesion, 'compilacion'>): void {
     if (reintento && this.enCurso) {
       this.registrarReintento(punto);
       return;
     }
-    this.iniciarSesion(ctx, entorno, punto);
+    // La versión de la compilación la pongo yo: es la misma para toda la sesión.
+    this.iniciarSesion(ctx, { ...entorno, compilacion: COMPILACION }, punto);
   }
 
   iniciarSesion(ctx: ContextoJuego, entorno: EntornoSesion, punto: string): void {
@@ -132,7 +134,7 @@ export class Telemetria {
     this.reacciones = [];
     this.vigilancias = [];
     this.sesion = {
-      version: 1,
+      version: 2,
       id: `${this.inicioReal.toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
       inicio: new Date(this.inicioReal).toISOString(),
       duracion: 0,
@@ -316,6 +318,7 @@ export class Telemetria {
     });
     bus.on('documento', ({ id }) => this.registrar('documento', { id }));
     bus.on('pista', ({ id }) => this.registrar('pista', { id }));
+    bus.on('dificultad-cambiada', ({ de, a, motivo }) => this.registrar('dificultad', { de, a, motivo }));
     bus.on('grabadora', ({ accion }) => this.registrar('grabadora', { accion, bateria: r2(this.ctx?.linterna.bateria ?? 0) }));
   }
 

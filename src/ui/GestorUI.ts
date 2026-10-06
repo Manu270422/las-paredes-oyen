@@ -38,8 +38,6 @@ export interface AccionesUI {
   nuevaPartida(dificultad: IdDificultad): void;
   reanudar(): void;
   reiniciarPunto(): void;
-  /** Si reintentar es empezar de cero (Pesadilla: no hay punto de control). */
-  reinicioDesdeCero(): boolean;
   salirAlMenu(): void;
   objetivo(): string | null;
   documentosLeidos(): readonly string[];
@@ -93,7 +91,7 @@ export class GestorUI {
       documentos: () => this.abrir(this.documentos),
       ajustes: () => this.abrir(this.ajustesPantalla),
       reiniciarPunto: () => acciones.reiniciarPunto(),
-      reinicioDesdeCero: () => acciones.reinicioDesdeCero(),
+      reinicioDesdeCero: () => acciones.dificultad.enCursoSinGuardado(),
       salirAlMenu: () => void this.confirmarSalir(),
     });
     this.ajustesPantalla = new PantallaAjustes(ajustes, raiz, () => this.cerrarActual(), acciones.telemetria, acciones.dificultad);
@@ -110,7 +108,15 @@ export class GestorUI {
     this.muerte = new PantallaMuerte(
       () => acciones.reiniciarPunto(),
       () => acciones.salirAlMenu(),
-      () => acciones.reinicioDesdeCero(),
+      () => acciones.dificultad.enCursoSinGuardado(),
+      {
+        ofrecida: () => acciones.dificultad.ofertaTrasMorir(),
+        aceptar: (id) => {
+          acciones.dificultad.cambiarEnCurso(id, 'oferta');
+          this.ajustes.cambiar('dificultad', id);
+          acciones.reiniciarPunto();
+        },
+      },
     );
     this.fin = new PantallaFin(() => acciones.salirAlMenu(), () => this.abrir(this.eleccion), acciones.telemetria);
     this.eleccion = new PantallaDificultad({
@@ -235,7 +241,7 @@ export class GestorUI {
 
   private async confirmarSalir(): Promise<void> {
     // En Pesadilla no hay nada guardado: salir pierde la partida, y el aviso tiene que decirlo.
-    const ok = this.acciones.reinicioDesdeCero()
+    const ok = this.acciones.dificultad.enCursoSinGuardado()
       ? await confirmar(this.raiz, 'Si sales, pierdes esta partida: Pesadilla no guarda.', 'Salir y perderla', 'Seguir jugando')
       : await confirmar(this.raiz, 'Volverás al menú. Tu progreso queda guardado en el último punto de control.', 'Salir al menú');
     if (ok) this.acciones.salirAlMenu();

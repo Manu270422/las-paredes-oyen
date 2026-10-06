@@ -28,6 +28,8 @@ describe('Normal es el juego de gate1-congelado', () => {
       puntosControl: 'todos', // src/nucleo/Juego.ts:265  const punto = PUNTOS_CONTROL[nombre]: toda bandera de la lista guardaba
       pistas: true, // src/ui/hud/HUD.ts:84  bus.on('pista', (p) => this.pistas.agregar(p.texto)): siempre
       indicadorAire: true, // src/ui/hud/EstadoJugadorHUD.ts:38  this.aire.fijar(aire, aguantando || aire < 0.98, …): siempre
+      // NUEVO en la Tarea 4 (aprobado): a la 3.ª muerte seguida solo OFRECE bajar a Historia. Si no se acepta, el juego es el mismo.
+      ofrecerBajarA: 'historia',
     });
   });
 });
@@ -118,5 +120,20 @@ describe('Puntos de control por dificultad (Piso 4)', () => {
 
   it('una bandera que no es punto de control no crea ninguno en ninguna dificultad', () => {
     for (const id of DIFICULTADES) expect(puntoDeControlDe(PISO, TABLA_DIFICULTAD[id], 'leyo:diario_rosalba')).toBeUndefined();
+  });
+});
+
+describe('La oferta de bajar tras morir seguido', () => {
+  it('ofrece exactamente un escalón más fácil, y nunca la que no guarda', () => {
+    for (const id of DIFICULTADES) {
+      const destino = TABLA_DIFICULTAD[id].ofrecerBajarA;
+      if (destino === null) continue;
+      expect(DIFICULTADES.indexOf(destino), `${id} → ${destino}`).toBe(DIFICULTADES.indexOf(id) - 1);
+      expect(TABLA_DIFICULTAD[destino].puntosControl).not.toBe('ninguno');
+    }
+  });
+
+  it('se ofrece en Normal y en Difícil; no en Historia (ya es la más fácil) ni en Pesadilla (se eligió a conciencia)', () => {
+    expect(DIFICULTADES.filter((id) => TABLA_DIFICULTAD[id].ofrecerBajarA !== null)).toEqual(['normal', 'dificil']);
   });
 });

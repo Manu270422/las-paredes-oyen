@@ -140,7 +140,6 @@ export class Juego {
         reanudar: () => this.reanudar(),
         // En Pesadilla no hay punto de control: reintentar es una partida nueva (sin tocar la guardada).
         reiniciarPunto: () => (this.guardado.sinGuardado ? this.nuevaPartida(this.dificultadPartida.actual, 'reintento') : this.comenzar(this.guardado.cargar(), 'reintento')),
-        reinicioDesdeCero: () => this.guardado.sinGuardado,
         salirAlMenu: () => this.salirAlMenu(),
         objetivo: () => this.progreso.objetivoActual()?.texto ?? null,
         documentosLeidos: () => this.progreso.documentosLeidos,
@@ -148,12 +147,12 @@ export class Juego {
         pisoDelMenu: () => ({ nombre: this.piso.nombre, completado: this.perfilGuardado.completado(this.piso.id) }),
         pistas: () => this.ctx.dificultad.pistas,
         dificultad: {
-          // Ajustes solo se abre desde el menú o desde la pausa: en la pausa hay una partida en curso.
           enCurso: () => (this.estado === 'pausa' ? this.dificultadPartida.actual : null),
           enCursoSinGuardado: () => this.guardado.sinGuardado,
           guardada: () => this.guardado.cargar()?.dificultad ?? null,
           pesadillaDesbloqueada: () => this.perfilGuardado.algunoCompletado,
-          cambiarEnCurso: (id) => this.dificultadPartida.cambiar(id, this.ctx),
+          cambiarEnCurso: (id, motivo) => this.dificultadPartida.cambiar(id, this.ctx, motivo),
+          ofertaTrasMorir: () => (this.memoria.muertesSinProgreso === 3 ? this.ctx.dificultad.ofrecerBajarA : null),
         },
         telemetria: this.telemetria.puente,
       },
@@ -363,6 +362,7 @@ export class Juego {
       calidad: this.calidadElegida(),
       aspecto: Math.round((ancho / Math.max(1, alto)) * 100) / 100,
       hrtf: this.perfil.audioHRTF,
+      dificultad: this.dificultadPartida.actual,
     });
   }
 

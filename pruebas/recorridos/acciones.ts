@@ -8,8 +8,8 @@ export const PREFIJO = 'las-paredes-oyen:';
 export const partidaGuardada = (page: Page) => page.evaluate((p) => localStorage.getItem(p + 'partida'), PREFIJO);
 
 /** Desde la pantalla de inicio: "Nueva partida", elijo la dificultad por su nombre y "Empezar" (sin confirmar avisos). */
-export async function abrirEleccion(page: Page): Promise<void> {
-  await page.goto('/');
+export async function abrirEleccion(page: Page, direccion = '/'): Promise<void> {
+  await page.goto(direccion);
   await page.waitForFunction(() => window.__juego?.estado === 'inicio', null, { timeout: 120_000 });
   await page.keyboard.press('Space');
   await page.getByRole('button', { name: 'Nueva partida', exact: true }).click();

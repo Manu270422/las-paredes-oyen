@@ -39,8 +39,9 @@ export class DificultadPartida {
    * La cambio en plena partida (Ajustes). Se aplica al instante. Si la partida ya tiene guardado propio, lo
    * actualizo ahora: así morir o "Continuar" no me devuelven a la anterior.
    */
-  cambiar(id: IdDificultad, ctx: ContextoJuego): void {
+  cambiar(id: IdDificultad, ctx: ContextoJuego, motivo: 'ajustes' | 'oferta'): void {
     if (id === this.actual) return;
+    ctx.bus.emit('dificultad-cambiada', { de: this.actual, a: id, motivo });
     const sinGuardadoPropio = this.guardado.sinGuardado;
     this.actual = id;
     this.masBajaJugada = masFacil(this.masBajaJugada, id);

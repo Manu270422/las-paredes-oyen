@@ -2,6 +2,7 @@
 // Si un sistema publica algo que no está aquí, TypeScript me avisa.
 import type { AcabadoPiso } from '../mundo/datos/TiposMapa';
 import type { FaseDirector, RasgoJugador } from '../director/TiposDirector';
+import type { IdDificultad } from '../config/Dificultad';
 
 /** 'cine': grande y centrada (por defecto). 'discreta': pequeña, abajo y breve. */
 export type EstiloTarjeta = 'cine' | 'discreta';
@@ -68,6 +69,8 @@ export interface MapaEventos {
   'jugador-atrapado': { x: number; z: number; motivo: MotivoCaza; enPared: boolean };
   'fin-demo': { tiempo: number };
   documento: { id: string };
+  /** La dificultad cambió en plena partida: desde Ajustes, o aceptando la oferta de bajar tras morir seguido. */
+  'dificultad-cambiada': { de: IdDificultad; a: IdDificultad; motivo: 'ajustes' | 'oferta' };
   /** Tarjeta de lugar: grande y de cine (lugar y hora), o discreta (al entrar a un apartamento). */
   tarjeta: { titulo: string; subtitulo: string; estilo?: EstiloTarjeta };
   /** El director lanzó un evento de terror (x/z si ocurrió en un punto concreto). */
