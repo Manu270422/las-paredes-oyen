@@ -1,4 +1,4 @@
-// Aquí están los ajustes, en pestañas: Video, Audio, Controles, Accesibilidad
+// Aquí están los ajustes, en pestañas: Juego (la dificultad), Video, Audio, Controles, Accesibilidad
 // y Pruebas (la telemetría local para las sesiones de playtesting).
 // Todo se aplica en vivo (sin botón de "aplicar") y se guarda solo.
 import type { GestorAjustes } from '../../config/Ajustes';
@@ -9,11 +9,14 @@ import { crearSelector } from '../componentes/Selector';
 import { confirmar } from '../componentes/Dialogo';
 import { crearFila } from '../componentes/FilaAjuste';
 import type { PuenteTelemetria } from '../PuenteTelemetria';
+import type { PuenteDificultad } from '../PuenteDificultad';
+import { DIFICULTADES, NOMBRE_DIFICULTAD, TABLA_DIFICULTAD, type IdDificultad } from '../../config/Dificultad';
 import { Pantalla } from './Pantalla';
 
-type Pestana = 'video' | 'audio' | 'controles' | 'accesibilidad' | 'pruebas';
+type Pestana = 'juego' | 'video' | 'audio' | 'controles' | 'accesibilidad' | 'pruebas';
 
 const NOMBRES: Record<Pestana, string> = {
+  juego: 'Juego',
   video: 'Video',
   audio: 'Audio',
   controles: 'Controles',
@@ -24,7 +27,7 @@ const NOMBRES: Record<Pestana, string> = {
 const porcentaje = (v: number) => `${Math.round(v * 100)} %`;
 
 export class PantallaAjustes extends Pantalla {
-  private pestana: Pestana = 'video';
+  private pestana: Pestana = 'juego';
   private readonly pestanas: HTMLDivElement;
   private readonly cuerpo: HTMLDivElement;
 
@@ -33,6 +36,7 @@ export class PantallaAjustes extends Pantalla {
     private readonly raizUI: HTMLElement,
     alCerrar: () => void,
     private readonly telemetria: PuenteTelemetria,
+    private readonly dificultad: PuenteDificultad,
   ) {
     super('panel');
     const caja = document.createElement('div');
@@ -101,6 +105,8 @@ export class PantallaAjustes extends Pantalla {
     const a = this.ajustes;
     const v = a.valores;
     switch (this.pestana) {
+      case 'juego':
+        return [this.selectorDificultad()];
       case 'video':
         return [
           crearSelector({
@@ -175,10 +181,60 @@ export class PantallaAjustes extends Pantalla {
             valor: v.reducirDestellos,
             alCambiar: (b) => a.cambiar('reducirDestellos', b),
           }),
+          crearInterruptor({
+            etiqueta: 'Indicador del aire siempre visible',
+            ayuda: 'Difícil y Pesadilla lo ocultan; con esto se ve siempre. La accesibilidad no depende de la dificultad.',
+            valor: v.indicadorAireSiempre,
+            alCambiar: (b) => a.cambiar('indicadorAireSiempre', b),
+          }),
         ];
       case 'pruebas':
         return this.contenidoPruebas();
     }
+  }
+
+  /**
+   * La dificultad. Desde el menú: la de la próxima partida nueva. En plena partida: la de esta, que se cambia al
+   * instante (bajar nunca se bloquea ni se castiga). La que no guarda (Pesadilla) solo se elige al empezar.
+   */
+  private selectorDificultad(): HTMLElement {
+    const d = this.dificultad;
+    const enCurso = d.enCurso();
+    const noGuarda = (id: IdDificultad) => TABLA_DIFICULTAD[id].puntosControl === 'ninguno';
+    if (enCurso === null) {
+      return crearSelector({
+        etiqueta: 'Dificultad',
+        ayuda: 'La próxima partida nueva empieza en esta dificultad.',
+        opciones: DIFICULTADES.map((id) => ({ valor: id, texto: NOMBRE_DIFICULTAD[id], deshabilitada: noGuarda(id) && !d.pesadillaDesbloqueada() })),
+        valor: this.ajustes.valores.dificultad,
+        alCambiar: (id) => this.ajustes.cambiar('dificultad', id),
+      });
+    }
+    return crearSelector({
+      etiqueta: 'Dificultad de esta partida',
+      ayuda: 'Puedes bajarla cuando quieras: se aplica al instante y no pierdes nada de lo que llevas. Pesadilla solo se elige al empezar una partida nueva.',
+      opciones: DIFICULTADES.map((id) => ({ valor: id, texto: NOMBRE_DIFICULTAD[id], deshabilitada: noGuarda(id) && id !== enCurso })),
+      valor: enCurso,
+      alCambiar: (id) => void this.cambiarEnCurso(id),
+    });
+  }
+
+  private async cambiarEnCurso(id: IdDificultad): Promise<void> {
+    const d = this.dificultad;
+    const guardada = d.guardada();
+    // Si esta partida aún no tiene guardado propio (Pesadilla), al cambiar empezará a guardarse y reemplazará
+    // la que haya: lo digo exacto antes. Sin partida guardada, no hay nada que avisar.
+    if (d.enCursoSinGuardado() && TABLA_DIFICULTAD[id].puntosControl !== 'ninguno' && guardada) {
+      const texto = `Tu partida guardada (${NOMBRE_DIFICULTAD[guardada]}) se reemplazará en el próximo punto de control. Hasta ese primer guardado, si mueres, empiezas de cero.`;
+      const ok = await confirmar(this.raizUI, texto, `Cambiar a ${NOMBRE_DIFICULTAD[id]}`);
+      if (!ok) {
+        this.dibujar();
+        return;
+      }
+    }
+    d.cambiarEnCurso(id);
+    this.ajustes.cambiar('dificultad', id);
+    this.dibujar();
   }
 
   /** Pestaña de pruebas: encender la telemetría local, exportarla y borrarla. */

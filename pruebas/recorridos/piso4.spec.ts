@@ -24,6 +24,7 @@ test.describe.serial('Piso 4 caminando', () => {
     await page.waitForFunction(() => window.__juego?.estado === 'inicio', null, { timeout: 120_000 });
     await page.keyboard.press('Space');
     await page.getByRole('button', { name: 'Nueva partida', exact: true }).click();
+    await page.getByRole('button', { name: 'Empezar', exact: true }).click();
     await page.waitForFunction(() => window.__juego?.estado === 'jugando');
     await instalarPiloto(page);
   });

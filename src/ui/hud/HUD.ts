@@ -25,6 +25,8 @@ export interface EstadoHUD {
   escalaResolucion: number;
   /** En PC: el ratón no está capturado (hay que hacer clic para mirar). */
   ratonLibre: boolean;
+  /** Si se muestra el indicador del aire (la dificultad, o Ajustes → Accesibilidad). */
+  indicadorAire: boolean;
 }
 
 /** Función que traduce una posición del mundo a una flecha relativa a la mirada. */
@@ -48,6 +50,8 @@ export class HUD {
     private readonly ajustes: GestorAjustes,
     private readonly modo: () => ModoEntrada,
     direccion: DireccionRelativa,
+    /** ¿La dificultad en curso muestra las pistas de tutorial? */
+    private readonly pistasPermitidas: () => boolean,
   ) {
     this.pistas = new Pistas(modo);
     this.elemento = document.createElement('div');
@@ -81,7 +85,9 @@ export class HUD {
     });
     bus.on('objetivo', (o) => this.objetivo.mostrar(o.texto, o.nuevo));
     bus.on('tarjeta', (t) => this.tarjeta.mostrar(t.titulo, t.subtitulo, t.estilo));
-    bus.on('pista', (p) => this.pistas.agregar(p.texto));
+    bus.on('pista', (p) => {
+      if (this.pistasPermitidas()) this.pistas.agregar(p.texto);
+    });
   }
 
   fijarVisible(visible: boolean): void {
@@ -103,7 +109,7 @@ export class HUD {
 
   actualizar(e: EstadoHUD): void {
     this.interaccion.actualizar(e.interaccion, this.modo());
-    this.estado.actualizar(e.aire, e.aguantando, e.energia, e.bateria, e.linterna);
+    this.estado.actualizar(e.aire, e.aguantando, e.energia, e.bateria, e.linterna, e.indicadorAire);
     this.medidor.actualizar(e.medicion);
     this.fps.actualizar(e.dtReal, this.ajustes.valores.mostrarFps, e.escalaResolucion);
     this.avisoRaton.classList.toggle('aviso-raton--visible', e.ratonLibre);

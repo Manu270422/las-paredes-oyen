@@ -4,6 +4,9 @@
 > Paso 2 hecho: puntos de control por dificultad, Pesadilla sin guardar ni borrar y **partida v4** (adelantada del paso 3:
 > sin ella, "Continuar" no sabría si la partida es de Normal o de Difícil). Morir en Pesadilla = partida nueva en Pesadilla:
 > estadísticas en 0 y +1 partida iniciada en el perfil (confirmado por el dueño).
+> Paso 3 hecho: pantalla para elegir (Nueva partida y Jugar otra vez), Ajustes → Juego (cambiar en plena partida, al
+> instante y sin castigo), pistas e indicador del aire por dificultad (Accesibilidad lo devuelve) y **partida v5**
+> (dificultad inicial y más baja jugada). Los ajustes no cambian de versión: las claves nuevas toman su valor por defecto.
 
 > **Sin programar.** Todos los números son **provisionales hasta el Gate 1**: en el código llevarán el comentario
 > `// PROVISIONAL (Gate 1)`. Normal es **idéntico** al juego de hoy. Los probadores del Gate 1 juegan `main` (congelado,

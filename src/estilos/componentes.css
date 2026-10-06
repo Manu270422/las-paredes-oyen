@@ -237,6 +237,12 @@
   color: var(--color-fondo);
 }
 
+/* Una opción que no se puede elegir (Pesadilla bloqueada, o solo al empezar): que se note. */
+.selector__opcion:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* --- Diálogo de confirmación --- */
 .dialogo {
   position: absolute;

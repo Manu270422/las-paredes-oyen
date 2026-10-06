@@ -105,6 +105,11 @@ export class Perfil {
     return { mejorTiempo: this.datos.mejorTiempo ?? tiempo, nuevoMejorTiempo, finales: this.datos.finales };
   }
 
+  /** ¿Terminó algún piso, en cualquier dificultad? Eso desbloquea Pesadilla. */
+  get algunoCompletado(): boolean {
+    return Object.keys(this.datos.pisosCompletados).length > 0;
+  }
+
   /** La dificultad más alta en que se terminó ese piso, o null si nunca se terminó. */
   completado(piso: string): IdDificultad | null {
     return this.datos.pisosCompletados[piso] ?? null;

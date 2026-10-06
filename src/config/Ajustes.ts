@@ -2,6 +2,7 @@
 // Se guardan en el navegador y cualquier sistema puede suscribirse para
 // reaccionar en vivo cuando algo cambia en el menú.
 import type { NivelCalidad } from './PerfilesCalidad';
+import { DIFICULTAD_POR_DEFECTO, esDificultad, type IdDificultad } from './Dificultad';
 import { escribirJSON } from '../utilidades/Almacenamiento';
 import { leerVersionado } from '../guardado/AlmacenVersionado';
 import type { Migracion } from '../guardado/Versionado';
@@ -27,6 +28,8 @@ function sanear(valores: Record<string, unknown>): Partial<AjustesJugador> {
   for (const [clave, porDefecto] of Object.entries(AJUSTES_POR_DEFECTO)) {
     if (typeof valores[clave] === typeof porDefecto) limpio[clave] = valores[clave];
   }
+  // La dificultad es un texto, pero no cualquiera: una que no existe vuelve a la de por defecto.
+  if (!esDificultad(limpio.dificultad)) delete limpio.dificultad;
   return limpio as Partial<AjustesJugador>;
 }
 
@@ -48,6 +51,10 @@ export interface AjustesJugador {
   movimientoCabeza: boolean;
   /** Registrar sesiones de prueba en este dispositivo (playtesting). Apagado por defecto. */
   telemetria: boolean;
+  /** La dificultad que viene marcada al empezar una partida nueva: la última que eligió el jugador. */
+  dificultad: IdDificultad;
+  /** Mostrar el indicador del aire aunque la dificultad lo oculte (accesibilidad). */
+  indicadorAireSiempre: boolean;
 }
 
 export const AJUSTES_POR_DEFECTO: AjustesJugador = {
@@ -67,6 +74,8 @@ export const AJUSTES_POR_DEFECTO: AjustesJugador = {
   reducirDestellos: false,
   movimientoCabeza: true,
   telemetria: false,
+  dificultad: DIFICULTAD_POR_DEFECTO,
+  indicadorAireSiempre: false,
 };
 
 type Oyente = (ajustes: Readonly<AjustesJugador>, clave: keyof AjustesJugador | null) => void;

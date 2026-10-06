@@ -10,7 +10,7 @@ import { borrar, escribirJSON } from '../utilidades/Almacenamiento';
 import { leerVersionado } from './AlmacenVersionado';
 import type { Migracion } from './Versionado';
 
-export const VERSION_PARTIDA = 4;
+export const VERSION_PARTIDA = 5;
 
 export interface DatosPartida {
   version: typeof VERSION_PARTIDA;
@@ -18,6 +18,9 @@ export interface DatosPartida {
   piso: string;
   /** La dificultad de la partida: "Continuar" la retoma con sus mismos valores y puntos de control. */
   dificultad: IdDificultad;
+  /** Con qué dificultad empezó y la más baja que se jugó (el final y el perfil cuentan la más baja). */
+  dificultadInicial: IdDificultad;
+  dificultadMasBaja: IdDificultad;
   puntoControl: string;
   progreso: DatosProgreso;
   bateria: number;
@@ -36,6 +39,8 @@ const MIGRACIONES: readonly Migracion[] = [
   { desde: 2, migrar: (v2) => ({ ...v2, estadisticas: { ...(v2.estadisticas as Record<string, unknown>), cambiosMundo: 0 } }) },
   // v3 → v4: la partida dice su dificultad. Antes solo existía el juego de siempre: Normal.
   { desde: 3, migrar: (v3) => ({ ...v3, dificultad: 'normal' }) },
+  // v4 → v5: con qué dificultad empezó y la más baja jugada. Hasta aquí no se podía cambiar en plena partida.
+  { desde: 4, migrar: (v4) => ({ ...v4, dificultadInicial: v4.dificultad, dificultadMasBaja: v4.dificultad }) },
 ];
 
 const CLAVE = 'partida';
@@ -46,6 +51,8 @@ function esPartida(d: Record<string, unknown>): d is Record<string, unknown> & D
     d.version === VERSION_PARTIDA &&
     typeof d.piso === 'string' &&
     esDificultad(d.dificultad) &&
+    esDificultad(d.dificultadInicial) &&
+    esDificultad(d.dificultadMasBaja) &&
     typeof d.puntoControl === 'string' &&
     typeof d.progreso === 'object' &&
     d.progreso !== null &&

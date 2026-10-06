@@ -26,6 +26,8 @@ describe('Normal es el juego de gate1-congelado', () => {
       presupuesto: 1, // src/director/PresupuestoTension.ts:29  LIMITE_FASE sin multiplicar
       alivio: { porMuerte: 0.15, tope: 0.45, modo: 'techo' }, // src/director/DirectorTerror.ts:81  Math.min(0.45, … * 0.15), limite × (1 − alivio)
       puntosControl: 'todos', // src/nucleo/Juego.ts:265  const punto = PUNTOS_CONTROL[nombre]: toda bandera de la lista guardaba
+      pistas: true, // src/ui/hud/HUD.ts:84  bus.on('pista', (p) => this.pistas.agregar(p.texto)): siempre
+      indicadorAire: true, // src/ui/hud/EstadoJugadorHUD.ts:38  this.aire.fijar(aire, aguantando || aire < 0.98, …): siempre
     });
   });
 });

@@ -6,7 +6,7 @@ import { Color, FogExp2, HemisphereLight, Scene } from 'three';
 import { CONFIG } from '../config/ConfiguracionJuego';
 import { GestorAjustes } from '../config/Ajustes';
 import { PERFILES, type NivelCalidad, type PerfilCalidad } from '../config/PerfilesCalidad';
-import { DIFICULTAD_POR_DEFECTO, NOMBRE_DIFICULTAD, puntoDeControlDe, TABLA_DIFICULTAD, type IdDificultad } from '../config/Dificultad';
+import { DIFICULTAD_POR_DEFECTO, puntoDeControlDe, TABLA_DIFICULTAD, type IdDificultad } from '../config/Dificultad';
 import { detectarDispositivo, sugerirCalidad } from '../plataforma/DetectorDispositivo';
 import { GestorPantalla } from '../plataforma/GestorPantalla';
 import { GestorEntrada } from '../entrada/GestorEntrada';
@@ -38,6 +38,7 @@ import { Programador } from './Programador';
 import { BucleJuego } from './BucleJuego';
 import { SecuenciaMuerte, type SalidaMuerte } from './SecuenciaMuerte';
 import { FondoMenu } from './FondoMenu';
+import { DificultadPartida } from './DificultadPartida';
 import { mostrarSusto } from './Susto';
 import type { ContextoJuego } from './ContextoJuego';
 import { amortiguar, normalizarAngulo } from '../utilidades/Matematicas';
@@ -56,6 +57,8 @@ export class Juego {
   /** El piso que se está jugando, como paquete de datos (mapa, objetivos, documentos, cintas). */
   private readonly piso: PaquetePiso = PISO_INICIAL;
   private readonly guardado = new SistemaGuardado();
+  /** La dificultad de la partida en curso: la actual, con la que empezó y la más baja jugada. */
+  private readonly dificultadPartida = new DificultadPartida(this.guardado);
   /** Mejores marcas y totales del jugador: sobrevive a todas las partidas. */
   private readonly perfilGuardado = new Perfil();
   private readonly escena = new Scene();
@@ -100,8 +103,6 @@ export class Juego {
   private bucle!: BucleJuego;
 
   private estado: EstadoApp = 'cargando';
-  /** La dificultad de la partida en curso (o la de la próxima partida nueva). */
-  private dificultad: IdDificultad = DIFICULTAD_POR_DEFECTO;
   private estadoAntesDePausa: EstadoApp = 'jugando';
   private soloMirar = false;
   private puntoControl = this.piso.puntoInicial;
@@ -135,16 +136,25 @@ export class Juego {
         documento: (id) => this.piso.documentos[id],
         hayPartida: () => this.guardado.hayPartida(),
         continuar: () => this.comenzar(this.guardado.cargar(), 'continuar'),
-        nuevaPartida: () => this.nuevaPartida(),
+        nuevaPartida: (dificultad) => this.nuevaPartida(dificultad),
         reanudar: () => this.reanudar(),
         // En Pesadilla no hay punto de control: reintentar es una partida nueva (sin tocar la guardada).
-        reiniciarPunto: () => (this.guardado.sinGuardado ? this.nuevaPartida(this.dificultad, 'reintento') : this.comenzar(this.guardado.cargar(), 'reintento')),
+        reiniciarPunto: () => (this.guardado.sinGuardado ? this.nuevaPartida(this.dificultadPartida.actual, 'reintento') : this.comenzar(this.guardado.cargar(), 'reintento')),
         reinicioDesdeCero: () => this.guardado.sinGuardado,
         salirAlMenu: () => this.salirAlMenu(),
         objetivo: () => this.progreso.objetivoActual()?.texto ?? null,
         documentosLeidos: () => this.progreso.documentosLeidos,
         sonar: (tipo) => this.audio?.reproducir('ui', { bus: 'interfaz', volumen: tipo === 'pasar' ? 0.25 : 0.5, tono: tipo === 'volver' ? 0.8 : 1 }),
         pisoDelMenu: () => ({ nombre: this.piso.nombre, completado: this.perfilGuardado.completado(this.piso.id) }),
+        pistas: () => this.ctx.dificultad.pistas,
+        dificultad: {
+          // Ajustes solo se abre desde el menú o desde la pausa: en la pausa hay una partida en curso.
+          enCurso: () => (this.estado === 'pausa' ? this.dificultadPartida.actual : null),
+          enCursoSinGuardado: () => this.guardado.sinGuardado,
+          guardada: () => this.guardado.cargar()?.dificultad ?? null,
+          pesadillaDesbloqueada: () => this.perfilGuardado.algunoCompletado,
+          cambiarEnCurso: (id) => this.dificultadPartida.cambiar(id, this.ctx),
+        },
         telemetria: this.telemetria.puente,
       },
       (x, z) => this.direccionRelativa(x, z),
@@ -324,8 +334,8 @@ export class Juego {
     this.ui.mostrarMenu();
   }
 
-  private nuevaPartida(dificultad = this.dificultad, origen: OrigenPartida = 'nueva'): void {
-    this.fijarDificultad(dificultad);
+  private nuevaPartida(dificultad: IdDificultad, origen: OrigenPartida = 'nueva'): void {
+    this.dificultadPartida.empezar(dificultad, this.ctx, origen === 'reintento');
     this.guardado.borrar();
     this.memoria.reiniciarEstadisticas();
     this.perfilGuardado.registrarInicio();
@@ -334,12 +344,6 @@ export class Juego {
     this.comenzar(null, origen);
   }
 
-  /** La dificultad de esta partida: sus valores van al contexto, y si no guarda (Pesadilla) no se guarda ni se borra nada. */
-  private fijarDificultad(id: IdDificultad): void {
-    this.dificultad = id;
-    this.ctx.dificultad = TABLA_DIFICULTAD[id];
-    this.guardado.fijarSinGuardado(this.ctx.dificultad.puntosControl === 'ninguno');
-  }
 
   /** Empiezo (o retomo) una partida desde un punto de control. */
   private comenzar(datos: DatosPartida | null, origen: OrigenPartida): void {
@@ -352,27 +356,14 @@ export class Juego {
     this.entrada.volverAlJuego();
     window.setTimeout(() => this.ui.hud.fundir(false, 1.6), 60);
     if (this.dispositivo.esTactil && !this.pantalla.esPantallaCompleta) void this.pantalla.entrarPantallaCompleta();
-    this.registrarInicioTelemetria(origen);
-  }
-
-  /** Reintentar tras morir es la MISMA sesión de prueba; empezar o continuar abre una nueva. */
-  private registrarInicioTelemetria(origen: OrigenPartida): void {
-    if (origen === 'reintento' && this.telemetria.enCurso) {
-      this.telemetria.registrarReintento(this.puntoControl);
-      return;
-    }
     const { ancho, alto } = this.pantalla;
-    this.telemetria.iniciarSesion(
-      this.ctx,
-      {
-        entrada: this.entrada.modo,
-        tactil: this.dispositivo.esTactil,
-        calidad: this.calidadElegida(),
-        aspecto: Math.round((ancho / Math.max(1, alto)) * 100) / 100,
-        hrtf: this.perfil.audioHRTF,
-      },
-      this.puntoControl,
-    );
+    this.telemetria.empezarPartida(origen === 'reintento', this.ctx, this.puntoControl, {
+      entrada: this.entrada.modo,
+      tactil: this.dispositivo.esTactil,
+      calidad: this.calidadElegida(),
+      aspecto: Math.round((ancho / Math.max(1, alto)) * 100) / 100,
+      hrtf: this.perfil.audioHRTF,
+    });
   }
 
   private cargarDesdePunto(datos: DatosPartida | null): void {
@@ -385,7 +376,7 @@ export class Juego {
     this.interferencia = 0;
 
     // "Continuar" y reintentar retoman la dificultad de la partida guardada; una partida nueva ya fijó la suya.
-    this.fijarDificultad(datos?.dificultad ?? this.dificultad);
+    if (datos) this.dificultadPartida.retomar(datos, ctx);
     this.progreso.importar(datos?.progreso ?? null);
     this.puntoControl = datos?.puntoControl ?? this.piso.puntoInicial;
     this.tiempoJugado = datos?.tiempoJugado ?? this.tiempoJugado;
@@ -410,9 +401,11 @@ export class Juego {
   }
 
   private guardarPartida(): void {
+    // Un punto de control: desde aquí la partida tiene guardado propio (también si venía bajada de Pesadilla).
+    this.guardado.fijarSinGuardado(false);
     this.guardado.guardar({
       piso: this.piso.id,
-      dificultad: this.dificultad,
+      ...this.dificultadPartida.campos,
       puntoControl: this.puntoControl,
       progreso: this.progreso.exportar(),
       bateria: Math.max(0.35, this.linterna.bateria),
@@ -489,13 +482,13 @@ export class Juego {
     this.guardado.borrar();
     this.ui.mostrarFin({
       piso: this.piso.nombre,
-      dificultad: NOMBRE_DIFICULTAD[this.dificultad],
+      dificultad: this.dificultadPartida.texto,
       siguiente: siguienteDe(this.piso),
       tiempo: this.tiempoJugado,
       cambiosMundo: this.memoria.cambiosMundo,
       persecuciones: this.memoria.persecuciones,
       muertes: this.memoria.muertes,
-      marcas: this.perfilGuardado.registrarFinal(this.piso.id, this.dificultad, this.tiempoJugado, this.memoria.muertes),
+      marcas: this.perfilGuardado.registrarFinal(this.piso.id, this.dificultadPartida.masBaja, this.tiempoJugado, this.memoria.muertes),
     });
     this.ui.hud.fundir(false, 0.5);
   }
@@ -616,6 +609,7 @@ export class Juego {
       medicion: this.grabadora.midiendo ? this.grabadora.progresoMedicion : null,
       dtReal: this.bucle.dtReal,
       escalaResolucion: this.renderizador.resolucionDinamica,
+      indicadorAire: ctx.dificultad.indicadorAire || this.ajustes.valores.indicadorAireSiempre,
       ratonLibre: this.entrada.modo === 'teclado' && !this.entrada.teclado.bloqueado,
     });
   }

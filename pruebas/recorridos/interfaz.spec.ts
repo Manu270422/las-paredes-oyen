@@ -10,6 +10,7 @@ test('sin telemetría, la pantalla final no muestra "Exportar registro de la pru
   await iniciar(page);
   await page.keyboard.press('Space');
   await page.getByRole('button', { name: 'Nueva partida', exact: true }).click();
+  await page.getByRole('button', { name: 'Empezar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');
   await page.waitForTimeout(1000);
   // Es la pantalla final, abierta por código: aquí solo se prueba cómo se dibuja.
@@ -21,8 +22,9 @@ test('sin telemetría, la pantalla final no muestra "Exportar registro de la pru
   const datos = await page.locator('.fin__estadisticas li').allTextContents();
   expect(datos.some((d) => d.includes('Tiempo · tu primera vez hasta el final'))).toBe(true);
   expect(datos.filter((d) => d.startsWith(datos[0].match(/^\d+:\d\d/)![0])), 'el tiempo aparece una sola vez').toHaveLength(1);
-  // "Jugar otra vez" empieza una partida nueva desde el final, sin pasar por el menú.
+  // "Jugar otra vez" lleva a elegir la dificultad y empieza una partida nueva, sin pasar por el menú.
   await page.getByRole('button', { name: 'Jugar otra vez' }).click();
+  await page.getByRole('button', { name: 'Empezar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando', null, { timeout: 10_000 });
   const nueva = await page.evaluate(() => {
     const { ctx } = window.__juego!;
@@ -36,6 +38,7 @@ test('con ?telemetria=1, el botón de exportar sí aparece', async ({ page }) =>
   await page.waitForFunction(() => window.__juego?.estado === 'inicio', null, { timeout: 120_000 });
   await page.keyboard.press('Space');
   await page.getByRole('button', { name: 'Nueva partida', exact: true }).click();
+  await page.getByRole('button', { name: 'Empezar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');
   await page.waitForTimeout(1000);
   await page.evaluate(() => (window.__juego as unknown as { terminarDemo(): void }).terminarDemo());

@@ -108,6 +108,15 @@ export class Telemetria {
   // ---------------------------------------------------------------------------
   // CICLO DE LA SESIÓN
   // ---------------------------------------------------------------------------
+  /** Empieza (o retoma) una partida: reintentar tras morir es la MISMA sesión de prueba; empezar o continuar abre una nueva. */
+  empezarPartida(reintento: boolean, ctx: ContextoJuego, punto: string, entorno: EntornoSesion): void {
+    if (reintento && this.enCurso) {
+      this.registrarReintento(punto);
+      return;
+    }
+    this.iniciarSesion(ctx, entorno, punto);
+  }
+
   iniciarSesion(ctx: ContextoJuego, entorno: EntornoSesion, punto: string): void {
     if (!this.activa) return;
     if (this.sesion) this.cerrarSesion('menu');

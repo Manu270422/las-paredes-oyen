@@ -34,8 +34,8 @@ export class EstadoJugadorHUD {
     this.elemento.append(this.aire.elemento, this.energia.elemento, this.bateria.elemento);
   }
 
-  actualizar(aire: number, aguantando: boolean, energia: number, bateria: number, linterna: boolean): void {
-    this.aire.fijar(aire, aguantando || aire < 0.98, aire < 0.3);
+  actualizar(aire: number, aguantando: boolean, energia: number, bateria: number, linterna: boolean, mostrarAire: boolean): void {
+    this.aire.fijar(aire, mostrarAire && (aguantando || aire < 0.98), aire < 0.3);
     this.energia.fijar(energia, energia < 0.98, energia < 0.25);
     this.bateria.fijar(bateria, linterna && bateria < 0.3, bateria < 0.15);
   }

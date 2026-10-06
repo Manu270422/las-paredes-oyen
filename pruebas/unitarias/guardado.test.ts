@@ -57,6 +57,8 @@ describe('SistemaGuardado', () => {
   const partida: Omit<DatosPartida, 'version' | 'fecha'> = {
     piso: 'piso4',
     dificultad: 'normal',
+    dificultadInicial: 'normal',
+    dificultadMasBaja: 'normal',
     puntoControl: 'sala401',
     progreso: { banderas: ['medido:401'], inventario: [], documentos: [] },
     bateria: 0.8,
@@ -71,26 +73,32 @@ describe('SistemaGuardado', () => {
   });
 
   it('una partida v1 (la de los probadores del Gate 1, sin piso) sube hasta la actual como Piso 4 y se guarda migrada', () => {
-    const { piso: _sinPiso, dificultad: _sinDificultad, ...v1 } = partida;
+    const { piso: _sinPiso, dificultad: _sinDificultad, dificultadInicial: _sinInicial, dificultadMasBaja: _sinMasBaja, ...v1 } = partida;
     const { cambiosMundo: _sinCambios, ...estadisticasV1 } = partida.estadisticas;
     sembrar('partida', { ...v1, estadisticas: estadisticasV1, version: 1, fecha: 1 });
     const cargada = new SistemaGuardado().cargar();
-    expect(cargada).toMatchObject({ version: 4, piso: 'piso4', dificultad: 'normal', puntoControl: 'sala401', estadisticas: { ...estadisticasV1, cambiosMundo: 0 } });
-    expect(guardado('partida'), 'queda guardada ya en el formato nuevo').toMatchObject({ version: 4, piso: 'piso4', dificultad: 'normal' });
+    expect(cargada).toMatchObject({ version: 5, piso: 'piso4', dificultad: 'normal', dificultadInicial: 'normal', dificultadMasBaja: 'normal', puntoControl: 'sala401', estadisticas: { ...estadisticasV1, cambiosMundo: 0 } });
+    expect(guardado('partida'), 'queda guardada ya en el formato nuevo').toMatchObject({ version: 5, piso: 'piso4', dificultad: 'normal' });
   });
 
   it('una partida v2 sube a v3: "Cosas que cambiaron" empieza en 0 (no se sabe cuántas hubo) y sustos no se toca', () => {
-    const { dificultad: _sinDificultad, ...v2 } = partida;
+    const { dificultad: _sinDificultad, dificultadInicial: _sinInicial, dificultadMasBaja: _sinMasBaja, ...v2 } = partida;
     const { cambiosMundo: _sinCambios, ...estadisticasV2 } = partida.estadisticas;
     sembrar('partida', { ...v2, estadisticas: estadisticasV2, version: 2, fecha: 1 });
     expect(new SistemaGuardado().cargar()?.estadisticas).toEqual({ persecuciones: 1, muertes: 2, sustos: 3, cambiosMundo: 0 });
-    expect(guardado('partida')).toMatchObject({ version: 4 });
+    expect(guardado('partida')).toMatchObject({ version: 5 });
   });
 
   it('una partida v3 sube a v4 como Normal (la única dificultad que existía)', () => {
-    const { dificultad: _sinDificultad, ...v3 } = partida;
+    const { dificultad: _sinDificultad, dificultadInicial: _sinInicial, dificultadMasBaja: _sinMasBaja, ...v3 } = partida;
     sembrar('partida', { ...v3, version: 3, fecha: 1 });
-    expect(new SistemaGuardado().cargar()).toMatchObject({ version: 4, dificultad: 'normal', puntoControl: 'sala401' });
+    expect(new SistemaGuardado().cargar()).toMatchObject({ version: 5, dificultad: 'normal', puntoControl: 'sala401' });
+  });
+
+  it('una partida v4 sube a v5: empezó y se jugó en su dificultad (no se podía cambiar en plena partida)', () => {
+    const { dificultadInicial: _sinInicial, dificultadMasBaja: _sinMasBaja, ...v4 } = partida;
+    sembrar('partida', { ...v4, dificultad: 'dificil', version: 4, fecha: 1 });
+    expect(new SistemaGuardado().cargar()).toMatchObject({ version: 5, dificultad: 'dificil', dificultadInicial: 'dificil', dificultadMasBaja: 'dificil' });
   });
 
   it('una partida v4 con una dificultad desconocida es dañada (no se inventa)', () => {
@@ -142,6 +150,15 @@ describe('GestorAjustes', () => {
     expect(a.valores.subtitulosEfectos).toBe(false);
     expect(a.valores.telemetria).toBe(true);
     expect(guardado('ajustes')).toMatchObject({ version: 1, valores: { volumenMaestro: 0.37 } });
+  });
+
+  it('la dificultad preferida (por defecto Normal) solo acepta dificultades que existen', () => {
+    expect(new GestorAjustes().valores.dificultad).toBe('normal');
+    expect(new GestorAjustes().valores.indicadorAireSiempre).toBe(false);
+    sembrar('ajustes', { version: 1, valores: { dificultad: 'dificil' } });
+    expect(new GestorAjustes().valores.dificultad).toBe('dificil');
+    sembrar('ajustes', { version: 1, valores: { dificultad: 'imposible' } });
+    expect(new GestorAjustes().valores.dificultad, 'una que no existe vuelve a Normal').toBe('normal');
   });
 
   it('ignora claves desconocidas y valores con el tipo equivocado', () => {

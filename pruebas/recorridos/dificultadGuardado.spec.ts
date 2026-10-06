@@ -3,20 +3,18 @@
 //    de nuevo (de cero de verdad) y "Continuar" sigue cargando la partida de Normal, intacta byte por byte.
 // 2) Difícil solo guarda al medir un apartamento: leer la orden no guarda; medir el 401 sí (y la partida dice
 //    que es Difícil); al morir vuelvo al 401 y "Continuar" la retoma en Difícil.
-// Mientras no existe la pantalla para elegir (paso 3 de la Tarea 4), la dificultad se elige llamando a la
-// partida nueva por dentro: es un interno y se cambia por la pantalla cuando exista.
+// Aquí la dificultad se elige llamando a la partida nueva por dentro (para ir directo al guardado): la pantalla
+// para elegirla se prueba en pantallaDificultad.spec.ts.
 import { expect, test, type Page } from '@playwright/test';
+import { leerLaOrden, morir, partidaGuardada, PREFIJO } from './acciones';
 import { instalarPiloto } from './piloto';
-
-const PREFIJO = 'las-paredes-oyen:';
 
 interface JuegoInterno {
   nuevaPartida(dificultad: string): void;
-  dificultad: string;
+  dificultadPartida: { actual: string };
   puntoControl: string;
 }
 
-const partidaGuardada = (page: Page) => page.evaluate((p) => localStorage.getItem(p + 'partida'), PREFIJO);
 const perfil = (page: Page) => page.evaluate((p) => JSON.parse(localStorage.getItem(p + 'perfil') ?? 'null') as { partidasIniciadas: number; muertesTotales: number }, PREFIJO);
 
 async function empezar(page: Page): Promise<void> {
@@ -24,39 +22,9 @@ async function empezar(page: Page): Promise<void> {
   await page.waitForFunction(() => window.__juego?.estado === 'inicio', null, { timeout: 120_000 });
   await page.keyboard.press('Space');
   await page.getByRole('button', { name: 'Nueva partida', exact: true }).click();
+  await page.getByRole('button', { name: 'Empezar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');
   await instalarPiloto(page);
-}
-
-/** Camino hasta la caja de la escalera y leo la orden de trabajo con E (y la cierro). */
-async function leerLaOrden(page: Page): Promise<void> {
-  await page.evaluate(async () => {
-    const P = window.__piloto!;
-    await P.caminar([[2.2, 9.5]]);
-    P.mirarA(1.5 * 1.3, 0.56, 8.6 * 1.3);
-    await P.esperarJuego(0.3);
-    await P.pulsar('KeyE');
-    await P.esperarEstado('documento');
-    await P.esperarReal(400);
-    await P.pulsar('KeyE');
-    await P.esperarEstado('jugando');
-  });
-}
-
-/** Camino por la ruta y la criatura me caza de verdad (aviso incluido) hasta atraparme. */
-async function morir(page: Page, ruta: ReadonlyArray<readonly [number, number]> = [[3.6, 10.5], [10, 10.5]]): Promise<void> {
-  await page.evaluate(async (ruta) => {
-    const J = window.__juego!;
-    const P = window.__piloto!;
-    const { ctx } = J;
-    await P.caminar(ruta);
-    const p = ctx.jugador.posicion;
-    ctx.entidad.manifestar(p.x + 3, p.z, ctx);
-    ctx.entidad.cazar('paso', ctx);
-    const limite = performance.now() + 10_000;
-    while (J.estado === 'jugando' && performance.now() < limite) await P.esperarReal(20);
-  }, ruta);
-  await page.waitForFunction(() => window.__juego?.estado === 'muerte', null, { timeout: 15_000 });
 }
 
 /** Salgo al menú desde la pausa en una dificultad que guarda: el aviso dice que el progreso queda guardado. */
@@ -74,7 +42,7 @@ const estado = (page: Page) =>
     const J = window.__juego!;
     const interno = J as unknown as JuegoInterno;
     return {
-      dificultad: interno.dificultad,
+      dificultad: interno.dificultadPartida.actual,
       puntosControl: J.ctx.dificultad.puntosControl,
       puntoControl: interno.puntoControl,
       banderas: J.ctx.progreso.exportar().banderas,
@@ -195,7 +163,7 @@ test('Difícil solo guarda al medir un apartamento, y "Continuar" la retoma en D
   await salirAlMenu(page);
   await page.evaluate(() => {
     // Desde el menú, la próxima partida "por defecto" no debe colarse: Continuar manda la guardada.
-    (window.__juego as unknown as JuegoInterno).dificultad = 'normal';
+    (window.__juego as unknown as JuegoInterno).dificultadPartida.actual = 'normal';
   });
   await page.locator('.menu').getByRole('button', { name: 'Continuar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');

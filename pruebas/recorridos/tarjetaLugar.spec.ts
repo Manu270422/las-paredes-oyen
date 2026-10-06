@@ -41,6 +41,7 @@ test('al cruzar al 401 sale una tarjeta discreta una sola vez, y una partida nue
   await page.waitForFunction(() => window.__juego?.estado === 'inicio', null, { timeout: 120_000 });
   await page.keyboard.press('Space');
   await page.getByRole('button', { name: 'Nueva partida', exact: true }).click();
+  await page.getByRole('button', { name: 'Empezar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');
   await instalarPiloto(page);
   await page.evaluate(() => {
@@ -72,6 +73,7 @@ test('al cruzar al 401 sale una tarjeta discreta una sola vez, y una partida nue
   await page.getByRole('alertdialog').getByRole('button', { name: 'Salir al menú', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'menu', null, { timeout: 10_000 });
   await page.getByRole('button', { name: 'Nueva partida', exact: true }).click();
+  await page.getByRole('button', { name: 'Empezar', exact: true }).click();
   // Si quedó una partida guardada, el menú pide confirmar que se borra.
   const confirmar = page.getByRole('alertdialog').getByRole('button', { name: 'Empezar de nuevo' });
   if (await confirmar.isVisible()) await confirmar.click();

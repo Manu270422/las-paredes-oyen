@@ -18,6 +18,7 @@ test('la silueta y la respiración detrás solo salen cuando la criatura ya desp
   await page.waitForFunction(() => window.__juego?.estado === 'inicio', null, { timeout: 120_000 });
   await page.keyboard.press('Space');
   await page.getByRole('button', { name: 'Nueva partida', exact: true }).click();
+  await page.getByRole('button', { name: 'Empezar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');
 
   const r = await page.evaluate(() => {
@@ -85,6 +86,7 @@ test('cada cosa del mundo que cambia el director suma en "Cosas que cambiaron"; 
   await page.waitForFunction(() => window.__juego?.estado === 'inicio', null, { timeout: 120_000 });
   await page.keyboard.press('Space');
   await page.getByRole('button', { name: 'Nueva partida', exact: true }).click();
+  await page.getByRole('button', { name: 'Empezar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');
 
   const r = await page.evaluate(async () => {

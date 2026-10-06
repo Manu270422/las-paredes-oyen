@@ -19,7 +19,9 @@ import { LectorDocumento } from './pantallas/LectorDocumento';
 import type { Documento } from '../narrativa/TiposNarrativa';
 import { PantallaMuerte, type DatosMuerte } from './pantallas/PantallaMuerte';
 import type { PuenteTelemetria } from './PuenteTelemetria';
-import type { IdDificultad } from '../config/Dificultad';
+import { NOMBRE_DIFICULTAD, TABLA_DIFICULTAD, type IdDificultad } from '../config/Dificultad';
+import type { PuenteDificultad } from './PuenteDificultad';
+import { PantallaDificultad } from './pantallas/PantallaDificultad';
 import { PantallaFin, type EstadisticasFin } from './pantallas/PantallaFin';
 import { PantallaCreditos } from './pantallas/PantallaCreditos';
 import { AvisoOrientacion } from './pantallas/AvisoOrientacion';
@@ -32,7 +34,8 @@ export interface AccionesUI {
   documento(id: string): Documento | undefined;
   hayPartida(): boolean;
   continuar(): void;
-  nuevaPartida(): void;
+  /** Empiezo una partida nueva en esa dificultad (los avisos ya se dieron). */
+  nuevaPartida(dificultad: IdDificultad): void;
   reanudar(): void;
   reiniciarPunto(): void;
   /** Si reintentar es empezar de cero (Pesadilla: no hay punto de control). */
@@ -43,6 +46,9 @@ export interface AccionesUI {
   sonar(tipo: TipoSonidoUI): void;
   /** El piso del menú: su nombre y la dificultad más alta en que se terminó (null si nunca). */
   pisoDelMenu(): { nombre: string; completado: IdDificultad | null };
+  /** ¿La dificultad en curso muestra las pistas de tutorial? */
+  pistas(): boolean;
+  dificultad: PuenteDificultad;
   telemetria: PuenteTelemetria;
 }
 
@@ -58,24 +64,25 @@ export class GestorUI {
   private readonly lector: LectorDocumento;
   private readonly muerte: PantallaMuerte;
   private readonly fin: PantallaFin;
+  private readonly eleccion: PantallaDificultad;
   private readonly creditos: PantallaCreditos;
   private pila: Pantalla[] = [];
 
   constructor(
     private readonly raiz: HTMLElement,
     bus: BusEventos<MapaEventos>,
-    ajustes: GestorAjustes,
+    private readonly ajustes: GestorAjustes,
     entrada: GestorEntrada,
     private readonly acciones: AccionesUI,
     direccion: DireccionRelativa,
   ) {
     conectarSonidoUI((tipo) => acciones.sonar(tipo));
-    this.hud = new HUD(bus, ajustes, () => entrada.modo, direccion);
+    this.hud = new HUD(bus, ajustes, () => entrada.modo, direccion, () => acciones.pistas());
 
     this.menu = new MenuPrincipal({
       hayPartida: () => acciones.hayPartida(),
       continuar: () => acciones.continuar(),
-      nuevaPartida: () => void this.confirmarNuevaPartida(),
+      nuevaPartida: () => this.abrir(this.eleccion),
       ajustes: () => this.abrir(this.ajustesPantalla),
       creditos: () => this.abrir(this.creditos),
       piso: () => acciones.pisoDelMenu(),
@@ -89,7 +96,7 @@ export class GestorUI {
       reinicioDesdeCero: () => acciones.reinicioDesdeCero(),
       salirAlMenu: () => void this.confirmarSalir(),
     });
-    this.ajustesPantalla = new PantallaAjustes(ajustes, raiz, () => this.cerrarActual(), acciones.telemetria);
+    this.ajustesPantalla = new PantallaAjustes(ajustes, raiz, () => this.cerrarActual(), acciones.telemetria, acciones.dificultad);
     this.lector = new LectorDocumento((id) => acciones.documento(id));
     this.documentos = new PantallaDocumentos(
       () => acciones.documentosLeidos(),
@@ -105,10 +112,17 @@ export class GestorUI {
       () => acciones.salirAlMenu(),
       () => acciones.reinicioDesdeCero(),
     );
-    this.fin = new PantallaFin(() => acciones.salirAlMenu(), () => void this.confirmarNuevaPartida(), acciones.telemetria);
+    this.fin = new PantallaFin(() => acciones.salirAlMenu(), () => this.abrir(this.eleccion), acciones.telemetria);
+    this.eleccion = new PantallaDificultad({
+      preferida: () => ajustes.valores.dificultad,
+      pesadillaDesbloqueada: () => acciones.dificultad.pesadillaDesbloqueada(),
+      nombrePiso: () => acciones.pisoDelMenu().nombre,
+      empezar: (id) => void this.confirmarEmpezar(id),
+      volver: () => this.cerrarActual(),
+    });
     this.creditos = new PantallaCreditos(() => this.cerrarActual());
 
-    for (const p of [this.carga, this.inicio, this.menu, this.pausa, this.ajustesPantalla, this.documentos, this.lector, this.muerte, this.fin, this.creditos]) {
+    for (const p of [this.carga, this.inicio, this.menu, this.pausa, this.ajustesPantalla, this.documentos, this.lector, this.muerte, this.fin, this.eleccion, this.creditos]) {
       raiz.appendChild(p.elemento);
     }
     raiz.append(this.hud.elemento, this.hud.fundido, this.aviso.elemento);
@@ -203,12 +217,20 @@ export class GestorUI {
     navegar(this.raiz, boton, () => arriba.alVolver?.());
   }
 
-  private async confirmarNuevaPartida(): Promise<void> {
-    if (this.acciones.hayPartida()) {
-      const ok = await confirmar(this.raiz, 'Empezar de nuevo borrará tu partida guardada.', 'Empezar de nuevo');
-      if (!ok) return;
+  /** Empiezo una partida nueva en esa dificultad, avisando antes lo que pasa con la partida guardada. */
+  private async confirmarEmpezar(id: IdDificultad): Promise<void> {
+    const hayPartida = this.acciones.hayPartida();
+    let ok = true;
+    if (TABLA_DIFICULTAD[id].puntosControl === 'ninguno') {
+      // La que no guarda tampoco borra: la partida guardada se queda como está.
+      const texto = `${NOMBRE_DIFICULTAD[id]} no guarda: si mueres o sales, empiezas de cero.${hayPartida ? ' Tu partida guardada no se toca.' : ''}`;
+      ok = await confirmar(this.raiz, texto, `Empezar en ${NOMBRE_DIFICULTAD[id]}`);
+    } else if (hayPartida) {
+      ok = await confirmar(this.raiz, 'Empezar de nuevo borrará tu partida guardada.', 'Empezar de nuevo');
     }
-    this.acciones.nuevaPartida();
+    if (!ok) return;
+    this.ajustes.cambiar('dificultad', id);
+    this.acciones.nuevaPartida(id);
   }
 
   private async confirmarSalir(): Promise<void> {

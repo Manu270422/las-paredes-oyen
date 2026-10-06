@@ -5,6 +5,8 @@ import { sonarUI } from './SonidoUI';
 export interface OpcionSelector<T extends string> {
   valor: T;
   texto: string;
+  /** No se puede elegir (por ejemplo, Pesadilla antes de terminar un piso). */
+  deshabilitada?: boolean;
 }
 
 export interface OpcionesSelector<T extends string> {
@@ -31,6 +33,7 @@ export function crearSelector<T extends string>(o: OpcionesSelector<T>): HTMLDiv
     boton.dataset.valor = opcion.valor;
     boton.setAttribute('role', 'radio');
     boton.textContent = opcion.texto;
+    boton.disabled = opcion.deshabilitada ?? false;
     boton.addEventListener('click', () => {
       actual = opcion.valor;
       refrescar();

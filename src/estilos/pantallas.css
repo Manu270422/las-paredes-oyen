@@ -401,6 +401,80 @@
 }
 
 /* --- Muerte y final --- */
+/* --- Elegir cómo jugar (al empezar una partida nueva) --- */
+.dificultad {
+  justify-content: center;
+  align-items: center;
+  gap: var(--espacio-s);
+  background: rgba(0, 0, 0, 0.92);
+  overflow-y: auto;
+}
+
+.dificultad__titulo {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: var(--texto-titulo);
+  font-weight: 400;
+  color: var(--color-texto);
+}
+
+.dificultad__nota,
+.dificultad__accesibilidad {
+  max-width: 40em;
+  margin: 0;
+  text-align: center;
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-s);
+  line-height: 1.5;
+}
+
+.dificultad__opciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs, 6px);
+  width: min(44em, 100%);
+}
+
+.dificultad__opcion {
+  display: grid;
+  grid-template-columns: 7.5em 1fr;
+  align-items: baseline;
+  gap: var(--espacio-m);
+  padding: var(--espacio-s) var(--espacio-m);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  background: transparent;
+  color: var(--color-texto-tenue);
+  text-align: left;
+  cursor: pointer;
+}
+
+.dificultad__opcion[aria-checked="true"] {
+  border-color: var(--color-acento-claro);
+  color: var(--color-texto);
+}
+
+.dificultad__opcion:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dificultad__nombre {
+  font-family: var(--fuente-titulo);
+  font-size: var(--texto-l);
+}
+
+.dificultad__linea {
+  font-size: var(--texto-s);
+  line-height: 1.4;
+}
+
+.dificultad__acciones {
+  display: flex;
+  gap: var(--espacio-s);
+  margin-top: var(--espacio-s);
+}
+
 .muerte,
 .fin {
   justify-content: center;

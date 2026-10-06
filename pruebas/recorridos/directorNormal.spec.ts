@@ -27,6 +27,8 @@ test('Normal: con la misma semilla, el director hace lo mismo que en gate1-conge
   await page.waitForFunction(() => window.__juego?.estado === 'inicio', null, { timeout: 120_000 });
   await page.keyboard.press('Space');
   await page.getByRole('button', { name: 'Nueva partida', exact: true }).click();
+  // La pantalla para elegir la dificultad no existía en gate1-congelado: allí la partida empieza directo.
+  if (!GRABAR_DESDE) await page.getByRole('button', { name: 'Empezar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');
   const registro = await simularDirector(page);
 
