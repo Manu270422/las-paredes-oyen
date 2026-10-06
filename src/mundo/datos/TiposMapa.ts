@@ -117,7 +117,11 @@ export interface PuntoAparicion {
 
 export interface DefMapa {
   nombre: string;
-  /** Filas del mapa: '#' muro, '.' piso, 'P' puerta. */
+  /**
+   * Filas del mapa: '#' muro, '.' piso, 'P' puerta, 'E' hueco de escalera. Un hueco es un rectángulo con
+   * UNA sola boca (el lado que da a celdas transitables); los otros tres lados son muro. Ahí construyo
+   * los tramos que bajan y suben (ver ConstructorEscalera).
+   */
   rejilla: readonly string[];
   habitaciones: readonly DefHabitacion[];
   puertas: readonly DefPuerta[];

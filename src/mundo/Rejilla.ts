@@ -1,5 +1,5 @@
 // Aquí interpreto la rejilla del mapa y respondo preguntas espaciales:
-// ¿esta celda es muro? ¿hay línea de visión? ¿cuántas paredes hay entre
+// ¿esta celda es muro? ¿es el hueco de una escalera? ¿hay línea de visión? ¿cuántas paredes hay entre
 // el jugador y ese sonido? Estas consultas alimentan colisiones, audio
 // (oclusión) e IA (oír a través de muros).
 import { CONFIG } from '../config/ConfiguracionJuego';
@@ -26,15 +26,23 @@ export class Rejilla {
 
   esMuro(gx: number, gy: number): boolean {
     const c = this.caracter(gx, gy);
-    return c !== '.' && c !== 'P';
+    return c !== '.' && c !== 'P' && c !== 'E';
   }
 
   esPuerta(gx: number, gy: number): boolean {
     return this.caracter(gx, gy) === 'P';
   }
 
+  /**
+   * El hueco de una escalera ('E'): para la vista y el sonido es aire (no es muro), pero
+   * nadie camina por él (no es transitable): ni el jugador, ni la criatura, ni un evento.
+   */
+  esHueco(gx: number, gy: number): boolean {
+    return this.caracter(gx, gy) === 'E';
+  }
+
   esTransitable(gx: number, gy: number): boolean {
-    return !this.esMuro(gx, gy);
+    return !this.esMuro(gx, gy) && !this.esHueco(gx, gy);
   }
 
   /** Paso de metros a índice de celda. */
@@ -150,9 +158,9 @@ export class Rejilla {
         const gx = gx0 + ox;
         const gy = gy0 + oy;
         if (!this.esMuro(gx, gy) || gx <= 0 || gy <= 0 || gx >= this.ancho - 1 || gy >= this.alto - 1) continue;
-        // Solo me sirven muros que dan a un espacio transitable (la superficie de la pared).
-        const daAEspacio =
-          this.esTransitable(gx + 1, gy) || this.esTransitable(gx - 1, gy) || this.esTransitable(gx, gy + 1) || this.esTransitable(gx, gy - 1);
+        // Solo me sirven muros que dan a un espacio abierto (la superficie de la pared). Un muro que da al aire
+        // del hueco de la escalera también es superficie: el sonido sale de ahí igual, aunque no se pise.
+        const daAEspacio = !this.esMuro(gx + 1, gy) || !this.esMuro(gx - 1, gy) || !this.esMuro(gx, gy + 1) || !this.esMuro(gx, gy - 1);
         if (!daAEspacio) continue;
         const d = Math.hypot(this.centro(gx) - x, this.centro(gy) - z);
         if (d < mejorDistancia) {

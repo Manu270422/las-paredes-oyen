@@ -119,6 +119,23 @@ Dos pruebas lo vigilan (`pruebas/unitarias/`):
   Las palabras que también son vocabulario del motor (`'pasillo'` como reverberación, `'orden'` como tipo de papel…)
   están declaradas archivo por archivo con su cuenta exacta.
 
+## El hueco de una escalera (celda `E`)
+
+La rejilla de un mapa tiene cuatro caracteres: `#` muro, `.` piso, `P` puerta y `E` hueco de escalera. El hueco es
+**aire que no se pisa**: `Rejilla.esMuro` es falso (la vista, la oclusión del sonido y el viento lo atraviesan) y
+`Rejilla.esTransitable` también (el jugador choca con él como con un muro, y ni la criatura ni el director lo usan).
+
+- `mundo/HuecoEscalera.ts` (lógica pura, sin three.js) encuentra cada hueco y valida sus reglas: rectángulo de al menos
+  2 × 2 celdas, **una sola boca** (un lado entero hacia celdas libres, sin puertas) y muro en los otros tres lados. Un mapa
+  que las rompa falla al cargar con un error que dice dónde.
+- `mundo/ConstructorEscalera.ts` dibuja la escalera en el marco local del hueco (u a lo largo de la boca, v hacia
+  dentro): el pozo, dos tramos de ida y vuelta con sus descansos, la reja con cadena del tramo que baja, las tablas y
+  escombros del que sube y la oscuridad del fondo (capas negras semitransparentes, sin un piso que la cierre).
+- `Rejilla.muroMasCercano` (de donde el director saca los golpes "dentro de la pared") acepta un muro que da al aire
+  del hueco: es superficie igual. Por eso el director de Normal sigue idéntico al golden master de gate1.
+- Pruebas: `huecoEscalera.test.ts` (rejilla, navegación, reglas y marco), `paquetesDePiso.test.ts` (nada del mapa cae
+  dentro de un hueco) y el recorrido `escalera.spec.ts` (empujar contra la boca no mete al jugador en el hueco).
+
 ## Estados de la aplicación
 
 `cargando → inicio (gesto: audio + pantalla completa) → menú ⇄ jugando ⇄ pausa / documento → muerte | fin`

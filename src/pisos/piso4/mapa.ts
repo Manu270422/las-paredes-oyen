@@ -2,7 +2,10 @@
 // Cada carácter de la rejilla es una celda de 1.3 m.
 //
 // Pensé el piso así:
-// - Escalera (oeste): punto de partida, luz de emergencia roja: la única "zona segura".
+// - Escalera (oeste): punto de partida, luz de emergencia roja: la única "zona segura". Al sur del
+//   descanso se abre el hueco de la escalera (las celdas 'E'): el tramo que baja a la oscuridad está
+//   cerrado con una reja y una cadena, y el que sube al 5, tapado con tablas y escombros. Por ahí no se
+//   pasa (todavía): las celdas 'E' bloquean como un muro, pero se ve y se oye a través de ellas.
 // - Pasillo largo y estrecho: una sola línea de visión, oscuro, sin escapatoria lateral.
 // - 401 (norte-oeste): la lámpara está encendida... en un edificio sin luz. Nadie sabe por qué.
 // - 403 (norte-este): el estudio del vecino que grababa las paredes.
@@ -28,8 +31,8 @@ export const MAPA_PISO_4: DefMapa = {
     '#...#........###...........##..#', // 8
     '#...###P############P########..#', // 9
     '#...........................P..#', // 10
-    '#...##########P##############..#', // 11
-    '#...####.............########..#', // 12
+    '#EEE##########P##############..#', // 11
+    '#EEE####.............########..#', // 12
     '########.............###########', // 13
     '########.............###########', // 14
     '########.............###########', // 15
@@ -85,8 +88,8 @@ export const MAPA_PISO_4: DefMapa = {
 
   muebles: [
     // Escalera
+    // (La baranda del hueco ya no es un mueble: la arma el constructor de la escalera en el borde.)
     { tipo: 'caja', x: 1.5, y: 8.6 },
-    { tipo: 'baranda', x: 2, y: 12.75 },
     // Pasillo
     { tipo: 'bolsa', x: 26.7, y: 10.25 },
     { tipo: 'bolsa', x: 17.3, y: 10.75, rot: 40 },
@@ -162,6 +165,6 @@ export const MAPA_PISO_4: DefMapa = {
 
   guaridaEntidad: { x: 14, y: 4.5 },
 
-  // El viento sube por el hueco de la escalera, en su esquina sur (junto a la baranda).
-  viento: { x: 2, y: 12 },
+  // El viento sube desde abajo por el hueco de la escalera (en medio del pozo, no en el borde).
+  viento: { x: 2.5, y: 12 },
 };

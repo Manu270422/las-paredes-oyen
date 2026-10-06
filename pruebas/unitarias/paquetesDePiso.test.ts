@@ -2,6 +2,7 @@
 // Vale para TODOS los pisos del catálogo, así el próximo piso se valida solo.
 import { describe, expect, it } from 'vitest';
 import type { Direccion } from '../../src/mundo/datos/TiposMapa';
+import { encontrarHuecos } from '../../src/mundo/HuecoEscalera';
 import { Rejilla } from '../../src/mundo/Rejilla';
 import { PISOS } from '../../src/pisos/catalogo';
 
@@ -39,10 +40,11 @@ describe.each(PISOS.map((p) => [p.id, p] as const))('Paquete %s', (_id, piso) =>
     expect(rotos).toEqual([]);
   });
 
-  it('el viento (si lo hay) sopla desde un punto junto a una celda transitable', () => {
+  it('el viento (si lo hay) sopla desde el aire (una celda libre o el hueco de una escalera), no desde un muro', () => {
     const v = piso.mapa.viento;
     if (!v) return;
-    const vecinas = [[0, 0], [-1, 0], [0, -1], [-1, -1]].map(([dx, dy]) => transitable(v.x + dx * 0.01, v.y + dy * 0.01));
+    // Miro las celdas que tocan el punto: si está justo en una esquina, me basta con que una sea aire.
+    const vecinas = [[0, 0], [-1, 0], [0, -1], [-1, -1]].map(([dx, dy]) => !rejilla.esMuro(Math.floor(v.x + dx * 0.01), Math.floor(v.y + dy * 0.01)));
     expect(vecinas.some(Boolean), `el viento en (${v.x}, ${v.y}) está dentro de un muro`).toBe(true);
   });
 
@@ -54,6 +56,31 @@ describe.each(PISOS.map((p) => [p.id, p] as const))('Paquete %s', (_id, piso) =>
   it('todo objetivo se completa con una bandera distinta (no hay dos objetivos con la misma)', () => {
     const banderas = piso.objetivos.map((o) => o.bandera);
     expect(new Set(banderas).size).toBe(banderas.length);
+  });
+});
+
+describe.each(PISOS.map((p) => [p.id, p] as const))('Huecos de escalera de %s', (_id, piso) => {
+  const rejilla = new Rejilla(piso.mapa.rejilla);
+  const enHueco = (x: number, y: number) => rejilla.esHueco(Math.floor(x), Math.floor(y));
+
+  it('cada hueco cumple las reglas (rectángulo, una sola boca, el resto muro)', () => {
+    expect(() => encontrarHuecos(rejilla)).not.toThrow();
+  });
+
+  it('nada del mapa cae dentro de un hueco (ahí no hay piso)', () => {
+    const m = piso.mapa;
+    const rotos = [
+      ...Object.entries(m.puntosControl).map(([nombre, p]) => ({ que: `punto de control ${nombre}`, ...p })),
+      ...m.muebles.map((d) => ({ que: `mueble ${d.tipo}`, x: d.x, y: d.y })),
+      ...m.lamparas.map((d) => ({ que: `lámpara ${d.id}`, x: d.x, y: d.y })),
+      ...m.interactuables.map((d) => ({ que: `interactuable ${d.id}`, x: d.x, y: d.y })),
+      { que: 'guarida de la criatura', ...m.guaridaEntidad },
+      { que: 'cámara del menú', ...piso.menu.camara },
+      { que: 'figura del menú', ...piso.menu.figura },
+    ]
+      .filter((c) => enHueco(c.x, c.y))
+      .map((c) => `${c.que} en (${c.x}, ${c.y})`);
+    expect(rotos).toEqual([]);
   });
 });
 

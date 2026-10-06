@@ -15,6 +15,7 @@ import { PuntoMedicion } from '../interaccion/objetos/PuntoMedicion';
 import { Tablero } from '../interaccion/objetos/Tablero';
 import { Radio } from '../interaccion/objetos/Radio';
 import { construirGeometria } from './ConstructorGeometria';
+import { construirEscaleras } from './ConstructorEscalera';
 import { Rejilla, type ConsultaPuertaCerrada } from './Rejilla';
 import { Puerta } from './Puerta';
 import { Lampara } from './Lampara';
@@ -71,6 +72,8 @@ export class Nivel {
     const { grupo, cajasEstaticas } = construirGeometria(this.rejilla, (gx, gy) => this.habitacionDeCelda(gx, gy), materiales);
     this.cajasEstaticas = cajasEstaticas;
     this.grupo.add(grupo);
+    // Los huecos de escalera (celdas 'E'): el pozo, los tramos, la reja y los escombros.
+    this.grupo.add(construirEscaleras(this.rejilla, materiales));
 
     for (const d of def.puertas) {
       const pasoEnZ = this.rejilla.esMuro(d.x - 1, d.y) && this.rejilla.esMuro(d.x + 1, d.y);
@@ -161,7 +164,7 @@ export class Nivel {
     return this.def.puntosControl[nombre] ?? this.def.puntosControl[respaldo];
   }
 
-  /** Reúno las cajas de colisión cercanas a un punto (muros, jambas, puertas cerradas, muebles). */
+  /** Reúno las cajas de colisión cercanas a un punto (muros, huecos de escalera, jambas, puertas cerradas, muebles). */
   cajasCercanas(x: number, z: number, radio = 1.2): readonly CajaColision[] {
     const C = CONFIG.celda;
     const salida = this.cajasTemporales;
@@ -172,7 +175,8 @@ export class Nivel {
       for (let ox = -1; ox <= 1; ox++) {
         const cx = gx + ox;
         const cy = gy + oy;
-        if (this.rejilla.esMuro(cx, cy)) salida.push({ minX: cx * C, maxX: (cx + 1) * C, minZ: cy * C, maxZ: (cy + 1) * C });
+        // Un hueco de escalera bloquea igual que un muro: por ahí no se camina (se cae).
+        if (!this.rejilla.esTransitable(cx, cy)) salida.push({ minX: cx * C, maxX: (cx + 1) * C, minZ: cy * C, maxZ: (cy + 1) * C });
         const puerta = this.puertaEn(cx, cy);
         const caja = puerta?.cajaColision();
         if (caja) salida.push(caja);
