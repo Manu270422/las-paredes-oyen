@@ -137,6 +137,7 @@ Nivel 2 o 3 = pulsar **F9** (en PC). En celular, anotar la hora del reloj en la 
 | ¿Corrió? ¿Cuándo? | | |
 | ¿Se atrincheró en un cuarto mucho tiempo? ¿Cuál? | | |
 | ¿Qué zona evitó? ¿Volvió a algún cuarto sin necesidad? | | |
+| ¿Se confundió de apartamento o no supo en cuál estaba? (p. ej., buscó la llave del 402 dentro del 402) | | cuál creía y cuál era; minuto |
 | ¿Apagó la linterna a propósito? | | |
 | ¿Pidió ayuda o preguntó algo? (anotar la pregunta textual) | | |
 | ¿Quiso abandonar? ¿Abandonó? | | minuto exacto y qué acababa de pasar |
@@ -199,6 +200,7 @@ Hacerla **justo al terminar**, con las luces aún bajas. Preguntas abiertas, en 
 8. Si moriste: ¿sabes por qué? ¿Te pareció justo? *(Comparar con la causa en la telemetría.)*
    - 8b. Si te persiguió: ¿sabías por dónde venía? ¿Cómo lo sabías? *(H9)*
 9. ¿Hubo algo que no entendiste? ¿Algo que pasó y no sabes si fue real o un error?
+   - 9b. ¿Supiste siempre en qué apartamento estabas? ¿Te equivocaste de puerta alguna vez? *(Orientación: la versión del Gate 1 no tiene placas con números; sirve para comparar cuando las tenga.)*
 10. ¿Qué lugar te pareció seguro? ¿Cuál evitaste?
 11. ¿En algún momento quisiste dejar de jugar?
 12. De todo lo que hiciste en el juego, ¿qué recuerdas más?
