@@ -6,7 +6,7 @@ import { Color, FogExp2, HemisphereLight, Scene } from 'three';
 import { CONFIG } from '../config/ConfiguracionJuego';
 import { GestorAjustes } from '../config/Ajustes';
 import { PERFILES, type NivelCalidad, type PerfilCalidad } from '../config/PerfilesCalidad';
-import { DIFICULTAD_POR_DEFECTO, NOMBRE_DIFICULTAD } from '../config/Dificultad';
+import { DIFICULTAD_POR_DEFECTO, NOMBRE_DIFICULTAD, TABLA_DIFICULTAD } from '../config/Dificultad';
 import { detectarDispositivo, sugerirCalidad } from '../plataforma/DetectorDispositivo';
 import { GestorPantalla } from '../plataforma/GestorPantalla';
 import { GestorEntrada } from '../entrada/GestorEntrada';
@@ -222,6 +222,7 @@ export class Juego {
       renderizador: this.renderizador,
       escena: this.escena,
       piso: this.piso,
+      dificultad: TABLA_DIFICULTAD[DIFICULTAD_POR_DEFECTO],
       camara: this.jugador.camara,
       nivel: this.nivel,
       jugador: this.jugador,
@@ -346,8 +347,7 @@ export class Juego {
     void this.audio.reanudar();
     this.cargarDesdePunto(datos);
     this.estado = 'jugando';
-    this.entrada.fijarEnJuego(true);
-    this.entrada.descartarPendientes();
+    this.entrada.volverAlJuego();
     window.setTimeout(() => this.ui.hud.fundir(false, 1.6), 60);
     if (this.dispositivo.esTactil && !this.pantalla.esPantallaCompleta) void this.pantalla.entrarPantallaCompleta();
     this.registrarInicioTelemetria(origen);
@@ -397,7 +397,7 @@ export class Juego {
     const guarida = this.piso.mapa.guaridaEntidad;
     this.entidad.reiniciar(guarida.x * CONFIG.celda, guarida.y * CONFIG.celda, ctx);
     this.entidad.puedeManifestarse = this.progreso.criaturaDespierta;
-    this.director.reiniciar(this.memoria.muertesSinProgreso);
+    this.director.reiniciar(this.memoria.muertesSinProgreso, ctx.dificultad.alivio);
     this.director.activo = this.progreso.tiene(this.piso.reglas.directorDesde);
     this.guion?.reiniciar(ctx);
     if (this.piso.mapa.viento) this.ambiente.iniciarViento(this.piso.mapa.viento.x * CONFIG.celda, this.piso.mapa.viento.y * CONFIG.celda);
@@ -431,8 +431,7 @@ export class Juego {
     if (this.pantalla.esVertical && this.dispositivo.esTactil) return;
     this.ui.cerrarTodo();
     this.estado = this.estadoAntesDePausa;
-    this.entrada.fijarEnJuego(true);
-    this.entrada.descartarPendientes();
+    this.entrada.volverAlJuego();
     void this.audio.reanudar();
     this.telemetria.registrarPausa(false);
   }
@@ -445,8 +444,7 @@ export class Juego {
     this.ui.mostrarDocumento(id, () => {
       this.estado = 'jugando';
       this.ui.hud.fijarVisible(true);
-      this.entrada.fijarEnJuego(true);
-      this.entrada.descartarPendientes();
+      this.entrada.volverAlJuego();
     });
   }
 

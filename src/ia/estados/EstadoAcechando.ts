@@ -47,7 +47,7 @@ export class EstadoAcechando implements EstadoIA {
     // La excepción a su regla: si me muevo cerca de ella, me siente aunque no haga ruido.
     // Y si estoy prácticamente encima, me siente aunque esté quieto.
     const moviendome = jugador.rapidez > 0.12;
-    if ((distancia < CONFIG.entidad.radioPresencia && moviendome) || distancia < DISTANCIA_CONTACTO) {
+    if ((distancia < ctx.dificultad.radioPresencia && moviendome) || distancia < DISTANCIA_CONTACTO) {
       entidad.cazar('presencia', ctx);
       return;
     }

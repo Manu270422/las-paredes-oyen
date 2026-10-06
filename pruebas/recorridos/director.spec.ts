@@ -46,7 +46,7 @@ test('la silueta y la respiración detrás solo salen cuando la criatura ya desp
       ctx.progreso.marcar('leyo:orden_trabajo');
       if (despierta) ctx.progreso.marcar(ctx.piso.reglas.despiertaCon);
       ctx.entidad.puedeManifestarse = despierta;
-      D.reiniciar(0);
+      D.reiniciar(0, ctx.dificultad.alivio);
       D.activo = true;
       D.forzarFase('acumulacion', ctx);
       D['tiempoFase'] = 60; // acumulación avanzada: ya caben los eventos de intensidad 3

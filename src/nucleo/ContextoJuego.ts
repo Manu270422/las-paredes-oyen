@@ -19,6 +19,7 @@ import type { MemoriaMundo } from '../director/MemoriaMundo';
 import type { DirectorTerror } from '../director/DirectorTerror';
 import type { Renderizador } from '../render/Renderizador';
 import type { PaquetePiso } from '../pisos/TiposPiso';
+import type { ValoresDificultad } from '../config/Dificultad';
 
 /** Lo que la lógica del juego puede pedirle a la interfaz. */
 export interface PuenteUI {
@@ -36,6 +37,8 @@ export interface ContextoJuego {
   readonly escena: Scene;
   /** El piso que se está jugando: mapa, objetivos, documentos y cintas. */
   readonly piso: PaquetePiso;
+  /** Los valores de la dificultad que se juega (config/Dificultad.ts). No es readonly: se puede cambiar en plena partida. */
+  dificultad: ValoresDificultad;
   readonly camara: PerspectiveCamera;
   readonly nivel: Nivel;
   readonly jugador: Jugador;

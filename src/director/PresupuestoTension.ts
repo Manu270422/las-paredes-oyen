@@ -65,15 +65,16 @@ export class PresupuestoTension {
   }
 
   /** El límite de la fase, reducido por el alivio (0..1) que decide el director. */
-  limite(fase: FaseDirector, alivio: number): number {
-    return LIMITE_FASE[fase] * (1 - alivio);
+  /** La carga que acepta una fase: la de la tabla, por el presupuesto de la dificultad, menos el alivio. */
+  limite(fase: FaseDirector, alivio: number, presupuesto: number): number {
+    return LIMITE_FASE[fase] * presupuesto * (1 - alivio);
   }
 
   /** ¿Cabe un evento de este costo ahora mismo? */
-  cabe(costo: number, fase: FaseDirector, alivio: number): boolean {
+  cabe(costo: number, fase: FaseDirector, alivio: number, presupuesto: number): boolean {
     if (this.respiro > 0) return false;
     // Un evento sutil (costo 1) siempre cabe si la carga ya se evaporó casi del todo.
-    return this.carga + costo <= Math.max(this.limite(fase, alivio), this.carga < 0.3 ? costo : 0);
+    return this.carga + costo <= Math.max(this.limite(fase, alivio, presupuesto), this.carga < 0.3 ? costo : 0);
   }
 
   actualizar(dt: number): void {

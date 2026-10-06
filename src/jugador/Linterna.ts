@@ -103,7 +103,7 @@ export class Linterna {
     this.objetivo.updateMatrixWorld();
 
     // Batería.
-    if (this.encendida && this.bateria > 0) this.bateria = Math.max(0, this.bateria - dt / CONFIG.duracionBateria);
+    if (this.encendida && this.bateria > 0) this.bateria = Math.max(0, this.bateria - dt / ctx.dificultad.bateria);
 
     // Brillo con parpadeos.
     let factor = this.encendida && this.bateria > 0 ? 1 : 0;

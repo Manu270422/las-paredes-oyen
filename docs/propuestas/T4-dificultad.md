@@ -1,4 +1,6 @@
-# Tarea 4 — Dificultad (estructura, sin balance) · propuesta para aprobar
+# Tarea 4 — Dificultad (estructura, sin balance)
+
+> **Aprobada** con cambios (ver "Decisiones del dueño" al final). Paso 1 hecho: tabla, `ctx.dificultad`, foto y golden master.
 
 > **Sin programar.** Todos los números son **provisionales hasta el Gate 1**: en el código llevarán el comentario
 > `// PROVISIONAL (Gate 1)`. Normal es **idéntico** al juego de hoy. Los probadores del Gate 1 juegan `main` (congelado,
@@ -31,12 +33,15 @@
 
 ## 2. Normal idéntico al juego de hoy (cuatro pruebas)
 
-1. **Foto de Normal**: una prueba unitaria compara `TABLA.normal` con los valores de hoy, escritos a mano. Si alguien toca
-   Normal, falla.
+1. **Foto de Normal**: una prueba unitaria (`dificultad.test.ts`) compara `TABLA.normal` con los valores **de la etiqueta
+   `gate1-congelado`**, leídos con `git show` y escritos a mano con su archivo y línea. Si alguien toca Normal, falla.
 2. **El alivio no cambia**: la prueba que ya existe (`[0, 0, 0.15, 0.3, 0.45, 0.45]` según las muertes) sigue igual.
-3. **Golden master del director**: **antes** del cambio grabo, con `Math.random` sembrado, la secuencia de eventos del
-   director (id y segundo) en 20 corridas de 400 s para 0 a 4 muertes seguidas. **Después** del cambio, Normal debe dar la
-   misma secuencia, byte a byte.
+3. **Golden master del director**, grabado con el código de **`gate1-congelado`**: con `Math.random` sembrado, la
+   secuencia de eventos y fases (id y segundo) en 10 corridas de 400 s para 0 a 4 muertes seguidas
+   (`pruebas/datos/director-normal-gate1.json`, 696 eventos). La etiqueta se extrajo con `git archive`, que solo lee el
+   repositorio; un `git worktree` escribe en `.git`. Grabarla dos veces da el mismo archivo. Resultado: el sprint-4
+   **antes** del refactor y **después** de conectar la tabla da la misma secuencia, evento por evento
+   (`directorNormal.spec.ts`).
 4. **La suite completa** de recorridos pasa sin cambiar ninguna expectativa.
 
 ## 3. Piso de justicia (una prueba que recorre las cuatro)
@@ -47,9 +52,9 @@ prueba falla si una dificultad baja del suelo; la verifico bajando a mano el avi
 ## 4. Puntos de control y Pesadilla
 
 - **Historia y Normal**: los de hoy. **Difícil**: solo al medir un apartamento.
-- **Pesadilla**: **nunca guarda**. Al empezar borra la partida guardada (con la confirmación que ya existe); al morir no
-  borra nada porque no hay nada guardado: se vuelve a empezar desde la escalera. Salir al menú a media partida la pierde,
-  y se avisa al elegirla. **Se desbloquea al terminar el Piso 4** (el perfil ya lo sabe: `pisosCompletados`).
+- **Pesadilla**: **no guarda ni borra**. Hay un solo hueco de guardado: la partida de otra dificultad queda intacta y
+  "Continuar" la sigue ofreciendo. Al morir se vuelve a empezar desde la escalera; salir al menú la pierde. Al elegirla
+  se avisa que no guarda. **Se desbloquea al terminar el Piso 4** (el perfil ya lo sabe: `pisosCompletados`).
 
 ## 5. Dónde se elige y qué pasa al cambiarla
 
@@ -58,8 +63,9 @@ prueba falla si una dificultad baja del suelo; la verifico bajando a mano el avi
 - **Ajustes → Juego → Dificultad**: en el menú cambia la de la próxima partida; **en plena partida cambia la actual al
   instante**. Bajar nunca se bloquea. Subir se puede, hasta Difícil; Pesadilla, solo al empezar.
 - **Continuar**: usa la dificultad **guardada en la partida** (partida v4: `dificultad`; las v3 migran como Normal).
-- **Oferta de bajar**: tras **3 muertes seguidas sin avanzar** en Normal o Difícil, la pantalla de muerte agrega un botón
-  secundario, "Probar en Historia desde aquí". Una vez por tramo, nunca automático. No se ofrece en Pesadilla.
+- **Oferta de bajar**: tras **3 muertes seguidas sin avanzar**, la pantalla de muerte agrega un botón secundario que
+  ofrece **un solo escalón**: desde Difícil, Normal; desde Normal, Historia. Una vez por tramo, nunca automático. No se
+  ofrece en Historia ni en Pesadilla.
 - **El final y el perfil** muestran la **más baja jugada** en esa partida ("Difícil → Normal"). Es un dato, no un castigo.
   **¿Lo apruebas así?**
 
@@ -68,7 +74,8 @@ prueba falla si una dificultad baja del suelo; la verifico bajando a mano el avi
 En el entorno de cada sesión: `dificultad` y `compilacion` (versión de `package.json` + los 7 primeros caracteres del
 commit). Además, un evento `dificultad` {de, a, motivo: `ajustes` | `oferta`}.
 - **Compilación**: Vercel ya expone `VERCEL_GIT_COMMIT_SHA` al compilar. Se inyecta con `define` en `vite.config`, sin
-  `vercel.json` ni dependencias; en local dice `local`.
+  `vercel.json` ni dependencias. Si no está, dice `local`. Al entregar ese paso reviso un preview: si el preview dice
+  `local`, aviso para revisar la configuración de Vercel.
 - **Sesiones**: suben a v2 con migración; las viejas quedan como `normal` / `desconocida`.
 
 ## 7. Accesibilidad: qué entra ahora y qué queda para A3
@@ -90,3 +97,13 @@ commit). Además, un evento `dificultad` {de, a, motivo: `ajustes` | `oferta`}.
 
 En Juego.ts, cablear la dificultad suma ~10 líneas. Lo compenso mudando `registrarInicioTelemetria` (18 líneas) a
 Telemetria, que es donde pertenece.
+
+## Decisiones del dueño (aprobación)
+
+1. Pesadilla no guarda ni borra (un solo hueco de guardado); al elegirla se avisa.
+2. El final y el perfil muestran la dificultad **más baja jugada**: sí.
+3. La sensibilidad al ruido no es una opción aparte (es el "oído"): sí.
+4. El indicador del aire se oculta en Difícil y Pesadilla, y la opción de accesibilidad lo devuelve: sí.
+5. El golden master y la foto de Normal salen de `gate1-congelado`, no del sprint-4.
+6. La oferta de bajar sube un escalón a la vez: Difícil → Normal, Normal → Historia.
+7. Versión de compilación: `local` si falta `VERCEL_GIT_COMMIT_SHA`, y se avisa.

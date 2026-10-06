@@ -3,9 +3,13 @@
 import { describe, expect, it } from 'vitest';
 import { CATALOGO_EVENTOS } from '../../src/director/eventos/Catalogo';
 import { PresupuestoTension } from '../../src/director/PresupuestoTension';
+import { TABLA_DIFICULTAD } from '../../src/config/Dificultad';
 import { DirectorTerror } from '../../src/director/DirectorTerror';
 import { BusEventos } from '../../src/nucleo/BusEventos';
 import type { MapaEventos } from '../../src/nucleo/Eventos';
+
+/** Estas reglas son las de Normal: el juego de gate1-congelado. */
+const NORMAL = TABLA_DIFICULTAD.normal;
 
 describe('PresupuestoTension', () => {
   it('la carga se reduce a la mitad cada 40 s de juego', () => {
@@ -24,9 +28,9 @@ describe('PresupuestoTension', () => {
     bus.emit('encuentro', { estado: 'inicio', distancia: 2 });
     expect(p.carga).toBe(4);
     bus.emit('encuentro', { estado: 'superado', distancia: 2 });
-    expect(p.cabe(1, 'pico', 0)).toBe(false);
+    expect(p.cabe(1, 'pico', 0, NORMAL.presupuesto)).toBe(false);
     p.actualizar(8.1);
-    expect(p.cabe(1, 'pico', 0)).toBe(true);
+    expect(p.cabe(1, 'pico', 0, NORMAL.presupuesto)).toBe(true);
   });
 
   it('una caza pesa más que cualquier evento del director', () => {
@@ -40,15 +44,15 @@ describe('PresupuestoTension', () => {
   it('respeta el límite de cada fase', () => {
     const p = new PresupuestoTension();
     p.carga = 5.5;
-    expect(p.cabe(PresupuestoTension.costo(1), 'acumulacion', 0)).toBe(false);
-    expect(p.cabe(PresupuestoTension.costo(1), 'pico', 0)).toBe(true);
+    expect(p.cabe(PresupuestoTension.costo(1), 'acumulacion', 0, NORMAL.presupuesto)).toBe(false);
+    expect(p.cabe(PresupuestoTension.costo(1), 'pico', 0, NORMAL.presupuesto)).toBe(true);
     // Con alivio, el mismo evento deja de caber en el pico.
-    expect(p.cabe(PresupuestoTension.costo(3), 'pico', 0.45)).toBe(false);
+    expect(p.cabe(PresupuestoTension.costo(3), 'pico', 0.45, NORMAL.presupuesto)).toBe(false);
   });
 
   it('un evento sutil siempre cabe cuando la carga ya se evaporó', () => {
     const p = new PresupuestoTension();
-    expect(p.cabe(PresupuestoTension.costo(1), 'calma', 0.45)).toBe(true);
+    expect(p.cabe(PresupuestoTension.costo(1), 'calma', 0.45, NORMAL.presupuesto)).toBe(true);
   });
 });
 
@@ -63,7 +67,7 @@ describe('Alivio del director tras muertes seguidas sin progreso', () => {
   it('1 muerte no cambia nada; después baja 15 % por muerte, con tope de 45 %', () => {
     const d = new DirectorTerror();
     const alivio = (muertes: number) => {
-      d.reiniciar(muertes);
+      d.reiniciar(muertes, NORMAL.alivio);
       return Math.round(d['alivio'] * 100) / 100;
     };
     expect([0, 1, 2, 3, 4, 10].map(alivio)).toEqual([0, 0, 0.15, 0.3, 0.45, 0.45]);

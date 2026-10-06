@@ -35,7 +35,7 @@ export class EstadoRetirada implements EstadoIA {
     this.limite -= dt;
     if (this.esperando > 0) {
       // Falsa retirada: quieto, de pie en la oscuridad.
-      if (entidad.distanciaAlJugador(ctx) < CONFIG.entidad.radioPresencia && ctx.jugador.rapidez > 0.12) {
+      if (entidad.distanciaAlJugador(ctx) < ctx.dificultad.radioPresencia && ctx.jugador.rapidez > 0.12) {
         entidad.cazar('presencia', ctx);
         return;
       }

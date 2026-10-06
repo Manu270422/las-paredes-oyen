@@ -7,6 +7,9 @@ import { CONFIG } from '../config/ConfiguracionJuego';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
 import { interpolar } from '../utilidades/Matematicas';
 
+/** Con miedo máximo el aire dura un 45 % menos: 9 s tranquilo, 4.95 s aterrado. El encuentro debe caber ahí. */
+export const PERDIDA_AIRE_POR_MIEDO = 0.45;
+
 export class Respiracion {
   /** Aire disponible para contener la respiración (0..1). */
   aire = 1;
@@ -39,7 +42,7 @@ export class Respiracion {
       this.aguantando = true;
       this.tiempoAguantado += dt;
       // Con miedo, el aire dura casi la mitad.
-      this.aire -= dt / (CONFIG.duracionAire * (1 - estres * 0.45));
+      this.aire -= dt / (CONFIG.duracionAire * (1 - estres * PERDIDA_AIRE_POR_MIEDO));
       if (this.aire <= 0) {
         this.aire = 0;
         this.aguantando = false;

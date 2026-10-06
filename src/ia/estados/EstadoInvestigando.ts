@@ -18,17 +18,12 @@ import type { Entidad } from '../Entidad';
 import type { EstadoIA } from '../TiposIA';
 import { aleatorio } from '../../utilidades/Matematicas';
 
-/** A esta distancia de un jugador quieto dejo de caminar y escucho. */
-const RADIO_ENCUENTRO = 2.6;
-/** Cuánto dura el encuentro: lo justo para que contener el aire sea posible pero angustioso. */
-const DURACION_ENCUENTRO: [number, number] = [2.8, 4.6];
-/**
- * Mientras ella inhala para escuchar, su propia respiración tapa la mía.
- * Es la ventana para reaccionar (contener el aire): sin ella, con mucho miedo
- * exhalo cada 0.6 s y moriría antes de poder hacer nada. Solo cubre mi
- * respiración: los pasos se oyen igual.
- */
-const GRACIA_INHALACION = 0.9;
+/** A esta distancia de un jugador quieto dejo de caminar y escucho (igual en todas las dificultades). */
+export const RADIO_ENCUENTRO = 2.6;
+// Cuánto dura el encuentro (ctx.dificultad.duracionEncuentro): lo justo para que contener el aire sea posible
+// pero angustioso. Y la gracia (ctx.dificultad.graciaEncuentro): mientras ella inhala para escuchar, su propia
+// respiración tapa la mía. Es la ventana para reaccionar (contener el aire): sin ella, con mucho miedo exhalo
+// cada 0.6 s y moriría antes de poder hacer nada. Solo cubre mi respiración: los pasos se oyen igual.
 
 export class EstadoInvestigando implements EstadoIA {
   readonly nombre = 'investigando' as const;
@@ -59,7 +54,7 @@ export class EstadoInvestigando implements EstadoIA {
   actualizar(entidad: Entidad, ctx: ContextoJuego, dt: number): void {
     const distancia = entidad.distanciaAlJugador(ctx);
     // La excepción que rompe su regla: si se mueve cerca de mí, lo siento aunque no haga ruido.
-    if (distancia < CONFIG.entidad.radioPresencia && ctx.jugador.rapidez > 0.12) {
+    if (distancia < ctx.dificultad.radioPresencia && ctx.jugador.rapidez > 0.12) {
       this.terminarEncuentro(ctx, 'fallido', distancia);
       entidad.cazar('presencia', ctx);
       return;
@@ -103,8 +98,8 @@ export class EstadoInvestigando implements EstadoIA {
 
   /** Me detengo a pocos metros y escucho. Mi firma: inhalo despacio... y contengo el aire, como él. */
   private iniciarEncuentro(entidad: Entidad, ctx: ContextoJuego, distancia: number): void {
-    this.encuentro = aleatorio(...DURACION_ENCUENTRO);
-    this.gracia = GRACIA_INHALACION;
+    this.encuentro = aleatorio(...ctx.dificultad.duracionEncuentro);
+    this.gracia = ctx.dificultad.graciaEncuentro;
     entidad.enEncuentro = true;
     entidad.pose = 'escuchar';
     entidad.velocidadActual = 0;

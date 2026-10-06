@@ -2,19 +2,16 @@
 // Es un poco más lento que yo corriendo, pero correr hace ruido y lo mantiene
 // sobre mi rastro. Para escapar tengo que CORTAR el sonido: cerrar puertas,
 // agacharme, contener la respiración... y confiar en que pierda mi pista.
-// Nunca se lanza de inmediato: primero el aviso (ARRANQUE), después la carrera.
+// Nunca se lanza de inmediato: primero el aviso, después la carrera.
 import { CONFIG } from '../../config/ConfiguracionJuego';
 import type { ContextoJuego } from '../../nucleo/ContextoJuego';
 import type { Ruido } from '../../nucleo/Eventos';
 import type { Entidad } from '../Entidad';
 import type { EstadoIA } from '../TiposIA';
 
-/**
- * Segundos que tarda en lanzarse: se endereza, gira hacia mí y jadea, y RECIÉN
- * ENTONCES corre. Es el aviso que exige la regla de justicia: sin esto, una
- * caza que empieza a 3 m es una muerte sin oportunidad (1.3 s en las pruebas).
- */
-const ARRANQUE = 0.8;
+// El aviso (ctx.dificultad.avisoCaza): se endereza, gira hacia mí y jadea, y RECIÉN ENTONCES corre. Es lo que
+// exige la regla de justicia: sin él, una caza que empieza a 3 m es una muerte sin oportunidad (1.3 s en las
+// pruebas). Ninguna dificultad lo baja de 0.5 s (lo prueba dificultad.test.ts).
 
 export class EstadoCazando implements EstadoIA {
   readonly nombre = 'cazando' as const;
@@ -24,7 +21,7 @@ export class EstadoCazando implements EstadoIA {
 
   entrar(entidad: Entidad, ctx: ContextoJuego): void {
     this.recalcular = 0;
-    this.arranque = ARRANQUE;
+    this.arranque = ctx.dificultad.avisoCaza;
     this.ultimoContacto = ctx.programador.ahora;
     entidad.pose = 'quieto';
     entidad.velocidadActual = 0;
@@ -46,7 +43,7 @@ export class EstadoCazando implements EstadoIA {
       entidad.mirarHacia(j.x, j.z, dt, 6);
       return;
     }
-    const cerca = entidad.distanciaAlJugador(ctx) < CONFIG.entidad.radioPresencia * 1.6;
+    const cerca = entidad.distanciaAlJugador(ctx) < ctx.dificultad.radioPresencia * 1.6;
     if (cerca) this.ultimoContacto = ahora;
     const conoce = ahora - this.ultimoContacto < 2.5;
 
@@ -62,7 +59,7 @@ export class EstadoCazando implements EstadoIA {
     }
 
     entidad.pose = 'correr';
-    const resultado = entidad.avanzar(dt, CONFIG.entidad.velocidadCazar, ctx, true);
+    const resultado = entidad.avanzar(dt, ctx.dificultad.velocidadCaza, ctx, true);
     if ((resultado === 'llego' || resultado === 'sin-camino') && !conoce) {
       // Perdí su rastro: vuelvo a buscar escuchando.
       entidad.cambiarEstado('investigando', ctx);

@@ -29,9 +29,7 @@ export const CONFIG = {
   longitudPaso: 0.72,
   distanciaInteraccion: 2.3,
 
-  // --- Linterna ---
-  /** Segundos de batería completa. */
-  duracionBateria: 480,
+  // La batería de la linterna depende de la dificultad: config/Dificultad.ts.
 
   // --- Ruido (0..1): cuánto ruido hago con cada acción ---
   ruido: {
@@ -57,15 +55,13 @@ export const CONFIG = {
     velocidadParedes: 1.6,
     velocidadInvestigar: 1.15,
     velocidadAcechar: 1.25,
-    velocidadCazar: 3.15,
     velocidadRetirada: 1.0,
     distanciaAtrapar: 0.85,
     /** Por debajo de este valor percibido ignoro el ruido. */
     umbralAudicion: 0.05,
     /** Ruido percibido a partir del cual empiezo a cazar. */
     umbralCaza: 0.3,
-    /** Distancia a la que siento al jugador aunque no haga ruido (rompe su propia regla). */
-    radioPresencia: 1.9,
+    // La velocidad de caza, la presencia, el aviso y el encuentro dependen de la dificultad: config/Dificultad.ts.
     alturaModelo: 2.25,
   },
 } as const;

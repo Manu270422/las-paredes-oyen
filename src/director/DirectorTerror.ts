@@ -24,6 +24,7 @@ import { CATALOGO_EVENTOS } from './eventos/Catalogo';
 import { PresupuestoTension } from './PresupuestoTension';
 import { PerfilJugador } from './PerfilJugador';
 import { aleatorio, amortiguar, elegirPonderado } from '../utilidades/Matematicas';
+import type { ParametrosAlivio } from '../config/Dificultad';
 
 const DURACION: Record<FaseDirector, [number, number]> = {
   calma: [40, 70],
@@ -49,6 +50,8 @@ export class DirectorTerror {
   private bloqueo = 0;
   private entidadSalio = false;
   private alivio = 0;
+  /** Cómo aplico el alivio (de la dificultad): bajando el techo o espaciando los eventos. */
+  private modoAlivio: ParametrosAlivio['modo'] = 'techo';
   private dominanteAnterior: RasgoJugador | null = null;
   private readonly ultimoUso = new Map<string, number>();
   private readonly usos = new Map<string, number>();
@@ -80,9 +83,11 @@ export class DirectorTerror {
    * Empiezo (o retomo) desde un punto de control.
    * "muertesSinProgreso": cuántas veces murió seguidas sin avanzar la historia.
    */
-  reiniciar(muertesSinProgreso = 0): void {
-    // 1 muerte: nada. 2: 15 %. 3: 30 %. Tope 45 %. Nunca lo vuelvo inofensivo.
-    this.alivio = Math.min(0.45, Math.max(0, muertesSinProgreso - 1) * 0.15);
+  reiniciar(muertesSinProgreso: number, alivio: ParametrosAlivio): void {
+    // 1 muerte: nada. Desde la 2.ª, un tanto por muerte hasta el tope (Normal: 15 %, 30 %, 45 %). Nunca lo
+    // vuelvo inofensivo.
+    this.alivio = Math.min(alivio.tope, Math.max(0, muertesSinProgreso - 1) * alivio.porMuerte);
+    this.modoAlivio = alivio.modo;
     this.fase = 'calma';
     this.tiempoFase = 0;
     this.duracionFase = aleatorio(...DURACION.calma) * (1 + this.alivio);
@@ -177,7 +182,17 @@ export class DirectorTerror {
       this.proximoEvento = aleatorio(...REINTENTO);
       return;
     }
-    this.proximoEvento = this.fase === 'calma' ? aleatorio(20, 34) : this.fase === 'pico' ? aleatorio(14, 24) : aleatorio(9, 17);
+    this.proximoEvento = (this.fase === 'calma' ? aleatorio(20, 34) : this.fase === 'pico' ? aleatorio(14, 24) : aleatorio(9, 17)) * this.estiramiento;
+  }
+
+  /** El alivio que baja el techo de carga (en modo 'intervalos' el techo no se toca). */
+  private get alivioDelTecho(): number {
+    return this.modoAlivio === 'techo' ? this.alivio : 0;
+  }
+
+  /** Cuánto se espacian los eventos (en modo 'techo', nada: × 1). */
+  private get estiramiento(): number {
+    return this.modoAlivio === 'intervalos' ? 1 + this.alivio : 1;
   }
 
   private elegirEvento(ctx: ContextoJuego): { evento: EventoTerror | null; porPresupuesto: boolean } {
@@ -192,7 +207,7 @@ export class DirectorTerror {
       if (e.requiereDespierta && !ctx.progreso.criaturaDespierta) return false;
       return e.puedeOcurrir(ctx);
     });
-    const validos = posibles.filter((e) => this.presupuesto.cabe(PresupuestoTension.costo(e.intensidad), this.fase, this.alivio));
+    const validos = posibles.filter((e) => this.presupuesto.cabe(PresupuestoTension.costo(e.intensidad), this.fase, this.alivioDelTecho, ctx.dificultad.presupuesto));
     // Novedad: lo que no ha pasado hace rato pesa más. Nada debe sentirse repetido.
     // Adaptación: lo que responde a su forma de jugar pesa más.
     const evento = elegirPonderado(validos, (e) => {

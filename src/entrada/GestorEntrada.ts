@@ -77,6 +77,12 @@ export class GestorEntrada {
     this.tactil.soltarTodo();
   }
 
+  /** Vuelvo al juego: capturo la entrada otra vez y descarto lo que se pulsó mientras no se leía. */
+  volverAlJuego(): void {
+    this.fijarEnJuego(true);
+    this.descartarPendientes();
+  }
+
   /** Leo todas las fuentes y dejo el resultado en this.estado. */
   actualizar(dt: number): void {
     limpiarEstado(this.estado);
