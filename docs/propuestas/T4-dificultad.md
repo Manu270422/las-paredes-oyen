@@ -10,6 +10,8 @@
 > Paso 4 hecho: la oferta de bajar un escalón a la 3.ª muerte seguida (una vez por tramo, nunca sola), y en la telemetría
 > la dificultad de la sesión, el evento "dificultad" (de, a, motivo) y la versión de la compilación (`package.json` +
 > commit de Vercel, o "+local"; también en el pie del menú). Las sesiones v1 se migran a v2.
+> Paso 5 hecho: "Sin sustos fuertes" (ni su cara, ni el grito fuerte, ni el destello) y "Ayuda visual del aire" (borde que late
+> bajo el 25 % y aviso antes del jadeo; Historia la trae). **Tarea 4 terminada.**
 
 > **Sin programar.** Todos los números son **provisionales hasta el Gate 1**: en el código llevarán el comentario
 > `// PROVISIONAL (Gate 1)`. Normal es **idéntico** al juego de hoy. Los probadores del Gate 1 juegan `main` (congelado,

@@ -145,7 +145,7 @@ export class Juego {
         documentosLeidos: () => this.progreso.documentosLeidos,
         sonar: (tipo) => this.audio?.reproducir('ui', { bus: 'interfaz', volumen: tipo === 'pasar' ? 0.25 : 0.5, tono: tipo === 'volver' ? 0.8 : 1 }),
         pisoDelMenu: () => ({ nombre: this.piso.nombre, completado: this.perfilGuardado.completado(this.piso.id) }),
-        pistas: () => this.ctx.dificultad.pistas,
+        dificultadEnJuego: () => this.ctx.dificultad,
         dificultad: {
           enCurso: () => (this.estado === 'pausa' ? this.dificultadPartida.actual : null),
           enCursoSinGuardado: () => this.guardado.sinGuardado,
@@ -609,7 +609,6 @@ export class Juego {
       medicion: this.grabadora.midiendo ? this.grabadora.progresoMedicion : null,
       dtReal: this.bucle.dtReal,
       escalaResolucion: this.renderizador.resolucionDinamica,
-      indicadorAire: ctx.dificultad.indicadorAire || this.ajustes.valores.indicadorAireSiempre,
       ratonLibre: this.entrada.modo === 'teclado' && !this.entrada.teclado.bloqueado,
     });
   }

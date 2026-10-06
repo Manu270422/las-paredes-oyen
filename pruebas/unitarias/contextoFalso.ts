@@ -1,11 +1,13 @@
 // Un contexto de juego mínimo para probar lógica sin navegador: bus real,
 // reloj controlado y un audio que solo anota lo que se pidió reproducir.
-// Cada prueba agrega (con "extra") solo las piezas que necesita.
+// Cada prueba agrega (con "extra") solo las piezas que necesita. Por defecto: Normal y los ajustes iniciales.
 import type { ContextoJuego } from '../../src/nucleo/ContextoJuego';
 import type { MapaEventos, Ruido } from '../../src/nucleo/Eventos';
 import type { IdSonido, OpcionesSonido } from '../../src/audio/TiposAudio';
 import type { ObservadorSonido } from '../../src/audio/MotorAudio';
 import { BusEventos } from '../../src/nucleo/BusEventos';
+import { TABLA_DIFICULTAD } from '../../src/config/Dificultad';
+import { AJUSTES_POR_DEFECTO } from '../../src/config/Ajustes';
 
 export interface Falso {
   ctx: ContextoJuego;
@@ -40,7 +42,8 @@ export function crearContextoFalso(extra: Record<string, unknown> = {}): Falso {
     },
   };
   const jugador = { posicion: { x: 0, y: 0, z: 0 }, yaw: 0, sumarEstres: () => undefined };
-  const ctx = { bus, audio, programador, jugador, ...extra } as unknown as ContextoJuego;
+  const ajustes = { valores: AJUSTES_POR_DEFECTO };
+  const ctx = { bus, audio, programador, jugador, dificultad: TABLA_DIFICULTAD.normal, ajustes, ...extra } as unknown as ContextoJuego;
   return {
     ctx,
     bus,

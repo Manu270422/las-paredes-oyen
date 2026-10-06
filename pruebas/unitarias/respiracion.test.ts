@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 import { Respiracion } from '../../src/jugador/Respiracion';
 import { CONFIG } from '../../src/config/ConfiguracionJuego';
 import { crearContextoFalso } from './contextoFalso';
+import { AJUSTES_POR_DEFECTO } from '../../src/config/Ajustes';
+import { TABLA_DIFICULTAD } from '../../src/config/Dificultad';
 
 const PASO = 1 / 60;
 
@@ -45,5 +47,43 @@ describe('Respiracion', () => {
     const r = new Respiracion();
     simular(r, 5, true, ctx);
     expect(ruidos).toHaveLength(0);
+  });
+});
+
+describe('Ayuda visual del aire (accesibilidad)', () => {
+  const avisos = (extra: Record<string, unknown>) => {
+    const falso = crearContextoFalso(extra);
+    const textos: string[] = [];
+    falso.bus.on('subtitulo', (s) => textos.push(s.texto));
+    return { ctx: falso.ctx, textos, ruidos: falso.ruidos };
+  };
+  const aguantarHasta = (r: Respiracion, ctx: ReturnType<typeof crearContextoFalso>['ctx'], aire: number) => {
+    while (r.aire > aire) r.actualizar(PASO, true, 0, 0, ctx, 0, 0);
+  };
+
+  it('apagada (Normal, por defecto): no avisa', () => {
+    const { ctx, textos } = avisos({});
+    const r = new Respiracion();
+    aguantarHasta(r, ctx, 0.05);
+    expect(textos).toEqual([]);
+  });
+
+  it('encendida en Ajustes: avisa UNA vez por aguantada, con tiempo para soltar antes del jadeo', () => {
+    const { ctx, textos, ruidos } = avisos({ ajustes: { valores: { ...AJUSTES_POR_DEFECTO, ayudaVisualAire: true } } });
+    const r = new Respiracion();
+    aguantarHasta(r, ctx, 0.05);
+    expect(textos).toEqual(['[Te queda poco aire: suéltalo antes de jadear]']);
+    expect(ruidos.some((x) => x.causa === 'jadeo'), 'avisó antes del jadeo').toBe(false);
+    // Suelto, recupero y vuelvo a aguantar: avisa otra vez.
+    for (let t = 0; t < 5; t += PASO) r.actualizar(PASO, false, 0, 0, ctx, 0, 0);
+    aguantarHasta(r, ctx, 0.05);
+    expect(textos).toHaveLength(2);
+  });
+
+  it('Historia la trae aunque Ajustes la tenga apagada (la dificultad puede dar, nunca quitar accesibilidad)', () => {
+    const { ctx, textos } = avisos({ dificultad: TABLA_DIFICULTAD.historia });
+    const r = new Respiracion();
+    aguantarHasta(r, ctx, 0.05);
+    expect(textos).toHaveLength(1);
   });
 });

@@ -28,6 +28,7 @@ describe('Normal es el juego de gate1-congelado', () => {
       puntosControl: 'todos', // src/nucleo/Juego.ts:265  const punto = PUNTOS_CONTROL[nombre]: toda bandera de la lista guardaba
       pistas: true, // src/ui/hud/HUD.ts:84  bus.on('pista', (p) => this.pistas.agregar(p.texto)): siempre
       indicadorAire: true, // src/ui/hud/EstadoJugadorHUD.ts:38  this.aire.fijar(aire, aguantando || aire < 0.98, …): siempre
+      ayudaAire: false, // no existía: la ayuda visual del aire es nueva (Tarea 4) y en Normal viene apagada
       // NUEVO en la Tarea 4 (aprobado): a la 3.ª muerte seguida solo OFRECE bajar a Historia. Si no se acepta, el juego es el mismo.
       ofrecerBajarA: 'historia',
     });

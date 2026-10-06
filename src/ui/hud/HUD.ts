@@ -8,6 +8,8 @@ import { Subtitulos } from './Subtitulos';
 import { AvisoObjetivo } from './AvisoObjetivo';
 import { TarjetaLugar } from './TarjetaLugar';
 import { Pistas } from './Pistas';
+import type { ValoresDificultad } from '../../config/Dificultad';
+import { AVISO_POCO_AIRE } from '../../jugador/Respiracion';
 import { IndicadorInteraccion } from './IndicadorInteraccion';
 import { EstadoJugadorHUD } from './EstadoJugadorHUD';
 import { MedidorGrabacion } from './MedidorGrabacion';
@@ -25,8 +27,6 @@ export interface EstadoHUD {
   escalaResolucion: number;
   /** En PC: el ratón no está capturado (hay que hacer clic para mirar). */
   ratonLibre: boolean;
-  /** Si se muestra el indicador del aire (la dificultad, o Ajustes → Accesibilidad). */
-  indicadorAire: boolean;
 }
 
 /** Función que traduce una posición del mundo a una flecha relativa a la mirada. */
@@ -44,14 +44,16 @@ export class HUD {
   private readonly medidor = new MedidorGrabacion();
   private readonly fps = new ContadorFps();
   private readonly avisoRaton: HTMLDivElement;
+  /** La ayuda visual del aire: el borde de la pantalla que late cuando queda poco. */
+  private readonly avisoAire: HTMLDivElement;
 
   constructor(
     bus: BusEventos<MapaEventos>,
     private readonly ajustes: GestorAjustes,
     private readonly modo: () => ModoEntrada,
     direccion: DireccionRelativa,
-    /** ¿La dificultad en curso muestra las pistas de tutorial? */
-    private readonly pistasPermitidas: () => boolean,
+    /** La dificultad en juego: si muestra las pistas, el indicador del aire y su ayuda visual. */
+    private readonly dificultad: () => ValoresDificultad,
   ) {
     this.pistas = new Pistas(modo);
     this.elemento = document.createElement('div');
@@ -61,7 +63,11 @@ export class HUD {
     this.avisoRaton = document.createElement('div');
     this.avisoRaton.className = 'aviso-raton';
     this.avisoRaton.textContent = 'Haz clic para controlar la mirada';
+    this.avisoAire = document.createElement('div');
+    this.avisoAire.className = 'aviso-aire';
+    this.avisoAire.setAttribute('aria-hidden', 'true');
     this.elemento.append(
+      this.avisoAire,
       this.interaccion.mira,
       this.interaccion.elemento,
       this.subtitulos.elemento,
@@ -86,7 +92,7 @@ export class HUD {
     bus.on('objetivo', (o) => this.objetivo.mostrar(o.texto, o.nuevo));
     bus.on('tarjeta', (t) => this.tarjeta.mostrar(t.titulo, t.subtitulo, t.estilo));
     bus.on('pista', (p) => {
-      if (this.pistasPermitidas()) this.pistas.agregar(p.texto);
+      if (this.dificultad().pistas) this.pistas.agregar(p.texto);
     });
   }
 
@@ -109,7 +115,13 @@ export class HUD {
 
   actualizar(e: EstadoHUD): void {
     this.interaccion.actualizar(e.interaccion, this.modo());
-    this.estado.actualizar(e.aire, e.aguantando, e.energia, e.bateria, e.linterna, e.indicadorAire);
+    // La accesibilidad no depende de la dificultad: Ajustes devuelve el indicador y enciende la ayuda.
+    const d = this.dificultad();
+    const v = this.ajustes.valores;
+    this.estado.actualizar(e.aire, e.aguantando, e.energia, e.bateria, e.linterna, d.indicadorAire || v.indicadorAireSiempre);
+    const poco = (d.ayudaAire || v.ayudaVisualAire) && e.aguantando && e.aire < AVISO_POCO_AIRE;
+    this.avisoAire.classList.toggle('aviso-aire--activo', poco);
+    this.avisoAire.classList.toggle('aviso-aire--quieto', v.reducirDestellos);
     this.medidor.actualizar(e.medicion);
     this.fps.actualizar(e.dtReal, this.ajustes.valores.mostrarFps, e.escalaResolucion);
     this.avisoRaton.classList.toggle('aviso-raton--visible', e.ratonLibre);

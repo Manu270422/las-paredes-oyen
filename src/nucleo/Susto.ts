@@ -8,6 +8,15 @@ const adelante = new Vector3();
 
 export function mostrarSusto(ctx: ContextoJuego, origen: 'muerte' | 'final'): void {
   ctx.bus.emit('susto', { origen });
+  // Accesibilidad (Ajustes): sin su cara, sin el grito fuerte ni el destello. Queda un grito lejano y apagado,
+  // y la secuencia sigue igual (el fundido a negro, la explicación de la muerte, el final).
+  if (ctx.ajustes.valores.sinSustosFuertes) {
+    // Cuando atrapa, ya está a menos de un metro: también la oculto, para que su cara no quede a la vista.
+    ctx.entidad.modelo.fijarVisible(false);
+    ctx.audio.reproducir('chillido', { bus: 'entidad', volumen: 0.18, tono: 0.7, reverb: 0.8, variacion: 0 });
+    ctx.jugador.sobresaltar(0.3);
+    return;
+  }
   const camara = ctx.jugador.camara;
   camara.getWorldDirection(adelante);
   adelante.y = 0;

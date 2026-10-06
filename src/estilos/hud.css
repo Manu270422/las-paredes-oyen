@@ -146,6 +146,36 @@
   text-shadow: 0 1px 6px #000;
 }
 
+/* --- Ayuda visual del aire (accesibilidad): el borde late cuando queda poco aire --- */
+.aviso-aire {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 clamp(40px, 12vmin, 120px) rgba(170, 28, 22, 0.75);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.aviso-aire--activo {
+  opacity: 1;
+  animation: aviso-aire-latido 0.9s ease-in-out infinite;
+}
+
+/* Con "reducir destellos", el aviso queda fijo: se ve, pero no parpadea. */
+.aviso-aire--quieto {
+  animation: none;
+}
+
+@keyframes aviso-aire-latido {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* --- Tarjeta de lugar (estilo cine) --- */
 .tarjeta {
   position: absolute;

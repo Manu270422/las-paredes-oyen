@@ -19,7 +19,7 @@ import { LectorDocumento } from './pantallas/LectorDocumento';
 import type { Documento } from '../narrativa/TiposNarrativa';
 import { PantallaMuerte, type DatosMuerte } from './pantallas/PantallaMuerte';
 import type { PuenteTelemetria } from './PuenteTelemetria';
-import { NOMBRE_DIFICULTAD, TABLA_DIFICULTAD, type IdDificultad } from '../config/Dificultad';
+import { NOMBRE_DIFICULTAD, TABLA_DIFICULTAD, type IdDificultad, type ValoresDificultad } from '../config/Dificultad';
 import type { PuenteDificultad } from './PuenteDificultad';
 import { PantallaDificultad } from './pantallas/PantallaDificultad';
 import { PantallaFin, type EstadisticasFin } from './pantallas/PantallaFin';
@@ -44,8 +44,8 @@ export interface AccionesUI {
   sonar(tipo: TipoSonidoUI): void;
   /** El piso del menú: su nombre y la dificultad más alta en que se terminó (null si nunca). */
   pisoDelMenu(): { nombre: string; completado: IdDificultad | null };
-  /** ¿La dificultad en curso muestra las pistas de tutorial? */
-  pistas(): boolean;
+  /** Los valores de la dificultad en juego (pistas, indicador y ayuda del aire para el HUD). */
+  dificultadEnJuego(): ValoresDificultad;
   dificultad: PuenteDificultad;
   telemetria: PuenteTelemetria;
 }
@@ -75,7 +75,7 @@ export class GestorUI {
     direccion: DireccionRelativa,
   ) {
     conectarSonidoUI((tipo) => acciones.sonar(tipo));
-    this.hud = new HUD(bus, ajustes, () => entrada.modo, direccion, () => acciones.pistas());
+    this.hud = new HUD(bus, ajustes, () => entrada.modo, direccion, () => acciones.dificultadEnJuego());
 
     this.menu = new MenuPrincipal({
       hayPartida: () => acciones.hayPartida(),

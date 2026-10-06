@@ -72,6 +72,8 @@ export interface ValoresDificultad {
   readonly pistas: boolean;
   /** El indicador del aire al contener la respiración. Ajustes → Accesibilidad lo devuelve siempre (ui/hud). */
   readonly indicadorAire: boolean;
+  /** La ayuda visual del aire (borde que late y aviso antes del jadeo). Ajustes → Accesibilidad la enciende en cualquiera. */
+  readonly ayudaAire: boolean;
   /**
    * A cuál se OFRECE bajar tras 3 muertes seguidas sin avanzar (pantalla de muerte): un solo escalón, y nunca
    * se baja sola. null: no se ofrece (Historia ya es la más fácil; Pesadilla se eligió a conciencia).
@@ -95,6 +97,7 @@ export const TABLA_DIFICULTAD: Readonly<Record<IdDificultad, ValoresDificultad>>
     puntosControl: 'todos',
     pistas: true,
     indicadorAire: true,
+    ayudaAire: true,
     ofrecerBajarA: null,
   },
   // El juego de gate1-congelado, valor por valor. NO SE TOCA: cambiar Normal es cambiar el juego que se probó.
@@ -111,6 +114,7 @@ export const TABLA_DIFICULTAD: Readonly<Record<IdDificultad, ValoresDificultad>>
     puntosControl: 'todos',
     pistas: true,
     indicadorAire: true,
+    ayudaAire: false,
     ofrecerBajarA: 'historia',
   },
   // PROVISIONAL (Gate 1). El encuentro NO se alarga: Normal ya está a 0.35 s del aire con miedo máximo.
@@ -127,6 +131,7 @@ export const TABLA_DIFICULTAD: Readonly<Record<IdDificultad, ValoresDificultad>>
     puntosControl: 'mayores',
     pistas: false,
     indicadorAire: false,
+    ayudaAire: false,
     ofrecerBajarA: 'normal',
   },
   // PROVISIONAL (Gate 1). Justo en el piso de justicia, nunca por debajo.
@@ -143,6 +148,7 @@ export const TABLA_DIFICULTAD: Readonly<Record<IdDificultad, ValoresDificultad>>
     puntosControl: 'ninguno',
     pistas: false,
     indicadorAire: false,
+    ayudaAire: false,
     ofrecerBajarA: null,
   },
 };

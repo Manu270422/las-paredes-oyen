@@ -55,6 +55,10 @@ export interface AjustesJugador {
   dificultad: IdDificultad;
   /** Mostrar el indicador del aire aunque la dificultad lo oculte (accesibilidad). */
   indicadorAireSiempre: boolean;
+  /** Al morir y en el final: sin su cara ni el grito fuerte, un fundido (accesibilidad). */
+  sinSustosFuertes: boolean;
+  /** Con poco aire: el borde de la pantalla late y un subtítulo avisa antes del jadeo (accesibilidad). */
+  ayudaVisualAire: boolean;
 }
 
 export const AJUSTES_POR_DEFECTO: AjustesJugador = {
@@ -76,6 +80,8 @@ export const AJUSTES_POR_DEFECTO: AjustesJugador = {
   telemetria: false,
   dificultad: DIFICULTAD_POR_DEFECTO,
   indicadorAireSiempre: false,
+  sinSustosFuertes: false,
+  ayudaVisualAire: false,
 };
 
 type Oyente = (ajustes: Readonly<AjustesJugador>, clave: keyof AjustesJugador | null) => void;

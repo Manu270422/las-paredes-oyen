@@ -18,7 +18,7 @@ export interface AccionesDificultad {
 
 /** Qué cambia en cada una, en palabras de jugador. */
 const LINEA: Readonly<Record<IdDificultad, string>> = {
-  historia: 'Ella tarda más en lanzarse y la linterna dura más. Para vivir la historia.',
+  historia: 'Ella tarda más en lanzarse, la linterna dura más y te avisa cuando se acaba el aire. Para vivir la historia.',
   normal: 'El juego como fue pensado. Recomendada para la primera vez.',
   dificil: 'Te oye mejor y caza más rápido. Solo guarda al medir un apartamento. Sin pistas ni indicador del aire.',
   pesadilla: 'Sin puntos de control: si mueres o sales, empiezas de cero. No guarda.',
@@ -46,7 +46,7 @@ export class PantallaDificultad extends Pantalla {
     // La accesibilidad no depende de la dificultad: lo digo aquí, donde se decide.
     const accesibilidad = document.createElement('p');
     accesibilidad.className = 'dificultad__accesibilidad';
-    accesibilidad.textContent = 'La accesibilidad no depende de la dificultad: subtítulos, menos destellos e indicador del aire siempre visible, en Ajustes → Accesibilidad.';
+    accesibilidad.textContent = 'La accesibilidad no depende de la dificultad: sin sustos fuertes, ayuda visual del aire, subtítulos y menos destellos, en Ajustes → Accesibilidad.';
     const botones = document.createElement('div');
     botones.className = 'dificultad__acciones';
     botones.append(

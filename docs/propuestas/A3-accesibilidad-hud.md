@@ -25,8 +25,8 @@ Sin `display: none` (mataría los fundidos) y sin `inert` (no hace falta: no rec
 
 ## Dónde encaja
 
-Es parte de **A3** (ajustes de accesibilidad), junto con los subtítulos direccionales, la ayuda visual del aire y el modo
-sin sustos fuertes. Va **después del Gate 1**: toca todo el HUD y no cambia el balance, pero conviene hacerlo con un
+Es parte de **A3** (ajustes de accesibilidad). La ayuda visual del aire, el modo sin sustos fuertes y el indicador del
+aire siempre visible ya se hicieron en la Tarea 4 del Sprint 4; los subtítulos direccionales ya existían. Va **después del Gate 1**: toca todo el HUD y no cambia el balance, pero conviene hacerlo con un
 lector de pantalla real a mano (NVDA en Windows, VoiceOver en iOS), y eso requiere tiempo de prueba que hoy es de los
 probadores.
 

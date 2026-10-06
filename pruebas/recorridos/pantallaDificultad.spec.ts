@@ -51,7 +51,7 @@ test('elegir: líneas claras y Pesadilla bloqueada; Difícil sin pistas ni aire;
   const pesadilla = pantalla.getByRole('radio', { name: /^Pesadilla/ });
   await expect(pesadilla).toBeDisabled();
   await expect(pesadilla).toContainText('se desbloquea al terminar el Piso 4, en cualquier dificultad');
-  await expect(pantalla).toContainText('La accesibilidad no depende de la dificultad');
+  await expect(pantalla).toContainText('La accesibilidad no depende de la dificultad: sin sustos fuertes, ayuda visual del aire');
 
   // "Volver" regresa al menú sin empezar nada.
   await pantalla.getByRole('button', { name: 'Volver', exact: true }).click();

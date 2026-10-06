@@ -182,6 +182,18 @@ export class PantallaAjustes extends Pantalla {
             alCambiar: (b) => a.cambiar('reducirDestellos', b),
           }),
           crearInterruptor({
+            etiqueta: 'Sin sustos fuertes',
+            ayuda: 'Al morir y en el final no aparece su cara ni suena el grito fuerte: la pantalla se funde a negro.',
+            valor: v.sinSustosFuertes,
+            alCambiar: (b) => a.cambiar('sinSustosFuertes', b),
+          }),
+          crearInterruptor({
+            etiqueta: 'Ayuda visual del aire',
+            ayuda: 'Al contener la respiración con poco aire, el borde de la pantalla late y un subtítulo avisa antes del jadeo. Historia la trae siempre.',
+            valor: v.ayudaVisualAire,
+            alCambiar: (b) => a.cambiar('ayudaVisualAire', b),
+          }),
+          crearInterruptor({
             etiqueta: 'Indicador del aire siempre visible',
             ayuda: 'Difícil y Pesadilla lo ocultan; con esto se ve siempre. La accesibilidad no depende de la dificultad.',
             valor: v.indicadorAireSiempre,

@@ -9,6 +9,8 @@ import { interpolar } from '../utilidades/Matematicas';
 
 /** Con miedo máximo el aire dura un 45 % menos: 9 s tranquilo, 4.95 s aterrado. El encuentro debe caber ahí. */
 export const PERDIDA_AIRE_POR_MIEDO = 0.45;
+/** Con la ayuda visual del aire: por debajo de esto, el borde de la pantalla late y un subtítulo avisa. */
+export const AVISO_POCO_AIRE = 0.25;
 
 export class Respiracion {
   /** Aire disponible para contener la respiración (0..1). */
@@ -22,6 +24,8 @@ export class Respiracion {
    */
   private debeSoltar = false;
   private tiempoAguantado = 0;
+  /** Ya avisé que queda poco aire en esta aguantada (ayuda visual del aire). */
+  private avisePocoAire = false;
   private temporizador = 1.5;
   private inhalando = true;
 
@@ -38,11 +42,19 @@ export class Respiracion {
 
     if (!quiereAguantar) this.debeSoltar = false;
     if (quiereAguantar && !this.recuperando && !this.debeSoltar && this.aire > 0) {
-      if (!this.aguantando) this.tiempoAguantado = 0;
+      if (!this.aguantando) {
+        this.tiempoAguantado = 0;
+        this.avisePocoAire = false;
+      }
       this.aguantando = true;
       this.tiempoAguantado += dt;
       // Con miedo, el aire dura casi la mitad.
       this.aire -= dt / (CONFIG.duracionAire * (1 - estres * PERDIDA_AIRE_POR_MIEDO));
+      // Ayuda visual del aire (la dificultad o Ajustes): aviso con tiempo para soltarlo antes del jadeo.
+      if (this.aire < AVISO_POCO_AIRE && !this.avisePocoAire && (ctx.dificultad.ayudaAire || ctx.ajustes.valores.ayudaVisualAire)) {
+        this.avisePocoAire = true;
+        ctx.bus.emit('subtitulo', { texto: '[Te queda poco aire: suéltalo antes de jadear]', duracion: 2.5, tipo: 'efecto' });
+      }
       if (this.aire <= 0) {
         this.aire = 0;
         this.aguantando = false;
