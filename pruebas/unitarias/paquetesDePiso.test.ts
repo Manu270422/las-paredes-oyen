@@ -27,6 +27,11 @@ describe.each(PISOS.map((p) => [p.id, p] as const))('Paquete %s', (_id, piso) =>
     expect(rotos).toEqual([]);
   });
 
+  it('los puntos de control "mayores" (los de Difícil) son puntos de control del paquete', () => {
+    const rotos = (piso.puntosControlMayores ?? []).filter((b) => !(b in piso.puntosControl));
+    expect(rotos).toEqual([]);
+  });
+
   it('todos los puntos de control caen en una celda por donde se puede caminar', () => {
     const rotos = Object.entries(piso.mapa.puntosControl)
       .filter(([, p]) => !transitable(p.x, p.y))

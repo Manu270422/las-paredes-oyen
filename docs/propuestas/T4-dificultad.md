@@ -1,6 +1,9 @@
 # Tarea 4 — Dificultad (estructura, sin balance)
 
 > **Aprobada** con cambios (ver "Decisiones del dueño" al final). Paso 1 hecho: tabla, `ctx.dificultad`, foto y golden master.
+> Paso 2 hecho: puntos de control por dificultad, Pesadilla sin guardar ni borrar y **partida v4** (adelantada del paso 3:
+> sin ella, "Continuar" no sabría si la partida es de Normal o de Difícil). Morir en Pesadilla = partida nueva en Pesadilla:
+> estadísticas en 0 y +1 partida iniciada en el perfil (confirmado por el dueño).
 
 > **Sin programar.** Todos los números son **provisionales hasta el Gate 1**: en el código llevarán el comentario
 > `// PROVISIONAL (Gate 1)`. Normal es **idéntico** al juego de hoy. Los probadores del Gate 1 juegan `main` (congelado,
@@ -91,7 +94,7 @@ commit). Además, un evento `dificultad` {de, a, motivo: `ajustes` | `oferta`}.
 
 1. Tabla, `ctx.dificultad`, foto de Normal y golden master. Es un refactor sin cambio de comportamiento.
 2. Puntos de control por dificultad y Pesadilla.
-3. Pantalla de selección, Ajustes, partida v4 y ajustes v2.
+3. Pantalla de selección, Ajustes y ajustes v2 (la partida v4 ya llegó en el paso 2).
 4. Oferta de bajar, telemetría y versión de compilación.
 5. Las dos opciones de accesibilidad.
 

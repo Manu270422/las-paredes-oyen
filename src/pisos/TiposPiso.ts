@@ -94,6 +94,8 @@ export interface PaquetePiso {
   readonly puntoInicial: string;
   /** Qué banderas crean un punto de control: bandera → nombre del punto donde se reaparece. */
   readonly puntosControl: Readonly<Record<string, string>>;
+  /** Las banderas de `puntosControl` que cuentan en Difícil (completar un apartamento, no cada paso). */
+  readonly puntosControlMayores?: readonly string[];
   /**
    * Las luces que cambian con una bandera. Se aplican al marcarla y al restaurar una partida,
    * en el orden en que están escritas (por eso una bandera posterior puede romper lo que otra encendió).

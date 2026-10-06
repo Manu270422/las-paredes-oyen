@@ -35,6 +35,8 @@ export interface AccionesUI {
   nuevaPartida(): void;
   reanudar(): void;
   reiniciarPunto(): void;
+  /** Si reintentar es empezar de cero (Pesadilla: no hay punto de control). */
+  reinicioDesdeCero(): boolean;
   salirAlMenu(): void;
   objetivo(): string | null;
   documentosLeidos(): readonly string[];
@@ -84,6 +86,7 @@ export class GestorUI {
       documentos: () => this.abrir(this.documentos),
       ajustes: () => this.abrir(this.ajustesPantalla),
       reiniciarPunto: () => acciones.reiniciarPunto(),
+      reinicioDesdeCero: () => acciones.reinicioDesdeCero(),
       salirAlMenu: () => void this.confirmarSalir(),
     });
     this.ajustesPantalla = new PantallaAjustes(ajustes, raiz, () => this.cerrarActual(), acciones.telemetria);
@@ -100,6 +103,7 @@ export class GestorUI {
     this.muerte = new PantallaMuerte(
       () => acciones.reiniciarPunto(),
       () => acciones.salirAlMenu(),
+      () => acciones.reinicioDesdeCero(),
     );
     this.fin = new PantallaFin(() => acciones.salirAlMenu(), () => void this.confirmarNuevaPartida(), acciones.telemetria);
     this.creditos = new PantallaCreditos(() => this.cerrarActual());

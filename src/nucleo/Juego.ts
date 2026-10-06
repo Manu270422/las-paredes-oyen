@@ -6,7 +6,7 @@ import { Color, FogExp2, HemisphereLight, Scene } from 'three';
 import { CONFIG } from '../config/ConfiguracionJuego';
 import { GestorAjustes } from '../config/Ajustes';
 import { PERFILES, type NivelCalidad, type PerfilCalidad } from '../config/PerfilesCalidad';
-import { DIFICULTAD_POR_DEFECTO, NOMBRE_DIFICULTAD, TABLA_DIFICULTAD } from '../config/Dificultad';
+import { DIFICULTAD_POR_DEFECTO, NOMBRE_DIFICULTAD, puntoDeControlDe, TABLA_DIFICULTAD, type IdDificultad } from '../config/Dificultad';
 import { detectarDispositivo, sugerirCalidad } from '../plataforma/DetectorDispositivo';
 import { GestorPantalla } from '../plataforma/GestorPantalla';
 import { GestorEntrada } from '../entrada/GestorEntrada';
@@ -37,9 +37,10 @@ import type { MapaEventos } from './Eventos';
 import { Programador } from './Programador';
 import { BucleJuego } from './BucleJuego';
 import { SecuenciaMuerte, type SalidaMuerte } from './SecuenciaMuerte';
+import { FondoMenu } from './FondoMenu';
 import { mostrarSusto } from './Susto';
 import type { ContextoJuego } from './ContextoJuego';
-import { amortiguar, GRADOS, normalizarAngulo } from '../utilidades/Matematicas';
+import { amortiguar, normalizarAngulo } from '../utilidades/Matematicas';
 
 type EstadoApp = 'cargando' | 'inicio' | 'menu' | 'jugando' | 'pausa' | 'documento' | 'muerte' | 'fin';
 
@@ -62,6 +63,8 @@ export class Juego {
   /** Telemetría local de playtesting: escucha el bus, no toca la lógica de nadie. */
   private readonly telemetria = new Telemetria(this.bus, this.ajustes);
   private readonly muerte = new SecuenciaMuerte();
+  /** El menú se dibuja sobre el pasillo real: cámara que respira y, a veces, algo al fondo. */
+  private readonly fondoMenu = new FondoMenu();
   /** Lo que la secuencia de muerte le pide al juego. */
   private readonly salidaMuerte: SalidaMuerte = {
     fundir: (aNegro, segundos) => this.ui.hud.fundir(aNegro, segundos),
@@ -97,14 +100,14 @@ export class Juego {
   private bucle!: BucleJuego;
 
   private estado: EstadoApp = 'cargando';
+  /** La dificultad de la partida en curso (o la de la próxima partida nueva). */
+  private dificultad: IdDificultad = DIFICULTAD_POR_DEFECTO;
   private estadoAntesDePausa: EstadoApp = 'jugando';
   private soloMirar = false;
   private puntoControl = this.piso.puntoInicial;
   private tiempoJugado = 0;
   private temporizadorLento = 0;
   private interferencia = 0;
-  private temporizadorMenu = 12;
-  private tiempoMenu = 0;
 
   constructor(contenedor: HTMLElement) {
     this.lienzo = contenedor.querySelector('#lienzo') as HTMLCanvasElement;
@@ -134,7 +137,9 @@ export class Juego {
         continuar: () => this.comenzar(this.guardado.cargar(), 'continuar'),
         nuevaPartida: () => this.nuevaPartida(),
         reanudar: () => this.reanudar(),
-        reiniciarPunto: () => this.comenzar(this.guardado.cargar(), 'reintento'),
+        // En Pesadilla no hay punto de control: reintentar es una partida nueva (sin tocar la guardada).
+        reiniciarPunto: () => (this.guardado.sinGuardado ? this.nuevaPartida(this.dificultad, 'reintento') : this.comenzar(this.guardado.cargar(), 'reintento')),
+        reinicioDesdeCero: () => this.guardado.sinGuardado,
         salirAlMenu: () => this.salirAlMenu(),
         objetivo: () => this.progreso.objetivoActual()?.texto ?? null,
         documentosLeidos: () => this.progreso.documentosLeidos,
@@ -167,7 +172,7 @@ export class Juego {
     this.bucle.iniciar();
     // Solo en desarrollo: expongo el juego en la consola para depurar (window.__juego).
     if (import.meta.env.DEV) (window as unknown as { __juego: unknown }).__juego = this;
-    this.prepararMenuFondo();
+    this.fondoMenu.preparar(this.ctx);
 
     // Pantalla de audífonos: espero el primer gesto para activar audio y pantalla completa.
     this.estado = 'inicio';
@@ -256,7 +261,7 @@ export class Juego {
       if (ruido.origen === 'jugador') this.grabadora.alRuidoJugador(ruido, this.ctx);
     });
     this.bus.on('bandera', ({ nombre }) => {
-      const punto = this.piso.puntosControl[nombre];
+      const punto = puntoDeControlDe(this.piso, this.ctx.dificultad, nombre);
       if (punto) {
         // Avancé en la historia: el alivio por muertes seguidas se reinicia.
         this.memoria.muertesSinProgreso = 0;
@@ -311,17 +316,6 @@ export class Juego {
   // ---------------------------------------------------------------------------
   // ESTADOS DE LA APLICACIÓN
   // ---------------------------------------------------------------------------
-  private prepararMenuFondo(): void {
-    this.progreso.importar(null);
-    this.nivel.restablecer(this.ctx);
-    this.entidad.reiniciar(this.piso.mapa.guaridaEntidad.x * CONFIG.celda, this.piso.mapa.guaridaEntidad.y * CONFIG.celda, this.ctx);
-    const { x, y, angulo } = this.piso.menu.camara;
-    this.jugador.teletransportar(x, y, angulo);
-    this.linterna.reiniciar(1);
-    this.linterna.encendida = true;
-    this.director.activo = false;
-  }
-
   private irAlMenu(): void {
     this.estado = 'menu';
     this.soloMirar = false;
@@ -330,13 +324,21 @@ export class Juego {
     this.ui.mostrarMenu();
   }
 
-  private nuevaPartida(): void {
+  private nuevaPartida(dificultad = this.dificultad, origen: OrigenPartida = 'nueva'): void {
+    this.fijarDificultad(dificultad);
     this.guardado.borrar();
     this.memoria.reiniciarEstadisticas();
     this.perfilGuardado.registrarInicio();
     this.director.olvidarPerfil();
     this.tiempoJugado = 0;
-    this.comenzar(null, 'nueva');
+    this.comenzar(null, origen);
+  }
+
+  /** La dificultad de esta partida: sus valores van al contexto, y si no guarda (Pesadilla) no se guarda ni se borra nada. */
+  private fijarDificultad(id: IdDificultad): void {
+    this.dificultad = id;
+    this.ctx.dificultad = TABLA_DIFICULTAD[id];
+    this.guardado.fijarSinGuardado(this.ctx.dificultad.puntosControl === 'ninguno');
   }
 
   /** Empiezo (o retomo) una partida desde un punto de control. */
@@ -382,6 +384,8 @@ export class Juego {
     this.soloMirar = false;
     this.interferencia = 0;
 
+    // "Continuar" y reintentar retoman la dificultad de la partida guardada; una partida nueva ya fijó la suya.
+    this.fijarDificultad(datos?.dificultad ?? this.dificultad);
     this.progreso.importar(datos?.progreso ?? null);
     this.puntoControl = datos?.puntoControl ?? this.piso.puntoInicial;
     this.tiempoJugado = datos?.tiempoJugado ?? this.tiempoJugado;
@@ -408,6 +412,7 @@ export class Juego {
   private guardarPartida(): void {
     this.guardado.guardar({
       piso: this.piso.id,
+      dificultad: this.dificultad,
       puntoControl: this.puntoControl,
       progreso: this.progreso.exportar(),
       bateria: Math.max(0.35, this.linterna.bateria),
@@ -456,7 +461,7 @@ export class Juego {
     this.audio.fijarSilencioAmbiente(1);
     void this.audio.reanudar();
     this.ui.hud.limpiar();
-    this.prepararMenuFondo();
+    this.fondoMenu.preparar(this.ctx);
     this.irAlMenu();
   }
 
@@ -482,16 +487,15 @@ export class Juego {
     this.audio.detenerTodo();
     this.ambiente.olvidarFuentes();
     this.guardado.borrar();
-    // La dificultad de hoy es la única que hay (la Tarea 4 trae la elegida).
     this.ui.mostrarFin({
       piso: this.piso.nombre,
-      dificultad: NOMBRE_DIFICULTAD[DIFICULTAD_POR_DEFECTO],
+      dificultad: NOMBRE_DIFICULTAD[this.dificultad],
       siguiente: siguienteDe(this.piso),
       tiempo: this.tiempoJugado,
       cambiosMundo: this.memoria.cambiosMundo,
       persecuciones: this.memoria.persecuciones,
       muertes: this.memoria.muertes,
-      marcas: this.perfilGuardado.registrarFinal(this.piso.id, DIFICULTAD_POR_DEFECTO, this.tiempoJugado, this.memoria.muertes),
+      marcas: this.perfilGuardado.registrarFinal(this.piso.id, this.dificultad, this.tiempoJugado, this.memoria.muertes),
     });
     this.ui.hud.fundir(false, 0.5);
   }
@@ -515,7 +519,7 @@ export class Juego {
         break;
       case 'menu':
       case 'inicio':
-        this.actualizarMenuFondo(dt);
+        this.fondoMenu.actualizar(dt, this.ctx, this.estado === 'menu');
         this.navegarMenus(dt);
         break;
       case 'pausa':
@@ -614,39 +618,6 @@ export class Juego {
       escalaResolucion: this.renderizador.resolucionDinamica,
       ratonLibre: this.entrada.modo === 'teclado' && !this.entrada.teclado.bloqueado,
     });
-  }
-
-  /** El menú se dibuja sobre el pasillo real: cámara que respira y, a veces, algo al fondo. */
-  private actualizarMenuFondo(dt: number): void {
-    this.tiempoMenu += dt;
-    const camara = this.jugador.camara;
-    const { camara: vista, figura } = this.piso.menu;
-    camara.position.set(vista.x * CONFIG.celda, 1.55 + Math.sin(this.tiempoMenu * 0.6) * 0.012, vista.y * CONFIG.celda);
-    camara.rotation.set(Math.sin(this.tiempoMenu * 0.23) * 0.02 - 0.03, vista.angulo * GRADOS + Math.sin(this.tiempoMenu * 0.17) * 0.05, 0);
-    this.linterna.actualizar(dt, Infinity, this.ctx);
-    this.linterna.bateria = 1;
-    this.nivel.actualizar(dt, null, camara.position.x, camara.position.z);
-
-    // Cada tanto aparece una figura de pie al fondo del pasillo.
-    this.temporizadorMenu -= dt;
-    const modelo = this.entidad.modelo;
-    if (this.temporizadorMenu <= 0) {
-      if (modelo.raiz.visible) {
-        modelo.fijarVisible(false);
-        this.temporizadorMenu = 20 + Math.random() * 25;
-      } else {
-        modelo.raiz.position.set(figura.x * CONFIG.celda, 0, figura.y * CONFIG.celda);
-        modelo.raiz.rotation.y = figura.angulo * GRADOS;
-        modelo.forzarPose('quieto');
-        modelo.fijarVisible(true);
-        this.temporizadorMenu = 1.8;
-      }
-    }
-    if (this.estado === 'menu') {
-      this.ambiente.actualizar(dt, camara.position.x, camara.position.z, this.nivel.rejilla);
-      this.audio.actualizarOyente(camara);
-      this.audio.actualizar(dt);
-    }
   }
 
   /** Paso el estado del jugador al postprocesado. */

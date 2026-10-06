@@ -9,11 +9,14 @@ export interface AccionesPausa {
   documentos(): void;
   ajustes(): void;
   reiniciarPunto(): void;
+  /** Si "volver al punto de control" es en realidad empezar de cero (Pesadilla). */
+  reinicioDesdeCero(): boolean;
   salirAlMenu(): void;
 }
 
 export class MenuPausa extends Pantalla {
   private readonly objetivo: HTMLDivElement;
+  private readonly reiniciar: HTMLButtonElement;
 
   constructor(private readonly acciones: AccionesPausa) {
     super('pausa');
@@ -30,7 +33,7 @@ export class MenuPausa extends Pantalla {
       crearBoton('Continuar', () => acciones.reanudar(), { clase: 'boton--principal' }),
       crearBoton('Documentos', () => acciones.documentos()),
       crearBoton('Ajustes', () => acciones.ajustes()),
-      crearBoton('Volver al último punto de control', () => acciones.reiniciarPunto()),
+      (this.reiniciar = crearBoton('Volver al último punto de control', () => acciones.reiniciarPunto())),
       crearBoton('Salir al menú principal', () => acciones.salirAlMenu(), { clase: 'boton--peligro' }),
     );
     contenido.append(izquierda, opciones);
@@ -42,5 +45,6 @@ export class MenuPausa extends Pantalla {
     const texto = this.acciones.objetivo();
     this.objetivo.innerHTML = '<small>Objetivo</small>';
     this.objetivo.append(document.createTextNode(texto ?? 'Sal de aquí.'));
+    this.reiniciar.textContent = this.acciones.reinicioDesdeCero() ? 'Empezar de nuevo' : 'Volver al último punto de control';
   }
 }

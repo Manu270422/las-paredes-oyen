@@ -7,7 +7,8 @@
 // 3) El orden: cada palanca empeora (o se queda igual) de Historia a Pesadilla.
 import { describe, expect, it } from 'vitest';
 import { CONFIG } from '../../src/config/ConfiguracionJuego';
-import { DIFICULTADES, TABLA_DIFICULTAD, type ValoresDificultad } from '../../src/config/Dificultad';
+import { DIFICULTADES, puntoDeControlDe, TABLA_DIFICULTAD, type ValoresDificultad } from '../../src/config/Dificultad';
+import { PISO_INICIAL as PISO } from '../../src/pisos/catalogo';
 import { DirectorTerror } from '../../src/director/DirectorTerror';
 import { RADIO_ENCUENTRO } from '../../src/ia/estados/EstadoInvestigando';
 import { PERDIDA_AIRE_POR_MIEDO } from '../../src/jugador/Respiracion';
@@ -24,6 +25,7 @@ describe('Normal es el juego de gate1-congelado', () => {
       bateria: 480, // src/config/ConfiguracionJuego.ts:34  duracionBateria: 480
       presupuesto: 1, // src/director/PresupuestoTension.ts:29  LIMITE_FASE sin multiplicar
       alivio: { porMuerte: 0.15, tope: 0.45, modo: 'techo' }, // src/director/DirectorTerror.ts:81  Math.min(0.45, … * 0.15), limite × (1 − alivio)
+      puntosControl: 'todos', // src/nucleo/Juego.ts:265  const punto = PUNTOS_CONTROL[nombre]: toda bandera de la lista guardaba
     });
   });
 });
@@ -91,5 +93,28 @@ describe('Los dos modos del alivio', () => {
     d.reiniciar(4, TABLA_DIFICULTAD.historia.alivio);
     expect(d['alivioDelTecho']).toBe(0);
     expect(d['estiramiento']).toBeCloseTo(1.6, 10);
+  });
+});
+
+describe('Puntos de control por dificultad (Piso 4)', () => {
+  const crean = (id: (typeof DIFICULTADES)[number]) =>
+    Object.keys(PISO.puntosControl).filter((bandera) => puntoDeControlDe(PISO, TABLA_DIFICULTAD[id], bandera) !== undefined);
+  const todas = Object.keys(PISO.puntosControl);
+
+  it('Historia y Normal guardan en todos los del paquete', () => {
+    expect(crean('historia')).toEqual(todas);
+    expect(crean('normal')).toEqual(todas);
+  });
+
+  it('Difícil solo al medir un apartamento: el tablero y la llave hay que conseguirlos sin morir', () => {
+    expect(crean('dificil')).toEqual(['medido:401', 'medido:403']);
+  });
+
+  it('Pesadilla en ninguno', () => {
+    expect(crean('pesadilla')).toEqual([]);
+  });
+
+  it('una bandera que no es punto de control no crea ninguno en ninguna dificultad', () => {
+    for (const id of DIFICULTADES) expect(puntoDeControlDe(PISO, TABLA_DIFICULTAD[id], 'leyo:diario_rosalba')).toBeUndefined();
   });
 });

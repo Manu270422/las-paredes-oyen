@@ -56,6 +56,7 @@ describe('cargarVersionado', () => {
 describe('SistemaGuardado', () => {
   const partida: Omit<DatosPartida, 'version' | 'fecha'> = {
     piso: 'piso4',
+    dificultad: 'normal',
     puntoControl: 'sala401',
     progreso: { banderas: ['medido:401'], inventario: [], documentos: [] },
     bateria: 0.8,
@@ -70,19 +71,45 @@ describe('SistemaGuardado', () => {
   });
 
   it('una partida v1 (la de los probadores del Gate 1, sin piso) sube hasta la actual como Piso 4 y se guarda migrada', () => {
-    const { piso: _sinPiso, ...v1 } = partida;
+    const { piso: _sinPiso, dificultad: _sinDificultad, ...v1 } = partida;
     const { cambiosMundo: _sinCambios, ...estadisticasV1 } = partida.estadisticas;
     sembrar('partida', { ...v1, estadisticas: estadisticasV1, version: 1, fecha: 1 });
     const cargada = new SistemaGuardado().cargar();
-    expect(cargada).toMatchObject({ version: 3, piso: 'piso4', puntoControl: 'sala401', estadisticas: { ...estadisticasV1, cambiosMundo: 0 } });
-    expect(guardado('partida'), 'queda guardada ya en el formato nuevo').toMatchObject({ version: 3, piso: 'piso4' });
+    expect(cargada).toMatchObject({ version: 4, piso: 'piso4', dificultad: 'normal', puntoControl: 'sala401', estadisticas: { ...estadisticasV1, cambiosMundo: 0 } });
+    expect(guardado('partida'), 'queda guardada ya en el formato nuevo').toMatchObject({ version: 4, piso: 'piso4', dificultad: 'normal' });
   });
 
   it('una partida v2 sube a v3: "Cosas que cambiaron" empieza en 0 (no se sabe cuántas hubo) y sustos no se toca', () => {
+    const { dificultad: _sinDificultad, ...v2 } = partida;
     const { cambiosMundo: _sinCambios, ...estadisticasV2 } = partida.estadisticas;
-    sembrar('partida', { ...partida, estadisticas: estadisticasV2, version: 2, fecha: 1 });
+    sembrar('partida', { ...v2, estadisticas: estadisticasV2, version: 2, fecha: 1 });
     expect(new SistemaGuardado().cargar()?.estadisticas).toEqual({ persecuciones: 1, muertes: 2, sustos: 3, cambiosMundo: 0 });
-    expect(guardado('partida')).toMatchObject({ version: 3 });
+    expect(guardado('partida')).toMatchObject({ version: 4 });
+  });
+
+  it('una partida v3 sube a v4 como Normal (la única dificultad que existía)', () => {
+    const { dificultad: _sinDificultad, ...v3 } = partida;
+    sembrar('partida', { ...v3, version: 3, fecha: 1 });
+    expect(new SistemaGuardado().cargar()).toMatchObject({ version: 4, dificultad: 'normal', puntoControl: 'sala401' });
+  });
+
+  it('una partida v4 con una dificultad desconocida es dañada (no se inventa)', () => {
+    sembrar('partida', { ...partida, dificultad: 'imposible', version: 4, fecha: 1 });
+    expect(new SistemaGuardado().cargar()).toBeNull();
+  });
+
+  it('sin guardado (Pesadilla): guardar y borrar no hacen nada, y la partida que había sigue ahí y se puede cargar', () => {
+    const g = new SistemaGuardado();
+    g.guardar(partida);
+    const antes = memoria.get(`${PREFIJO}partida`);
+    g.fijarSinGuardado(true);
+    g.guardar({ ...partida, dificultad: 'pesadilla', puntoControl: 'sala403' });
+    g.borrar();
+    expect(memoria.get(`${PREFIJO}partida`), 'intacta, byte por byte').toBe(antes);
+    expect(g.cargar()).toMatchObject({ dificultad: 'normal', puntoControl: 'sala401' });
+    g.fijarSinGuardado(false);
+    g.borrar();
+    expect(g.hayPartida()).toBe(false);
   });
 
   it('una partida v2 sin piso es dañada (no se inventa el piso)', () => {

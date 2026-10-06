@@ -16,8 +16,14 @@ export class PantallaMuerte extends Pantalla {
   private readonly titulo: HTMLHeadingElement;
   private readonly linea: HTMLParagraphElement;
   private readonly consejo: HTMLParagraphElement;
+  private readonly reintentar: HTMLButtonElement;
 
-  constructor(reintentar: () => void, menu: () => void) {
+  constructor(
+    reintentar: () => void,
+    menu: () => void,
+    /** En Pesadilla no hay punto de control: el botón dice que se empieza de nuevo. */
+    private readonly desdeCero: () => boolean,
+  ) {
     super('muerte');
     this.titulo = document.createElement('h2');
     this.titulo.className = 'muerte__titulo';
@@ -27,10 +33,8 @@ export class PantallaMuerte extends Pantalla {
     this.consejo.className = 'muerte__pista';
     const acciones = document.createElement('div');
     acciones.className = 'muerte__acciones';
-    acciones.append(
-      crearBoton('Reintentar', reintentar, { clase: 'boton--contorno boton--principal' }),
-      crearBoton('Menú principal', menu, { clase: 'boton--contorno' }),
-    );
+    this.reintentar = crearBoton('Reintentar', reintentar, { clase: 'boton--contorno boton--principal' });
+    acciones.append(this.reintentar, crearBoton('Menú principal', menu, { clase: 'boton--contorno' }));
     this.elemento.append(this.titulo, this.linea, this.consejo, acciones);
     this.alVolver = menu;
   }
@@ -40,5 +44,6 @@ export class PantallaMuerte extends Pantalla {
     this.linea.textContent = datos.linea;
     this.consejo.textContent = datos.consejo ?? '';
     this.consejo.hidden = datos.consejo === null;
+    this.reintentar.textContent = this.desdeCero() ? 'Empezar de nuevo' : 'Reintentar';
   }
 }

@@ -7,8 +7,10 @@
 // - Los demás valores son PROVISIONALES hasta el Gate 1: se afinan con datos de jugadores, no a ojo.
 // - Ninguna dificultad baja del piso de justicia (aviso antes de cazar, encuentro sobrevivible...): lo prueba
 //   la misma prueba unitaria.
-// - La tabla crece por pasos: cada valor entra cuando el motor ya lo lee (puntos de control, pistas e
-//   indicador del aire llegan en los pasos 2 y 3).
+// - La tabla crece por pasos: cada valor entra cuando el motor ya lo lee (pistas e indicador del aire llegan
+//   en el paso 3).
+import type { PaquetePiso } from '../pisos/TiposPiso';
+
 export const DIFICULTADES = ['historia', 'normal', 'dificil', 'pesadilla'] as const;
 export type IdDificultad = (typeof DIFICULTADES)[number];
 
@@ -59,6 +61,13 @@ export interface ValoresDificultad {
   readonly presupuesto: number;
   /** Cómo afloja el director tras muertes seguidas (director/DirectorTerror.reiniciar). */
   readonly alivio: ParametrosAlivio;
+  /**
+   * Qué banderas crean un punto de control (nucleo/Juego, al marcarse una bandera):
+   * 'todos' los del paquete; 'mayores' solo los de `puntosControlMayores` (medir un apartamento);
+   * 'ninguno': la partida NO se guarda ni se borra (morir es empezar de cero) y la guardada de otra
+   * dificultad queda intacta (guardado/SistemaGuardado.sinGuardado).
+   */
+  readonly puntosControl: 'todos' | 'mayores' | 'ninguno';
 }
 
 export const TABLA_DIFICULTAD: Readonly<Record<IdDificultad, ValoresDificultad>> = {
@@ -74,6 +83,7 @@ export const TABLA_DIFICULTAD: Readonly<Record<IdDificultad, ValoresDificultad>>
     bateria: 720,
     presupuesto: 0.8,
     alivio: { porMuerte: 0.2, tope: 0.6, modo: 'intervalos' },
+    puntosControl: 'todos',
   },
   // El juego de gate1-congelado, valor por valor. NO SE TOCA: cambiar Normal es cambiar el juego que se probó.
   normal: {
@@ -86,6 +96,7 @@ export const TABLA_DIFICULTAD: Readonly<Record<IdDificultad, ValoresDificultad>>
     bateria: 480,
     presupuesto: 1,
     alivio: { porMuerte: 0.15, tope: 0.45, modo: 'techo' },
+    puntosControl: 'todos',
   },
   // PROVISIONAL (Gate 1). El encuentro NO se alarga: Normal ya está a 0.35 s del aire con miedo máximo.
   dificil: {
@@ -98,6 +109,7 @@ export const TABLA_DIFICULTAD: Readonly<Record<IdDificultad, ValoresDificultad>>
     bateria: 380,
     presupuesto: 1.15,
     alivio: { porMuerte: 0.1, tope: 0.3, modo: 'techo' },
+    puntosControl: 'mayores',
   },
   // PROVISIONAL (Gate 1). Justo en el piso de justicia, nunca por debajo.
   pesadilla: {
@@ -110,8 +122,17 @@ export const TABLA_DIFICULTAD: Readonly<Record<IdDificultad, ValoresDificultad>>
     bateria: 320,
     presupuesto: 1.3,
     alivio: { porMuerte: 0, tope: 0, modo: 'techo' },
+    puntosControl: 'ninguno',
   },
 };
+
+/** El punto de control que crea esa bandera en esta dificultad, o undefined si aquí no crea ninguno. */
+export function puntoDeControlDe(piso: PaquetePiso, valores: ValoresDificultad, bandera: string): string | undefined {
+  const punto = piso.puntosControl[bandera];
+  if (!punto || valores.puntosControl === 'ninguno') return undefined;
+  if (valores.puntosControl === 'mayores' && !piso.puntosControlMayores?.includes(bandera)) return undefined;
+  return punto;
+}
 
 /** La más difícil de las dos (el orden es el de DIFICULTADES). */
 export const masDificil = (a: IdDificultad, b: IdDificultad): IdDificultad => (DIFICULTADES.indexOf(a) >= DIFICULTADES.indexOf(b) ? a : b);

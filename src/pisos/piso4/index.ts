@@ -43,6 +43,8 @@ export const PISO_4: PaquetePiso = {
     tablero_activado: 'servicio',
     'objeto:llave_402': 'estudio403',
   },
+  // En Difícil solo guardan las mediciones: el tablero y la llave hay que conseguirlos sin morir.
+  puntosControlMayores: ['medido:401', 'medido:403'],
   luzPorBandera: {
     // El tablero devuelve la luz a todo el piso... menos al 402, donde nunca hay luz.
     tablero_activado: { circuitos: { general: 'encendida' }, lamparas: { lampara402: 'rota' } },
