@@ -212,7 +212,10 @@ export class GestorUI {
   }
 
   private async confirmarSalir(): Promise<void> {
-    const ok = await confirmar(this.raiz, 'Volverás al menú. Tu progreso queda guardado en el último punto de control.', 'Salir al menú');
+    // En Pesadilla no hay nada guardado: salir pierde la partida, y el aviso tiene que decirlo.
+    const ok = this.acciones.reinicioDesdeCero()
+      ? await confirmar(this.raiz, 'Si sales, pierdes esta partida: Pesadilla no guarda.', 'Salir y perderla', 'Seguir jugando')
+      : await confirmar(this.raiz, 'Volverás al menú. Tu progreso queda guardado en el último punto de control.', 'Salir al menú');
     if (ok) this.acciones.salirAlMenu();
   }
 }

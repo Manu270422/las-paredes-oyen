@@ -59,10 +59,12 @@ async function morir(page: Page, ruta: ReadonlyArray<readonly [number, number]> 
   await page.waitForFunction(() => window.__juego?.estado === 'muerte', null, { timeout: 15_000 });
 }
 
+/** Salgo al menú desde la pausa en una dificultad que guarda: el aviso dice que el progreso queda guardado. */
 async function salirAlMenu(page: Page): Promise<void> {
   await page.evaluate(() => window.__piloto!.pulsar('Escape'));
   await page.waitForFunction(() => window.__juego?.estado === 'pausa');
-  await page.getByRole('button', { name: 'Salir al menú principal' }).click();
+  await page.locator('.pausa').getByRole('button', { name: 'Salir al menú principal' }).click();
+  await expect(page.getByRole('alertdialog')).toContainText('Tu progreso queda guardado');
   await page.getByRole('alertdialog').getByRole('button', { name: 'Salir al menú', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'menu', null, { timeout: 10_000 });
 }
@@ -120,11 +122,19 @@ test('Pesadilla no guarda ni borra: muere, empieza de cero, y "Continuar" carga 
   await page.waitForFunction(() => window.__juego?.estado === 'pausa');
   // Dentro de la pausa: la pantalla de muerte todavía puede estar en su fundido de salida (300 ms).
   await expect(page.locator('.pausa').getByRole('button', { name: 'Empezar de nuevo' })).toBeVisible();
-  await page.getByRole('button', { name: 'Salir al menú principal' }).click();
-  await page.getByRole('alertdialog').getByRole('button', { name: 'Salir al menú', exact: true }).click();
+
+  // 6. Salir en Pesadilla pierde la partida: el aviso lo dice, y "Seguir jugando" no sale.
+  await page.locator('.pausa').getByRole('button', { name: 'Salir al menú principal' }).click();
+  const aviso = page.getByRole('alertdialog');
+  await expect(aviso).toContainText('Si sales, pierdes esta partida');
+  await aviso.getByRole('button', { name: 'Seguir jugando' }).click();
+  await expect(aviso).toHaveCount(0);
+  expect(await page.evaluate(() => window.__juego!.estado), 'sigo en la pausa, con la partida').toBe('pausa');
+  await page.locator('.pausa').getByRole('button', { name: 'Salir al menú principal' }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Salir y perderla' }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'menu');
 
-  // 6. "Continuar" carga la partida de Normal: su dificultad, su punto de control y sus banderas.
+  // 7. "Continuar" carga la partida de Normal: su dificultad, su punto de control y sus banderas.
   await page.locator('.menu').getByRole('button', { name: 'Continuar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');
   const continuada = await estado(page);
