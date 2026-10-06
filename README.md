@@ -127,6 +127,14 @@ Todo lo que haces produce sonido, y todo sonido es información para lo que vive
     <td><sub><b>La orden de trabajo.</b> «Si oye golpes, son las tuberías. Son las tuberías.»</sub></td>
     <td><sub><b>Morir enseña.</b> El juego te dice qué oyó, y te lo hace escuchar como ella lo oyó.</sub></td>
   </tr>
+  <tr>
+    <td><img src="docs/media/capturas/ayuda-aire-borde-pc.jpg" alt="Borde rojo pulsante y subtítulo de aviso cuando queda poco aire, en modo Historia"></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><sub><b>Ayuda visual del aire (Historia y Accesibilidad).</b> El borde late y un subtítulo avisa antes del jadeo.</sub></td>
+    <td></td>
+  </tr>
 </table>
 
 <p align="center"><img src="docs/media/onda.svg" alt="" width="100%"></p>
@@ -270,6 +278,9 @@ de dibujo sobre WebGL 2: la IA, el audio, el director, la física, la interacci�
 
 **Accesibilidad:** subtítulos de voz y de efectos **con dirección** (← → ↑ ↓), reducción de destellos y sacudidas,
 calibración de brillo, balanceo de cámara desactivable, tamaño de controles táctiles y navegación completa con mando.
+Además: **sin sustos fuertes** (sin cara, sin grito ni destello en la muerte) y **ayuda visual del aire** (borde
+rojo pulsante y subtítulo cuando queda menos del 25 % del aire). Todo en *Ajustes → Accesibilidad*, y ambas opciones
+funcionan igual en cualquier dificultad.
 
 <details>
 <summary><b>🏗️ Arquitectura</b></summary>
@@ -359,7 +370,7 @@ Abre `http://localhost:5173`. Para jugar en el celular, conéctalo a la misma re
 | `npm run typecheck` | Revisa los tipos sin compilar |
 | `npm run build` | Revisa los tipos y genera la versión final en `dist/` |
 | `npm run preview` | Sirve la versión final para probarla |
-| `npm test` | Todas las pruebas: tipos de las pruebas, lógica pura y el recorrido caminando |
+| `npm test` | Todas las pruebas: tipos de las pruebas, lógica pura y los recorridos en el juego real |
 
 La versión final es un sitio estático con rutas relativas: `dist/` se puede publicar en cualquier dominio o subcarpeta.
 La versión pública está **publicada en Vercel** (que ejecuta `npm run build`) con el dominio
@@ -371,8 +382,8 @@ Todo vive en `pruebas/`. Ni `npm run build` ni el despliegue en Vercel las carga
 
 | Comando | Qué prueba | Tiempo |
 |---|---|---|
-| `npm run test:unit` | Lógica pura con Vitest: memoria de tensión, alivio, respiración, la cinta de la grabadora, explicaciones de muerte | ~3 s |
-| `npm run test:e2e` | El juego real con Playwright: camina de la escalera al 401 (E para leer, E en la puerta, medir con Q), el caso "aguantar el aire hasta jadear con la criatura en el muro" y el aviso antes de cada caza | ~1.5 min |
+| `npm run test:unit` | Lógica pura con Vitest: memoria de tensión, alivio, respiración, la cinta de la grabadora, explicaciones de muerte, sistema de dificultad y migración de telemetría | ~3 s |
+| `npm run test:e2e` | El juego real con Playwright (30 recorridos): interfaz, guardado, pantalla de dificultad, guardado por dificultad, oferta de bajar un escalón y accesibilidad | ~3 min |
 
 **Navegador para `test:e2e`:** por defecto usa el **Google Chrome que ya tienes instalado** (no descarga nada).
 Para usar otro:
@@ -418,8 +429,12 @@ en los [issues del repositorio](https://github.com/Manu270422/las-paredes-oyen/i
 - [x] **Firma sonora** de El Inquilino por estado y audio híbrido (grabaciones reales + síntesis)
 - [x] **La grabadora como segunda realidad**: lo que capta sale de lo que de verdad pasó fuera de tu vista
 - [x] **Director adaptativo**: memoria de tensión, estilo de juego y alivio tras muertes seguidas
+- [x] **Pisos como paquetes de datos** y guardado con migración de versiones (Sprint 3)
+- [x] **Viento acústico**: el aire de los pasillos suena diferente según el mapa, y cambia al abrirse puertas (Sprint 3)
+- [x] **Sistema de dificultad**: Historia · Normal · Difícil · Pesadilla — puntos de control por dificultad, cambio en plena partida sin penalización, Pesadilla no guarda ni borra otras partidas (Sprint 4)
+- [x] **Accesibilidad visual**: sin sustos fuertes (sin cara, sin grito ni destello) y ayuda visual del aire (borde rojo + subtítulo antes del jadeo), independientes de la dificultad (Sprint 4)
+- [x] **Telemetría v2**: dificultad y versión de compilación en cada sesión; migración automática de sesiones v1 (Sprint 4)
 - [ ] **Playtesting** con al menos cinco personas (una en celular) y ajuste con esos datos
-- [ ] **Pisos como paquetes de datos** y guardado con migración de versiones (Sprint 3)
 - [ ] **Calidad visual**: El Inquilino en glTF con esqueleto, sin perder sus 12 poses por segundo
 - [ ] **Nuevos espacios**: *el hueco* entre el 401 y el 403, el piso 3, el cuarto de bombas y la azotea
 - [ ] **Versiones nativas** para PC (Tauri) y móvil (Capacitor)
@@ -437,7 +452,8 @@ El detalle, fase por fase, está en [docs/03-HOJA-DE-RUTA.md](docs/03-HOJA-DE-RU
 
 > [!WARNING]
 > **Advertencia de contenido.** Terror psicológico, sonidos fuertes repentinos, destellos de luz y referencias a violencia
-> doméstica. Los destellos y las sacudidas de cámara se pueden reducir en *Ajustes → Accesibilidad*.
+> doméstica. Los destellos, las sacudidas de cámara, el grito y la cara de la criatura se pueden desactivar en
+> *Ajustes → Accesibilidad* con la opción **«Sin sustos fuertes»**, disponible en cualquier dificultad.
 
 <details>
 <summary><b>🇬🇧 In English</b></summary>
