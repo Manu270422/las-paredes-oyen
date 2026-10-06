@@ -103,6 +103,8 @@ export interface PaquetePiso {
   readonly placas?: readonly DefPlaca[];
   /** Lo pintado en los muros (el número del piso en la escalera). */
   readonly rotulos?: readonly DefRotulo[];
+  /** El piso que sigue en la historia, aunque todavía no exista: el final dice "Próximamente: Piso 3". */
+  readonly siguiente?: { readonly id: string; readonly nombre: string };
   /** El guion del piso (opcional): recibe lo que puede pedirle al juego (fundidos, susto, final). */
   readonly guion?: (acciones: AccionesGuion) => GuionPiso;
   /** El fondo del menú: se dibuja sobre el piso real, con alguien de pie al fondo. */

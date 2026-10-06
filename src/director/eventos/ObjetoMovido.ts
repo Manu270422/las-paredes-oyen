@@ -21,6 +21,7 @@ function candidatos(ctx: ContextoJuego): Mueble[] {
 
 export const objetoMovido: EventoTerror = {
   id: 'objeto_movido',
+  cambia: 'objeto',
   fases: ['acumulacion', 'pico'],
   intensidad: 2,
   peso: 2,

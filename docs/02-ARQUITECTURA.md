@@ -92,9 +92,9 @@ cargador (`guardado/Versionado.ts` + `guardado/AlmacenVersionado.ts`):
 
 | Clave | Qué es | Versión | Se borra |
 |---|---|---|---|
-| `partida` | Piso, punto de control, banderas, batería, tiempo (`guardado/SistemaGuardado.ts`) | 2 (migra desde v1: toda v1 es del Piso 4) | Al terminar o con "Nueva partida" |
+| `partida` | Piso, punto de control, banderas, batería, tiempo, estadísticas (`guardado/SistemaGuardado.ts`) | 3 (v1 → v2: toda v1 es del Piso 4; v2 → v3: "Cosas que cambiaron" empieza en 0) | Al terminar o con "Nueva partida" |
 | `ajustes` | Ajustes del jugador (`config/Ajustes.ts`) | 1 (migra desde v0, sin versión) | Nunca |
-| `perfil` | Mejores marcas y totales de toda la vida (`guardado/Perfil.ts`) | 1 | Nunca |
+| `perfil` | Mejores marcas, totales y pisos completados con su dificultad más alta (`guardado/Perfil.ts`) | 2 (v1 → v2: si llegó al final, completó el Piso 4 en Normal) | Nunca |
 | `telemetria` | Sesiones de prueba (`telemetria/`) | 1 por sesión | Desde Ajustes → Pruebas |
 
 Reglas del cargador:

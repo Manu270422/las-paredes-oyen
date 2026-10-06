@@ -39,6 +39,8 @@ export interface EventoTerror {
   requiere?: readonly string[];
   /** Solo cuando la criatura ya despertó (la bandera `despiertaCon` del piso). */
   requiereDespierta?: boolean;
+  /** Si cambia algo del mundo que el jugador puede notar después: cuenta en "Cosas que cambiaron" del final. */
+  cambia?: 'puerta' | 'objeto' | 'luz';
   /**
    * A qué forma de jugar le "responde" este evento. El peso se multiplica por
    * 1 + Σ(afinidad × rasgo): si alguien se pega a las paredes, las paredes contestan.

@@ -17,6 +17,14 @@ test('sin telemetría, la pantalla final no muestra "Exportar registro de la pru
   await expect(page.locator('.fin__estadisticas')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Exportar registro de la prueba' })).toBeHidden();
   await expect(page.getByRole('button', { name: 'Volver al menú' })).toBeVisible();
+  // "Jugar otra vez" empieza una partida nueva desde el final, sin pasar por el menú.
+  await page.getByRole('button', { name: 'Jugar otra vez' }).click();
+  await page.waitForFunction(() => window.__juego?.estado === 'jugando', null, { timeout: 10_000 });
+  const nueva = await page.evaluate(() => {
+    const { ctx } = window.__juego!;
+    return { banderas: ctx.progreso.exportar().banderas.length, cambios: ctx.memoria.cambiosMundo };
+  });
+  expect(nueva, 'empieza de cero').toEqual({ banderas: 0, cambios: 0 });
 });
 
 test('con ?telemetria=1, el botón de exportar sí aparece', async ({ page }) => {

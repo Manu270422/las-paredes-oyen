@@ -16,6 +16,8 @@ export interface EstadisticasPartida {
   persecuciones: number;
   muertes: number;
   sustos: number;
+  /** Cosas del mundo que cambió el director (puertas, objetos, luces). Es lo que muestra el final. */
+  cambiosMundo: number;
 }
 
 export class MemoriaMundo {
@@ -27,6 +29,7 @@ export class MemoriaMundo {
   persecuciones = 0;
   muertes = 0;
   sustos = 0;
+  cambiosMundo = 0;
   /**
    * Lo que el jugador YA VIVIÓ en esta partida (sobrevive a morir y recargar):
    * cuántas veces oyó la imitación (sube su etapa) y qué consejos de muerte
@@ -38,13 +41,14 @@ export class MemoriaMundo {
   muertesSinProgreso = 0;
 
   get estadisticas(): EstadisticasPartida {
-    return { persecuciones: this.persecuciones, muertes: this.muertes, sustos: this.sustos };
+    return { persecuciones: this.persecuciones, muertes: this.muertes, sustos: this.sustos, cambiosMundo: this.cambiosMundo };
   }
 
   restaurarEstadisticas(e: EstadisticasPartida): void {
     this.persecuciones = e.persecuciones;
     this.muertes = e.muertes;
     this.sustos = e.sustos;
+    this.cambiosMundo = e.cambiosMundo;
   }
 
   reiniciarSesion(): void {
@@ -57,6 +61,7 @@ export class MemoriaMundo {
     this.persecuciones = 0;
     this.muertes = 0;
     this.sustos = 0;
+    this.cambiosMundo = 0;
     this.exposicionesImitacion = 0;
     this.consejosVistos.clear();
     this.muertesSinProgreso = 0;

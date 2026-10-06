@@ -19,6 +19,7 @@ import { LectorDocumento } from './pantallas/LectorDocumento';
 import type { Documento } from '../narrativa/TiposNarrativa';
 import { PantallaMuerte, type DatosMuerte } from './pantallas/PantallaMuerte';
 import type { PuenteTelemetria } from './PuenteTelemetria';
+import type { IdDificultad } from '../config/Dificultad';
 import { PantallaFin, type EstadisticasFin } from './pantallas/PantallaFin';
 import { PantallaCreditos } from './pantallas/PantallaCreditos';
 import { AvisoOrientacion } from './pantallas/AvisoOrientacion';
@@ -38,6 +39,8 @@ export interface AccionesUI {
   objetivo(): string | null;
   documentosLeidos(): readonly string[];
   sonar(tipo: TipoSonidoUI): void;
+  /** El piso del menú: su nombre y la dificultad más alta en que se terminó (null si nunca). */
+  pisoDelMenu(): { nombre: string; completado: IdDificultad | null };
   telemetria: PuenteTelemetria;
 }
 
@@ -73,6 +76,7 @@ export class GestorUI {
       nuevaPartida: () => void this.confirmarNuevaPartida(),
       ajustes: () => this.abrir(this.ajustesPantalla),
       creditos: () => this.abrir(this.creditos),
+      piso: () => acciones.pisoDelMenu(),
     });
     this.pausa = new MenuPausa({
       objetivo: () => acciones.objetivo(),
@@ -97,7 +101,7 @@ export class GestorUI {
       () => acciones.reiniciarPunto(),
       () => acciones.salirAlMenu(),
     );
-    this.fin = new PantallaFin(() => acciones.salirAlMenu(), acciones.telemetria);
+    this.fin = new PantallaFin(() => acciones.salirAlMenu(), () => void this.confirmarNuevaPartida(), acciones.telemetria);
     this.creditos = new PantallaCreditos(() => this.cerrarActual());
 
     for (const p of [this.carga, this.inicio, this.menu, this.pausa, this.ajustesPantalla, this.documentos, this.lector, this.muerte, this.fin, this.creditos]) {

@@ -60,7 +60,7 @@ describe('SistemaGuardado', () => {
     progreso: { banderas: ['medido:401'], inventario: [], documentos: [] },
     bateria: 0.8,
     tiempoJugado: 120,
-    estadisticas: { persecuciones: 1, muertes: 2, sustos: 3 },
+    estadisticas: { persecuciones: 1, muertes: 2, sustos: 3, cambiosMundo: 4 },
   };
 
   it('guarda y carga la partida actual', () => {
@@ -69,12 +69,20 @@ describe('SistemaGuardado', () => {
     expect(g.cargar()).toMatchObject({ ...partida, version: VERSION_PARTIDA });
   });
 
-  it('una partida v1 (la que tienen hoy los probadores, sin piso) sube a v2 como Piso 4 y se guarda migrada', () => {
+  it('una partida v1 (la de los probadores del Gate 1, sin piso) sube hasta la actual como Piso 4 y se guarda migrada', () => {
     const { piso: _sinPiso, ...v1 } = partida;
-    sembrar('partida', { ...v1, version: 1, fecha: 1 });
+    const { cambiosMundo: _sinCambios, ...estadisticasV1 } = partida.estadisticas;
+    sembrar('partida', { ...v1, estadisticas: estadisticasV1, version: 1, fecha: 1 });
     const cargada = new SistemaGuardado().cargar();
-    expect(cargada).toMatchObject({ version: 2, piso: 'piso4', puntoControl: 'sala401', estadisticas: partida.estadisticas });
-    expect(guardado('partida'), 'queda guardada ya en el formato nuevo').toMatchObject({ version: 2, piso: 'piso4' });
+    expect(cargada).toMatchObject({ version: 3, piso: 'piso4', puntoControl: 'sala401', estadisticas: { ...estadisticasV1, cambiosMundo: 0 } });
+    expect(guardado('partida'), 'queda guardada ya en el formato nuevo').toMatchObject({ version: 3, piso: 'piso4' });
+  });
+
+  it('una partida v2 sube a v3: "Cosas que cambiaron" empieza en 0 (no se sabe cuántas hubo) y sustos no se toca', () => {
+    const { cambiosMundo: _sinCambios, ...estadisticasV2 } = partida.estadisticas;
+    sembrar('partida', { ...partida, estadisticas: estadisticasV2, version: 2, fecha: 1 });
+    expect(new SistemaGuardado().cargar()?.estadisticas).toEqual({ persecuciones: 1, muertes: 2, sustos: 3, cambiosMundo: 0 });
+    expect(guardado('partida')).toMatchObject({ version: 3 });
   });
 
   it('una partida v2 sin piso es dañada (no se inventa el piso)', () => {
@@ -133,14 +141,40 @@ describe('Perfil', () => {
     bus.emit('jugador-atrapado', { x: 0, z: 0, motivo: 'jadeo', enPared: false });
     bus.emit('encuentro', { estado: 'inicio', distancia: 2 });
     bus.emit('encuentro', { estado: 'superado', distancia: 2 });
-    expect(guardado('perfil')).toMatchObject({ version: 1, partidasIniciadas: 1, muertesTotales: 1, encuentrosSuperados: 1 });
+    expect(guardado('perfil')).toMatchObject({ version: 2, partidasIniciadas: 1, muertesTotales: 1, encuentrosSuperados: 1, pisosCompletados: {} });
   });
 
   it('las marcas solo mejoran: premia jugar bien, no jugar más', () => {
     const p = new Perfil();
-    expect(p.registrarFinal(600, 3)).toEqual({ mejorTiempo: 600, nuevoMejorTiempo: true, finales: 1 });
-    expect(p.registrarFinal(700, 1)).toEqual({ mejorTiempo: 600, nuevoMejorTiempo: false, finales: 2 });
-    expect(new Perfil().registrarFinal(500, 5)).toEqual({ mejorTiempo: 500, nuevoMejorTiempo: true, finales: 3 });
+    expect(p.registrarFinal('piso4', 'normal', 600, 3)).toEqual({ mejorTiempo: 600, nuevoMejorTiempo: true, finales: 1 });
+    expect(p.registrarFinal('piso4', 'normal', 700, 1)).toEqual({ mejorTiempo: 600, nuevoMejorTiempo: false, finales: 2 });
+    expect(new Perfil().registrarFinal('piso4', 'normal', 500, 5)).toEqual({ mejorTiempo: 500, nuevoMejorTiempo: true, finales: 3 });
     expect(guardado('perfil')).toMatchObject({ mejorTiempo: 500, menosMuertes: 1, finales: 3 });
+  });
+
+  it('recuerda cada piso terminado con la dificultad MÁS ALTA: terminarlo en una más fácil no la baja', () => {
+    const p = new Perfil();
+    expect(p.completado('piso4')).toBeNull();
+    p.registrarFinal('piso4', 'normal', 600, 0);
+    p.registrarFinal('piso4', 'historia', 500, 0);
+    expect(p.completado('piso4')).toBe('normal');
+    p.registrarFinal('piso4', 'dificil', 900, 2);
+    expect(new Perfil().completado('piso4'), 'sobrevive a recargar').toBe('dificil');
+    expect(guardado('perfil')).toMatchObject({ pisosCompletados: { piso4: 'dificil' } });
+  });
+
+  it('un perfil v1 sube a v2: si llegó al final, completó el Piso 4 en Normal (lo único que existía); si no, nada', () => {
+    const v1 = { version: 1, creado: 1, partidasIniciadas: 4, finales: 2, mejorTiempo: 700, menosMuertes: 1, muertesTotales: 9, encuentrosSuperados: 3 };
+    sembrar('perfil', v1);
+    expect(new Perfil().completado('piso4')).toBe('normal');
+    expect(guardado('perfil')).toMatchObject({ ...v1, version: 2, pisosCompletados: { piso4: 'normal' } });
+    sembrar('perfil', { ...v1, finales: 0, mejorTiempo: null, menosMuertes: null });
+    expect(new Perfil().completado('piso4')).toBeNull();
+  });
+
+  it('un perfil v2 con una dificultad desconocida es dañado (no se inventa)', () => {
+    sembrar('perfil', { version: 2, creado: 1, partidasIniciadas: 1, finales: 1, mejorTiempo: 1, menosMuertes: 0, muertesTotales: 0, encuentrosSuperados: 0, pisosCompletados: { piso4: 'imposible' } });
+    expect(new Perfil().completado('piso4')).toBeNull();
+    expect(memoria.get(`${PREFIJO}perfil:respaldo`), 'queda un respaldo').toBeDefined();
   });
 });

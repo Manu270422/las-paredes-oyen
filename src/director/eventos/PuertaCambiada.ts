@@ -17,6 +17,7 @@ function candidatas(ctx: ContextoJuego): Puerta[] {
 
 export const puertaCambiada: EventoTerror = {
   id: 'puerta_cambiada',
+  cambia: 'puerta',
   fases: ['acumulacion', 'pico'],
   intensidad: 2,
   peso: 2,

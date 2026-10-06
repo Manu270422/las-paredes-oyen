@@ -58,6 +58,8 @@ export const PISO_4: PaquetePiso = {
   ],
   // El "4" pintado en la pared norte de la escalera, bajo la luz de emergencia: se lee siempre, en rojo.
   rotulos: [{ texto: '4', x: 2.45, y: 8, altura: 1.6, rot: 0, alto: 0.45 }],
+  // Bajando: el siguiente es el Piso 3 (todavía no existe; el final lo dice).
+  siguiente: { id: 'piso3', nombre: 'Piso 3' },
   guion: (acciones) => new GuionPiso4(acciones),
   menu: {
     camara: { x: 4.4, y: 10.5, angulo: -90 },

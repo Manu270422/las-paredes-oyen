@@ -3,12 +3,13 @@
 // cuando cambie la estructura, agrego un paso "vN → vN+1" en MIGRACIONES y
 // las partidas viejas siguen cargando. Si encuentro una partida de una versión
 // MÁS NUEVA del juego (se volvió a publicar una versión vieja), no la toco.
+import type { EstadisticasPartida } from '../director/MemoriaMundo';
 import type { DatosProgreso } from '../narrativa/Progreso';
 import { borrar, escribirJSON } from '../utilidades/Almacenamiento';
 import { leerVersionado } from './AlmacenVersionado';
 import type { Migracion } from './Versionado';
 
-export const VERSION_PARTIDA = 2;
+export const VERSION_PARTIDA = 3;
 
 export interface DatosPartida {
   version: typeof VERSION_PARTIDA;
@@ -19,7 +20,7 @@ export interface DatosPartida {
   bateria: number;
   tiempoJugado: number;
   fecha: number;
-  estadisticas: { persecuciones: number; muertes: number; sustos: number };
+  estadisticas: EstadisticasPartida;
 }
 
 /** Pasos para subir partidas viejas a la versión actual. */
@@ -27,6 +28,9 @@ const MIGRACIONES: readonly Migracion[] = [
   // v1 → v2: la partida dice de qué piso es. Toda partida v1 es del Piso 4 (el único que existía
   // hasta el Sprint 4): ese id aquí es un hecho histórico, no una regla del motor.
   { desde: 1, migrar: (v1) => ({ ...v1, piso: 'piso4' }) },
+  // v2 → v3: las estadísticas cuentan las cosas que cambió el director (para el final). De una partida
+  // vieja no se sabe cuántas fueron: empieza en 0 y cuenta desde aquí.
+  { desde: 2, migrar: (v2) => ({ ...v2, estadisticas: { ...(v2.estadisticas as Record<string, unknown>), cambiosMundo: 0 } }) },
 ];
 
 const CLAVE = 'partida';
@@ -43,7 +47,8 @@ function esPartida(d: Record<string, unknown>): d is Record<string, unknown> & D
     typeof d.tiempoJugado === 'number' &&
     typeof e === 'object' &&
     e !== null &&
-    typeof e.muertes === 'number'
+    typeof e.muertes === 'number' &&
+    typeof e.cambiosMundo === 'number'
   );
 }
 

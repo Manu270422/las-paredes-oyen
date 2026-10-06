@@ -6,6 +6,7 @@ import { Color, FogExp2, HemisphereLight, Scene } from 'three';
 import { CONFIG } from '../config/ConfiguracionJuego';
 import { GestorAjustes } from '../config/Ajustes';
 import { PERFILES, type NivelCalidad, type PerfilCalidad } from '../config/PerfilesCalidad';
+import { DIFICULTAD_POR_DEFECTO, NOMBRE_DIFICULTAD } from '../config/Dificultad';
 import { detectarDispositivo, sugerirCalidad } from '../plataforma/DetectorDispositivo';
 import { GestorPantalla } from '../plataforma/GestorPantalla';
 import { GestorEntrada } from '../entrada/GestorEntrada';
@@ -15,7 +16,7 @@ import { crearCookieLinterna } from '../render/texturas/CookieLinterna';
 import { MotorAudio } from '../audio/MotorAudio';
 import { AmbienteSonoro } from '../audio/AmbienteSonoro';
 import { Nivel } from '../mundo/Nivel';
-import { PISO_INICIAL } from '../pisos/catalogo';
+import { PISO_INICIAL, siguienteDe } from '../pisos/catalogo';
 import type { GuionPiso, PaquetePiso } from '../pisos/TiposPiso';
 import { Jugador } from '../jugador/Jugador';
 import { Linterna } from '../jugador/Linterna';
@@ -138,13 +139,8 @@ export class Juego {
         objetivo: () => this.progreso.objetivoActual()?.texto ?? null,
         documentosLeidos: () => this.progreso.documentosLeidos,
         sonar: (tipo) => this.audio?.reproducir('ui', { bus: 'interfaz', volumen: tipo === 'pasar' ? 0.25 : 0.5, tono: tipo === 'volver' ? 0.8 : 1 }),
-        telemetria: {
-          activa: () => this.ajustes.valores.telemetria,
-          contarSesiones: () => this.telemetria.contarSesiones(),
-          exportarTodo: () => this.telemetria.exportarTodo(),
-          exportarUltima: () => this.telemetria.exportarUltima(),
-          borrarTodo: () => this.telemetria.borrarTodo(),
-        },
+        pisoDelMenu: () => ({ nombre: this.piso.nombre, completado: this.perfilGuardado.completado(this.piso.id) }),
+        telemetria: this.telemetria.puente,
       },
       (x, z) => this.direccionRelativa(x, z),
     );
@@ -488,12 +484,16 @@ export class Juego {
     this.audio.detenerTodo();
     this.ambiente.olvidarFuentes();
     this.guardado.borrar();
+    // La dificultad de hoy es la única que hay (la Tarea 4 trae la elegida).
     this.ui.mostrarFin({
+      piso: this.piso.nombre,
+      dificultad: NOMBRE_DIFICULTAD[DIFICULTAD_POR_DEFECTO],
+      siguiente: siguienteDe(this.piso),
       tiempo: this.tiempoJugado,
-      sustos: this.memoria.sustos,
+      cambiosMundo: this.memoria.cambiosMundo,
       persecuciones: this.memoria.persecuciones,
       muertes: this.memoria.muertes,
-      marcas: this.perfilGuardado.registrarFinal(this.tiempoJugado, this.memoria.muertes),
+      marcas: this.perfilGuardado.registrarFinal(this.piso.id, DIFICULTAD_POR_DEFECTO, this.tiempoJugado, this.memoria.muertes),
     });
     this.ui.hud.fundir(false, 0.5);
   }

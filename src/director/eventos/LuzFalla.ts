@@ -13,6 +13,7 @@ function lamparaCercana(ctx: ContextoJuego) {
 
 export const luzFalla: EventoTerror = {
   id: 'luz_falla',
+  cambia: 'luz',
   fases: ['calma', 'acumulacion'],
   intensidad: 1,
   peso: 2,

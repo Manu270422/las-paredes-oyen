@@ -5,6 +5,7 @@ import type { EventoTerror } from '../TiposDirector';
 
 export const radioEncendida: EventoTerror = {
   id: 'radio_encendida',
+  cambia: 'objeto',
   fases: ['calma', 'acumulacion'],
   intensidad: 2,
   peso: 2,

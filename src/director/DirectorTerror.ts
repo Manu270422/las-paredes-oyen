@@ -171,6 +171,7 @@ export class DirectorTerror {
       this.usos.set(evento.id, (this.usos.get(evento.id) ?? 0) + 1);
       this.bloqueo = evento.duracion ?? 3;
       if (evento.intensidad >= 2) ctx.memoria.sustos++;
+      if (evento.cambia) ctx.memoria.cambiosMundo++;
     } else if (porPresupuesto) {
       // Había algo que lanzar, pero el jugador todavía está digiriendo el último susto.
       this.proximoEvento = aleatorio(...REINTENTO);

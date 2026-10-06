@@ -1,6 +1,7 @@
 // Memoria de tensión y alivio del director: las reglas que evitan apilar sustos
 // y que un jugador que muere seguido abandone de frustración.
 import { describe, expect, it } from 'vitest';
+import { CATALOGO_EVENTOS } from '../../src/director/eventos/Catalogo';
 import { PresupuestoTension } from '../../src/director/PresupuestoTension';
 import { DirectorTerror } from '../../src/director/DirectorTerror';
 import { BusEventos } from '../../src/nucleo/BusEventos';
@@ -48,6 +49,13 @@ describe('PresupuestoTension', () => {
   it('un evento sutil siempre cabe cuando la carga ya se evaporó', () => {
     const p = new PresupuestoTension();
     expect(p.cabe(PresupuestoTension.costo(1), 'calma', 0.45)).toBe(true);
+  });
+});
+
+describe('Eventos que cambian el mundo ("Cosas que cambiaron" del final)', () => {
+  it('son los que dejan algo distinto que el jugador puede notar: la luz, la puerta, el objeto movido y la radio', () => {
+    const cambian = Object.fromEntries(CATALOGO_EVENTOS.filter((e) => e.cambia).map((e) => [e.id, e.cambia]));
+    expect(cambian).toEqual({ luz_falla: 'luz', objeto_movido: 'objeto', puerta_cambiada: 'puerta', radio_encendida: 'objeto' });
   });
 });
 

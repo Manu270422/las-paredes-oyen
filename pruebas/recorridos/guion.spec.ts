@@ -2,7 +2,8 @@
 // 1) leer la orden pone a trabajar al director (regla `directorDesde`); medir el 401 reproduce su cinta y
 //    despierta a la criatura; se camina al 403, se abre con E, se mide y su cinta revela la imitación completa;
 // 2) con la luz de vuelta, al entrar al pasillo las lámparas revientan una a una y ella aparece al fondo;
-// 3) medir el 402 dispara la secuencia final y termina en la pantalla de fin.
+// 3) medir el 402 dispara la secuencia final y termina en "Piso 4 completado": el perfil recuerda el piso y
+//    la dificultad, y el menú lo marca en voz baja.
 // La criatura se mantiene en las paredes durante los trayectos: aquí se prueba el guion, no su caza
 // (eso lo cubren piso4.spec y director.spec).
 import { expect, test, type Page } from '@playwright/test';
@@ -191,5 +192,22 @@ test.describe.serial('Guion del Piso 4 jugado', () => {
     expect(r.pasos, 'la secuencia final reproduce su guion').toBe(true);
     expect(r.estado, 'termina en la pantalla de fin').toBe('fin');
     expect(r.pantalla).toContain('Tiempo');
+
+    // La pantalla dice sin ambigüedad qué pasó, en qué dificultad y qué sigue (el nombre sale del paquete).
+    await expect(page.locator('.fin__titulo')).toHaveText('Piso 4 completado');
+    const fin = (await page.locator('.fin').textContent()) ?? '';
+    expect(fin).toContain('Dificultad');
+    expect(fin).toContain('Normal');
+    expect(fin, 'el contador nuevo, no "sustos"').toContain('Cosas que cambiaron');
+    expect(fin, 'el Piso 3 todavía no existe: se dice').toContain('Próximamente: Piso 3');
+    expect(fin).not.toContain('vertical slice');
+    await expect(page.getByRole('button', { name: 'Jugar otra vez' })).toBeVisible();
+    const perfil = await page.evaluate(() => JSON.parse(localStorage.getItem('las-paredes-oyen:perfil') ?? 'null'));
+    expect(perfil, 'el perfil recuerda el piso y la dificultad').toMatchObject({ version: 2, pisosCompletados: { piso4: 'normal' } });
+
+    // De vuelta al menú: la marca discreta junto al piso.
+    await page.getByRole('button', { name: 'Volver al menú' }).click();
+    await page.waitForFunction(() => window.__juego?.estado === 'menu');
+    await expect(page.locator('.menu__cabecera .subtitulo-juego')).toHaveText('Edificio Almendros · Piso 4 · completado en Normal');
   });
 });

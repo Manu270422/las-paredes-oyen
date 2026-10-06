@@ -16,6 +16,7 @@ import type { BusEventos } from '../nucleo/BusEventos';
 import type { MapaEventos } from '../nucleo/Eventos';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
 import type { GestorAjustes } from '../config/Ajustes';
+import type { PuenteTelemetria } from '../ui/PuenteTelemetria';
 import { AlmacenTelemetria } from './AlmacenTelemetria';
 import { ReaccionPendiente } from './ReaccionJugador';
 import { VigilanciaEvento } from './VigilanciaEvento';
@@ -66,6 +67,15 @@ export class Telemetria {
     // Si cierran la pestaña o la app a media partida, guardo lo que haya.
     window.addEventListener('pagehide', () => this.cerrarSesion('cierre'));
   }
+
+  /** Lo que la interfaz puede pedirle a la telemetría (Ajustes y la pantalla final). */
+  readonly puente: PuenteTelemetria = {
+    activa: () => this.activa,
+    contarSesiones: () => this.contarSesiones(),
+    exportarTodo: () => this.exportarTodo(),
+    exportarUltima: () => this.exportarUltima(),
+    borrarTodo: () => this.borrarTodo(),
+  };
 
   /** ¿El jugador aceptó registrar sesiones? */
   get activa(): boolean {

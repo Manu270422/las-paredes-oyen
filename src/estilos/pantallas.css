@@ -148,6 +148,13 @@
   padding-top: var(--espacio-l);
 }
 
+/* La marca de piso completado: en voz baja, junto al nombre del piso. */
+.menu__completado {
+  letter-spacing: 0.15em;
+  text-transform: none;
+  color: var(--color-acento-claro);
+}
+
 .menu__opciones {
   display: flex;
   flex-direction: column;
@@ -437,6 +444,20 @@
   justify-content: center;
   gap: var(--espacio-s);
   margin-top: var(--espacio-l);
+}
+
+/* "Piso 4 completado": dicho sin ambigüedad, en letra de título, sin fanfarria. */
+.fin__titulo {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: var(--texto-titulo);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--color-texto);
+}
+
+.fin__siguiente {
+  margin: var(--espacio-m) 0 0;
 }
 
 .fin__texto {

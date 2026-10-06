@@ -49,20 +49,21 @@ describe('Progreso con los objetivos de un piso', () => {
 });
 
 describe('MemoriaMundo.estadisticas', () => {
-  it('se restauran tal cual y viajan completas (cosas que cambiaron, cazas y muertes)', () => {
+  it('se restauran tal cual y viajan completas (sustos, cosas que cambiaron, cazas y muertes)', () => {
     const origen = new MemoriaMundo();
     origen.sustos = 5;
+    origen.cambiosMundo = 7;
     origen.persecuciones = 2;
     origen.muertes = 4;
     const destino = new MemoriaMundo();
     destino.restaurarEstadisticas(origen.estadisticas);
-    expect(destino.estadisticas).toEqual({ sustos: 5, persecuciones: 2, muertes: 4 });
+    expect(destino.estadisticas).toEqual({ sustos: 5, persecuciones: 2, muertes: 4, cambiosMundo: 7 });
   });
 
   it('una partida nueva las pone en cero', () => {
     const m = new MemoriaMundo();
-    m.restaurarEstadisticas({ sustos: 3, persecuciones: 1, muertes: 2 });
+    m.restaurarEstadisticas({ sustos: 3, persecuciones: 1, muertes: 2, cambiosMundo: 6 });
     m.reiniciarEstadisticas();
-    expect(m.estadisticas).toEqual({ sustos: 0, persecuciones: 0, muertes: 0 });
+    expect(m.estadisticas).toEqual({ sustos: 0, persecuciones: 0, muertes: 0, cambiosMundo: 0 });
   });
 });

@@ -77,3 +77,49 @@ test('la silueta y la respiración detrás solo salen cuando la criatura ya desp
   expect(r.enOtroCuarto, 'en otro cuarto, a buena distancia, sí puede encenderse').toBe(true);
   expect(errores, 'errores de consola').toEqual([]);
 });
+
+test('cada cosa del mundo que cambia el director suma en "Cosas que cambiaron"; un sonido no', async ({ page }) => {
+  const errores: string[] = [];
+  page.on('pageerror', (e) => errores.push(String(e)));
+  await page.goto('/');
+  await page.waitForFunction(() => window.__juego?.estado === 'inicio', null, { timeout: 120_000 });
+  await page.keyboard.press('Space');
+  await page.getByRole('button', { name: 'Nueva partida', exact: true }).click();
+  await page.waitForFunction(() => window.__juego?.estado === 'jugando');
+
+  const r = await page.evaluate(async () => {
+    const { ctx } = window.__juego!;
+    const D = ctx.director;
+    const original = D['elegirEvento'];
+    /** Hago que el bucle REAL del director lance ese evento (solo fuerzo la elección) y espero a que lo haga. */
+    const lanzar = async (id: string) => {
+      const evento = D['eventos'].find((e) => e.id === id)!;
+      const antes = D['usos'].get(id) ?? 0;
+      D['elegirEvento'] = () => ({ evento, porPresupuesto: false });
+      D.activo = true;
+      D.forzarFase('acumulacion', ctx);
+      const limite = performance.now() + 8000;
+      while ((D['usos'].get(id) ?? 0) === antes && performance.now() < limite) {
+        D['bloqueo'] = 0;
+        D['proximoEvento'] = 0;
+        D['tiempoFase'] = 0;
+        await new Promise((res) => setTimeout(res, 30));
+      }
+      D['elegirEvento'] = original;
+      D.activo = false;
+      return { lanzado: (D['usos'].get(id) ?? 0) > antes, cambios: ctx.memoria.cambiosMundo, sustos: ctx.memoria.sustos };
+    };
+    const inicio = { cambios: ctx.memoria.cambiosMundo, sustos: ctx.memoria.sustos };
+    const sonido = await lanzar('susurro_lejano');
+    const luz = await lanzar('luz_falla');
+    return { inicio, sonido, luz };
+  });
+
+  expect(r.inicio).toEqual({ cambios: 0, sustos: 0 });
+  expect(r.sonido.lanzado, 'el director lanzó el susurro').toBe(true);
+  expect(r.sonido.cambios, 'un sonido no cambia el mundo').toBe(0);
+  expect(r.luz.lanzado, 'el director lanzó la falla de luz').toBe(true);
+  expect(r.luz.cambios, 'una luz que falla sí cuenta').toBe(1);
+  expect(r.luz.sustos, '"sustos" sigue con su propia regla (intensidad ≥ 2): no lo toco').toBe(0);
+  expect(errores, 'errores de consola').toEqual([]);
+});
