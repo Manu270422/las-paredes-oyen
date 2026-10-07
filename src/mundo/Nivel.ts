@@ -15,7 +15,7 @@ import { PuntoMedicion } from '../interaccion/objetos/PuntoMedicion';
 import { Tablero } from '../interaccion/objetos/Tablero';
 import { Radio } from '../interaccion/objetos/Radio';
 import { construirGeometria } from './ConstructorGeometria';
-import { construirEscaleras } from './ConstructorEscalera';
+import { construirEscaleras, type OpcionesEscalera } from './ConstructorEscalera';
 import { Rejilla, type ConsultaPuertaCerrada } from './Rejilla';
 import { Puerta } from './Puerta';
 import { Lampara } from './Lampara';
@@ -76,8 +76,8 @@ export class Nivel {
     const { grupo, cajasEstaticas } = construirGeometria(this.rejilla, (gx, gy) => this.habitacionDeCelda(gx, gy), materiales);
     this.cajasEstaticas = cajasEstaticas;
     this.grupo.add(grupo);
-    // Los huecos de escalera (celdas 'E'): el pozo, los tramos, la reja y los escombros.
-    this.grupo.add(construirEscaleras(this.rejilla, materiales));
+    // Los huecos de escalera (celdas 'E'): el pozo, los tramos, la reja y los escombros (opcionales por piso).
+    this.grupo.add(construirEscaleras(this.rejilla, materiales, piso.opcionesEscalera as OpcionesEscalera | undefined));
 
     for (const d of def.puertas) {
       const pasoEnZ = this.rejilla.esMuro(d.x - 1, d.y) && this.rejilla.esMuro(d.x + 1, d.y);

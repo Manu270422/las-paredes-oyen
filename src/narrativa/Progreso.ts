@@ -63,6 +63,11 @@ export class Progreso {
     this.revisarObjetivo();
   }
 
+  /** Marco una bandera sin avisar al bus ni revisar objetivos: solo para banderas de arranque del piso. */
+  marcarSilencioso(bandera: string): void {
+    this.banderas.add(bandera);
+  }
+
   tieneObjeto(id: string): boolean {
     return this.inventario.includes(id);
   }

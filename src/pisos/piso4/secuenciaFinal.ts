@@ -55,7 +55,7 @@ export function ejecutarSecuenciaFinal(ctx: ContextoJuego, acciones: AccionesGui
       [12.5, () => acciones.fundido(true, 0.15)],
       [13.6, () => {
         ctx.audio.fijarSilencioAmbiente(1);
-        acciones.terminarDemo();
+        acciones.despertar();
       }],
     ],
     g,

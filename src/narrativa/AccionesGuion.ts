@@ -9,4 +9,9 @@ export interface AccionesGuion {
   /** Solo puedo mirar, no moverme (momentos guionizados). */
   fijarSoloMirar(activo: boolean): void;
   terminarDemo(): void;
+  /**
+   * El final del Piso 4 no termina la demo: el jugador despierta en el descanso de la escalera con la llave
+   * en la mano. La pantalla de fin queda pendiente para la Tanda 2 (con botón "Continuar al Piso 3").
+   */
+  despertar(): void;
 }

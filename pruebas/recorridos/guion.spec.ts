@@ -176,39 +176,39 @@ test.describe.serial('Guion del Piso 4 jugado', () => {
     expect(r.estado).toBe('jugando');
   });
 
-  test('medir el 402 dispara la secuencia final y termina en la pantalla de fin', async () => {
+  test('medir el 402 dispara la secuencia final: el jugador despierta en la escalera con la llave', async () => {
     const r = await page.evaluate(async () => {
       const J = window.__juego!;
       const { ctx } = J;
       const subs = (window as unknown as { __subtitulos: string[] }).__subtitulos;
       ctx.progreso.marcar('medido:402');
+      // Espero a que 'despertar()' deposite la llave (señal de que la secuencia terminó).
       const limite = performance.now() + 30_000;
-      while (J.estado !== 'fin' && performance.now() < limite) await new Promise((r) => setTimeout(r, 50));
+      while (!ctx.progreso.tiene('objeto:llave_escalera') && performance.now() < limite) await new Promise((r) => setTimeout(r, 50));
+      // Espero a que el viaje de vuelta al punto de escalera termine.
+      const limiteViaje = performance.now() + 10_000;
+      while (J.estado !== 'jugando' && performance.now() < limiteViaje) await new Promise((r) => setTimeout(r, 50));
+      const lamGeneral = ctx.nivel.lamparas.filter((l) => l.circuito === 'general').every((l) => l.estado === 'apagada');
+      const lamEmergencia = ctx.nivel.lamparas.find((l) => l.id === 'emergencia')?.estado;
       return {
         estado: J.estado,
+        tieneKey: ctx.progreso.tiene('objeto:llave_escalera'),
+        subtituloLlave: subs.some((s) => s.includes('llave en la mano')),
         pasos: subs.some((s) => s.includes('Los pasos ya no vienen de la grabadora')),
-        pantalla: document.querySelector('.fin__estadisticas')?.textContent ?? '',
+        piso: ctx.piso?.id,
+        lamGeneralApagada: lamGeneral,
+        lamEmergencia,
       };
     });
     expect(r.pasos, 'la secuencia final reproduce su guion').toBe(true);
-    expect(r.estado, 'termina en la pantalla de fin').toBe('fin');
-    expect(r.pantalla).toContain('Tiempo');
-
-    // La pantalla dice sin ambigüedad qué pasó, en qué dificultad y qué sigue (el nombre sale del paquete).
-    await expect(page.locator('.fin__titulo')).toHaveText('Piso 4 completado');
-    const fin = (await page.locator('.fin').textContent()) ?? '';
-    expect(fin).toContain('Dificultad');
-    expect(fin).toContain('Normal');
-    expect(fin, 'el contador nuevo, no "sustos"').toContain('Cosas que cambiaron');
-    expect(fin, 'el Piso 3 todavía no existe: se dice').toContain('Próximamente: Piso 3');
-    expect(fin).not.toContain('vertical slice');
-    await expect(page.getByRole('button', { name: 'Jugar otra vez' })).toBeVisible();
+    expect(r.estado, 'el juego sigue corriendo (no hay pantalla de fin)').toBe('jugando');
+    expect(r.tieneKey, 'despertar() da la llave al jugador').toBe(true);
+    expect(r.subtituloLlave, 'el subtítulo explica la llave sin romper la inmersión').toBe(true);
+    expect(r.piso, 'el jugador sigue en el Piso 4 (escalera)').toBe('piso4');
+    expect(r.lamGeneralApagada, 'el circuito general sigue apagado tras el despertar').toBe(true);
+    expect(r.lamEmergencia, 'la emergencia sigue encendida').toBe('encendida');
+    // El perfil se lee desde localStorage: registrarFinal lo guarda antes de volver al juego.
     const perfil = await page.evaluate(() => JSON.parse(localStorage.getItem('las-paredes-oyen:perfil') ?? 'null'));
-    expect(perfil, 'el perfil recuerda el piso y la dificultad').toMatchObject({ version: 2, pisosCompletados: { piso4: 'normal' } });
-
-    // De vuelta al menú: la marca discreta junto al piso.
-    await page.getByRole('button', { name: 'Volver al menú' }).click();
-    await page.waitForFunction(() => window.__juego?.estado === 'menu');
-    await expect(page.locator('.menu__cabecera .subtitulo-juego')).toHaveText('Edificio Almendros · Piso 4 · completado en Normal');
+    expect(perfil?.pisosCompletados?.piso4, 'el perfil registra el Piso 4 como completado').toBe('normal');
   });
 });

@@ -50,6 +50,8 @@ export const PISO_4: PaquetePiso = {
     tablero_activado: { circuitos: { general: 'encendida' }, lamparas: { lampara402: 'rota' } },
     // El apagón del pasillo: las cinco lámparas revientan (el guion las revienta una a una hacia el jugador).
     apagon_pasillo: { lamparas: { pasillo1: 'rota', pasillo2: 'rota', pasillo3: 'rota', pasillo4: 'rota', pasillo5: 'rota' } },
+    // Al medir el 402 el edificio queda oscuro: el circuito general apagado, solo la emergencia de la escalera.
+    'medido:402': { circuitos: { general: 'apagada', fantasma: 'apagada' }, lamparas: { lampara402: 'rota', emergencia: 'encendida' } },
   },
   // Los números en la cara de pasillo de cada puerta. Sin ellos, la llave del 402 (que está en el 403)
   // confundía: no había cómo saber en qué apartamento estabas.
@@ -95,8 +97,9 @@ export const PISO_4: PaquetePiso = {
     // contados con la uña en el yeso. Treinta y siete. El último quedó a medias.
     { tipo: 'conteo', id: 'conteo_402', x: 18.2, y: 19, rot: 180, altura: 0.95, ancho: 0.55, alto: 0.24, cuenta: 37 },
   ],
-  // Bajando: el siguiente es el Piso 3 (todavía no existe; el final lo dice).
-  siguiente: { id: 'piso3', nombre: 'Piso 3' },
+  escaleras: [{ id: 'bajada', hacia: 'piso3', llegada: 'escalera', x: 1.5, y: 10.5, texto: 'Bajar al Piso 3', requiere: 'objeto:llave_escalera', cerrada: 'La cadena está dada vuelta con candado.' }],
+  // Al terminar el piso, el jugador "despierta" con esta llave en la mano, en este punto de control.
+  despertar: { objeto: 'llave_escalera', punto: 'escalera' },
   guion: (acciones) => new GuionPiso4(acciones),
   menu: {
     camara: { x: 4.4, y: 10.5, angulo: -90 },

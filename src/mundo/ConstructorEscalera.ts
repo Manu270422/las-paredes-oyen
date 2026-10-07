@@ -116,17 +116,22 @@ function texturaEnMundo(geometria: BufferGeometry, escala: number): void {
 }
 
 /** Construyo todos los huecos de escalera del mapa. Si no hay ninguno, devuelvo un grupo vacío. */
-export function construirEscaleras(rejilla: Rejilla, materiales: BibliotecaMateriales): Group {
+export interface OpcionesEscalera {
+  rejaAbajo?: boolean;
+  escombrosArriba?: boolean;
+}
+
+export function construirEscaleras(rejilla: Rejilla, materiales: BibliotecaMateriales, opciones: OpcionesEscalera = {}): Group {
   const grupo = new Group();
   grupo.name = 'escaleras';
   encontrarHuecos(rejilla).forEach((hueco, i) => {
     const marco = marcoDelHueco(hueco, CONFIG.celda);
-    grupo.add(construirHueco(marco, materiales, crearGenerador(9041 + i * 131)));
+    grupo.add(construirHueco(marco, materiales, crearGenerador(9041 + i * 131), opciones));
   });
   return grupo;
 }
 
-function construirHueco(m: MarcoHueco, materiales: BibliotecaMateriales, azar: GeneradorAleatorio): Group {
+function construirHueco(m: MarcoHueco, materiales: BibliotecaMateriales, azar: GeneradorAleatorio, opciones: OpcionesEscalera = {}): Group {
   const H = CONFIG.alturaTecho;
   const A = m.ancho;
   const L = m.fondo;
@@ -161,9 +166,11 @@ function construirHueco(m: MarcoHueco, materiales: BibliotecaMateriales, azar: G
   tramo(piezas, medidas, derecha, { vInicio: inicioDescanso, yInicio: -H / 2, sentidoV: -1, sentidoY: -1, extraInicio: 0.1, extraFin: 0 });
   tramo(piezas, medidas, izquierda, { vInicio: inicioDescanso, yInicio: H / 2, sentidoV: -1, sentidoY: 1, extraInicio: 0.1, extraFin: -0.1 });
 
-  construirReja(piezas, izquierda.u0 + 0.02, izquierda.baranda - 0.06, 0.09, -contrahuella);
-  construirTablas(piezas, derecha.baranda, A, 0.07);
-  construirEscombros(piezas, azar, A, L, H, anchoTramo, medidas);
+  if (opciones.rejaAbajo !== false) construirReja(piezas, izquierda.u0 + 0.02, izquierda.baranda - 0.06, 0.09, -contrahuella);
+  if (opciones.escombrosArriba !== false) {
+    construirTablas(piezas, derecha.baranda, A, 0.07);
+    construirEscombros(piezas, azar, A, L, H, anchoTramo, medidas);
+  }
 
   return crearMallas(piezas, materiales);
 }

@@ -95,6 +95,7 @@ export class Juego {
     fundido: (aNegro, segundos) => this.ui.hud.fundir(aNegro, segundos),
     fijarSoloMirar: (activo) => (this.soloMirar = activo),
     terminarDemo: () => this.terminarDemo(),
+    despertar: () => this.despertar(),
   };
   private readonly lienzo: HTMLCanvasElement;
   private readonly raizUI: HTMLElement;
@@ -484,12 +485,12 @@ export class Juego {
    * de piso, y aparezco en `llegada` del destino con lo que traía (la linterna y sus pilas, el inventario).
    * Lo que pasó en el piso que dejo queda guardado en el progreso: si vuelvo, sigue como lo dejé.
    */
-  private viajarA(destino: PaquetePiso, llegada: string): void {
+  private viajarA(destino: PaquetePiso, llegada: string, sinPasos = false): void {
     if (this.estado !== 'jugando') return;
     const desde = this.piso.id;
     this.estado = 'viaje';
     this.ui.hud.fundir(true, VIAJE.fundido);
-    this.pasosEscalera(2);
+    if (!sinPasos) this.pasosEscalera(2);
     window.setTimeout(() => {
       this.programador.cancelarTodo();
       this.audio.detenerTodo();
@@ -499,7 +500,7 @@ export class Juego {
       this.cambiarNivel(destino);
       this.llegarA(llegada);
       this.bus.emit('piso-cambiado', { desde, hacia: destino.id });
-      this.pasosEscalera(4);
+      if (!sinPasos) this.pasosEscalera(4);
       window.setTimeout(() => {
         this.estado = 'jugando';
         this.ui.hud.fundir(false, VIAJE.aparecer);
@@ -521,6 +522,8 @@ export class Juego {
     this.soloMirar = false;
     this.interferencia = 0;
     this.puntoControl = llegada;
+    // Banderas de arranque del piso: el director y la criatura las leen en ponerEnPunto().
+    for (const b of this.piso.banderasAlLlegar ?? []) this.progreso.marcarSilencioso(b);
     this.director.cambiarDePiso();
     this.ponerEnPunto();
     // Llegar a un piso es avanzar: como un punto de control, reinicia el alivio por muertes seguidas y guarda
@@ -599,6 +602,18 @@ export class Juego {
   private guardarPartidaEstadisticas(): void {
     const datos = this.guardado.cargar();
     if (datos) this.guardado.guardar({ ...datos, estadisticas: this.memoria.estadisticas });
+  }
+
+  private despertar(): void {
+    const cfg = this.piso.despertar;
+    if (!cfg) return;
+    // El piso queda registrado como completado (el perfil lo recuerda aunque no haya pantalla de fin).
+    this.perfilGuardado.registrarFinal(this.piso.id, this.dificultadPartida.masBaja, this.tiempoJugado, this.memoria.muertes);
+    // La llave está en la mano: el jugador no la recogió conscientemente.
+    this.progreso.agregarObjeto(cfg.objeto);
+    this.bus.emit('subtitulo', { texto: 'Tienes una llave en la mano que no recuerdas haber tomado.', duracion: 5 });
+    // Despierta en el punto que el paquete indica, a oscuras todavía (viajarA funde desde negro).
+    this.viajarA(this.piso, cfg.punto, true);
   }
 
   private terminarDemo(): void {

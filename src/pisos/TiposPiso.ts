@@ -192,8 +192,17 @@ export interface PaquetePiso {
    * 'E'): al pulsar E, el motor funde a negro, pone pasos y monta el piso de destino.
    */
   readonly escaleras?: readonly DefEscaleraPiso[];
+  /** Banderas que se marcan en silencio al llegar a este piso, antes de ponerEnPunto (para que el director ya las vea). */
+  readonly banderasAlLlegar?: readonly string[];
+  /** Qué hay en los tramos de la escalera: por defecto reja abajo y escombros arriba. */
+  readonly opcionesEscalera?: { readonly rejaAbajo?: boolean; readonly escombrosArriba?: boolean };
   /** El guion del piso (opcional): recibe lo que puede pedirle al juego (fundidos, susto, final). */
   readonly guion?: (acciones: AccionesGuion) => GuionPiso;
+  /**
+   * Qué ocurre cuando el jugador "despierta" al terminar este piso: qué objeto se deposita en su
+   * inventario y a qué punto de control se le teletransporta. Sin este campo, el piso no tiene despertar.
+   */
+  readonly despertar?: { readonly objeto: string; readonly punto: string };
   /** El fondo del menú: se dibuja sobre el piso real, con alguien de pie al fondo. */
   readonly menu: {
     /** Dónde está la cámara (en celdas) y hacia dónde mira (grados). */
