@@ -5,6 +5,10 @@
 //
 // Un tramo puede estar cerrado (la reja con cadena): hasta que exista su bandera, suena la cerradura y lo
 // digo con un subtítulo. Sacudir una reja hace ruido: la criatura lo oye como una puerta.
+//
+// Mientras ella caza, la escalera tampoco me deja pasar: la cadena se traba. El viaje de hoy es un fundido
+// instantáneo, y pulsar E a la carrera sería una huida gratis que nadie diseñó. Cuando la escalera se camine,
+// la huida tendrá su costo (unos segundos expuesto) y esto se podrá quitar.
 import { Group } from 'three';
 import { CONFIG } from '../../config/ConfiguracionJuego';
 import type { ContextoJuego } from '../../nucleo/ContextoJuego';
@@ -16,6 +20,7 @@ const ALTURA_ZONA = 0.9;
 /** Generosa (como la de las pilas): apuntar a "la escalera" no debería costar. */
 const RADIO_ZONA = 0.5;
 const TEXTO_CERRADA = 'Por aquí no se puede pasar.';
+const TEXTO_EN_CAZA = '[La cadena se traba]';
 
 export class TramoEscalera implements Interactuable {
   readonly id: string;
@@ -35,13 +40,22 @@ export class TramoEscalera implements Interactuable {
 
   interactuar(ctx: ContextoJuego): void {
     const { requiere, cerrada, hacia, llegada } = this.def;
+    if (ctx.entidad.estado === 'cazando') {
+      this.trabarse(ctx, TEXTO_EN_CAZA, 'efecto');
+      return;
+    }
     if (requiere && !ctx.progreso.tiene(requiere)) {
-      const p = this.objeto.position;
-      ctx.audio.reproducir('cerradura', { posicion: { x: p.x, y: p.y, z: p.z }, volumen: 0.8 });
-      ctx.bus.emit('subtitulo', { texto: cerrada ?? TEXTO_CERRADA, duracion: 2.5 });
-      ctx.bus.emit('ruido', { x: p.x, z: p.z, intensidad: 0.25, origen: 'puerta', causa: 'puerta' });
+      this.trabarse(ctx, cerrada ?? TEXTO_CERRADA);
       return;
     }
     ctx.viaje.cambiarDePiso(hacia, llegada);
+  }
+
+  /** Suena la cadena, lo digo con un subtítulo y hace ruido (la criatura lo oye como una puerta). No viajo. */
+  private trabarse(ctx: ContextoJuego, texto: string, tipo?: 'efecto'): void {
+    const p = this.objeto.position;
+    ctx.audio.reproducir('cerradura', { posicion: { x: p.x, y: p.y, z: p.z }, volumen: 0.8 });
+    ctx.bus.emit('subtitulo', { texto, duracion: 2.5, tipo });
+    ctx.bus.emit('ruido', { x: p.x, z: p.z, intensidad: 0.25, origen: 'puerta', causa: 'puerta' });
   }
 }

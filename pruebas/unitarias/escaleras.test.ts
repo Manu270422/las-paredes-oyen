@@ -22,8 +22,10 @@ function tramo(def: DefEscaleraPiso) {
   falso.bus.on('subtitulo', (s) => subtitulos.push(s.texto));
   const progreso = new Progreso(falso.bus, [], { directorDesde: 'x', despiertaCon: 'x', imitacionCompletaCon: 'y' });
   const viaje = { cambiarDePiso: (hacia: string, llegada: string) => viajes.push([hacia, llegada]) };
-  const ctx = { ...falso.ctx, progreso, viaje } as unknown as ContextoJuego;
-  return { t: new TramoEscalera(def), ctx, progreso, viajes, subtitulos, sonidos: falso.sonidos, ruidos: falso.ruidos };
+  // La criatura: solo importa en qué estado está (la prueba la pone a cazar o a las paredes).
+  const entidad: { estado: string | null } = { estado: 'paredes' };
+  const ctx = { ...falso.ctx, progreso, viaje, entidad } as unknown as ContextoJuego;
+  return { t: new TramoEscalera(def), ctx, progreso, viajes, subtitulos, entidad, sonidos: falso.sonidos, ruidos: falso.ruidos };
 }
 
 describe('TramoEscalera', () => {
@@ -51,6 +53,26 @@ describe('TramoEscalera', () => {
     progreso.marcar('abierta:reja');
     t.interactuar(ctx);
     expect(viajes).toEqual([['abajo', 'descanso']]);
+  });
+
+  it('mientras ella caza no es una salida: la cadena se traba (suena, lo dice, hace ruido) y no viaja; al dejar de cazar, sí', () => {
+    const { t, ctx, viajes, subtitulos, sonidos, ruidos, entidad } = tramo(BAJADA);
+    entidad.estado = 'cazando';
+    t.interactuar(ctx);
+    expect(viajes).toEqual([]);
+    expect(sonidos).toEqual(['cerradura']);
+    expect(subtitulos).toEqual(['[La cadena se traba]']);
+    expect(ruidos.map((r) => r.causa)).toEqual(['puerta']);
+    entidad.estado = 'acechando';
+    t.interactuar(ctx);
+    expect(viajes, 'acechar no es cazar: la escalera responde').toEqual([['abajo', 'descanso']]);
+  });
+
+  it('en caza se traba antes de mirar si está cerrado (no da pistas de la llave mientras huyes)', () => {
+    const { t, ctx, subtitulos, entidad } = tramo({ ...BAJADA, requiere: 'abierta:reja', cerrada: 'La reja tiene una cadena.' });
+    entidad.estado = 'cazando';
+    t.interactuar(ctx);
+    expect(subtitulos).toEqual(['[La cadena se traba]']);
   });
 });
 
