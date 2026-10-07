@@ -104,6 +104,7 @@ export class Juego {
       // Si mientras viajaba se ocultó la pestaña o se soltó el ratón, no pude pausar (no estaba jugando): ahora sí.
       if (document.hidden || (this.entrada.modo === 'teclado' && !this.entrada.teclado.bloqueado)) this.pausar();
     },
+    resumenAlSalir: (desde) => this.finDePiso.tomarResumen(desde),
   });
   /** El fin de un piso (despertar o la pantalla final): vive en FinDePiso; aquí, lo que es del juego. */
   private readonly finDePiso = new FinDePiso(
@@ -120,7 +121,7 @@ export class Juego {
     mostrarSusto: () => mostrarSusto(this.ctx, 'final'),
     fundido: (aNegro, segundos) => this.ui.hud.fundir(aNegro, segundos),
     fijarSoloMirar: (activo) => (this.soloMirar = activo),
-    terminarDemo: () => this.finDePiso.terminarDemo(this.ctx),
+    terminarPartida: () => this.finDePiso.terminarPartida(this.ctx),
     despertar: () => this.finDePiso.despertar(this.ctx),
   };
   private readonly lienzo: HTMLCanvasElement;
@@ -460,6 +461,7 @@ export class Juego {
     if (partida) this.dificultadPartida.retomar(partida, ctx);
     this.progreso.usarPiso(piso);
     this.progreso.importar(partida?.progreso ?? null, partida?.otrosPisos);
+    this.finDePiso.importar(partida?.pisosCompletados ?? []);
     this.puntoControl = partida?.puntoControl ?? piso.puntoInicial;
     this.tiempoJugado = partida?.tiempoJugado ?? this.tiempoJugado;
     if (partida) this.memoria.restaurarEstadisticas(partida.estadisticas);
@@ -501,6 +503,7 @@ export class Juego {
       puntoControl: this.puntoControl,
       progreso: this.progreso.exportar(),
       otrosPisos: this.progreso.exportarOtros(),
+      pisosCompletados: this.finDePiso.exportar(),
       bateria: Math.max(0.35, this.linterna.bateria),
       tiempoJugado: this.tiempoJugado,
       estadisticas: this.memoria.estadisticas,
@@ -593,8 +596,9 @@ export class Juego {
         break;
       case 'viaje':
         // A oscuras en la escalera: no me muevo ni interactúo. Leo la entrada y la descarto, para que nada de
-        // lo que pulse mientras tanto se dispare al llegar.
+        // lo que pulse mientras tanto se dispare al llegar (salvo E o Esc, que adelantan la tarjeta de un piso).
         this.entrada.actualizar(dt);
+        if (this.entrada.estado.interactuar || this.entrada.estado.pausa) this.viajeEscalera.adelantar();
         break;
       case 'cargando':
         break;

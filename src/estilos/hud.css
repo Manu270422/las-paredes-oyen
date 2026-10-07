@@ -213,6 +213,12 @@
   color: #cfc7b6;
 }
 
+/* La de capítulo va sobre el negro de un viaje (dentro del fundido): aparece rápido, el viaje la espera. */
+.tarjeta--capitulo {
+  top: 46%;
+  transition-duration: 0.8s;
+}
+
 .tarjeta p {
   margin: var(--espacio-s) 0 0;
   font-size: var(--texto-s);

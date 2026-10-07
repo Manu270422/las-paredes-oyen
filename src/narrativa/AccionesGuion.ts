@@ -8,10 +8,11 @@ export interface AccionesGuion {
   fundido(aNegro: boolean, segundos: number): void;
   /** Solo puedo mirar, no moverme (momentos guionizados). */
   fijarSoloMirar(activo: boolean): void;
-  terminarDemo(): void;
+  /** La partida terminó: la pantalla final, con una línea por cada piso completado. La pide el último piso. */
+  terminarPartida(): void;
   /**
-   * El final del Piso 4 no termina la demo: el jugador despierta en el descanso de la escalera con la llave
-   * en la mano. La pantalla de fin queda pendiente para la Tanda 2 (con botón "Continuar al Piso 3").
+   * El piso queda completado pero la partida sigue: el jugador despierta en el punto que dice su paquete. Así
+   * termina el Piso 4; su resumen sale en una tarjeta breve la primera vez que baja de él.
    */
   despertar(): void;
 }

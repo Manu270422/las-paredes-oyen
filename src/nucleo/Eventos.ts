@@ -5,7 +5,8 @@ import type { FaseDirector, RasgoJugador } from '../director/TiposDirector';
 import type { IdDificultad } from '../config/Dificultad';
 
 /** 'cine': grande y centrada (por defecto). 'discreta': pequeña, abajo y breve. */
-export type EstiloTarjeta = 'cine' | 'discreta';
+/** 'capitulo': la que sale sobre el negro de un viaje (el resumen de un piso completado). */
+export type EstiloTarjeta = 'cine' | 'discreta' | 'capitulo';
 
 export type OrigenRuido = 'jugador' | 'puerta' | 'grabadora' | 'entorno' | 'radio';
 
@@ -67,7 +68,9 @@ export interface MapaEventos {
   };
   'entidad-estado': { estado: string; fisica: boolean };
   'jugador-atrapado': { x: number; z: number; motivo: MotivoCaza; enPared: boolean };
-  'fin-demo': { tiempo: number };
+  'fin-partida': { tiempo: number };
+  /** Un piso quedó completado: lo que tardó en él y las veces que la criatura me atrapó ahí. */
+  'piso-completado': { piso: string; tiempo: number; muertes: number };
   documento: { id: string };
   /** El jugador vio un rastro (sangre vieja, lápiz, rayas) de cerca y con luz, por primera vez en el piso. */
   'rastro-visto': { id: string };

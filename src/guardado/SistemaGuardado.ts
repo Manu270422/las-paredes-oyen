@@ -6,11 +6,12 @@
 import { esDificultad, type IdDificultad } from '../config/Dificultad';
 import type { EstadisticasPartida } from '../director/MemoriaMundo';
 import type { DatosPisoVisitado, DatosProgreso } from '../narrativa/Progreso';
+import type { PisoCompletado } from '../nucleo/FinDePiso';
 import { borrar, escribirJSON } from '../utilidades/Almacenamiento';
 import { leerVersionado } from './AlmacenVersionado';
 import type { Migracion } from './Versionado';
 
-export const VERSION_PARTIDA = 6;
+export const VERSION_PARTIDA = 7;
 
 export interface DatosPartida {
   version: typeof VERSION_PARTIDA;
@@ -26,6 +27,8 @@ export interface DatosPartida {
   progreso: DatosProgreso;
   /** Lo que pasó en los otros pisos que visité, por id de piso: si vuelvo, sigue como lo dejé. */
   otrosPisos: Record<string, DatosPisoVisitado>;
+  /** Los pisos completados en esta partida, en orden: para su tarjeta al bajar y la pantalla final. */
+  pisosCompletados: PisoCompletado[];
   bateria: number;
   tiempoJugado: number;
   fecha: number;
@@ -46,6 +49,9 @@ const MIGRACIONES: readonly Migracion[] = [
   { desde: 4, migrar: (v4) => ({ ...v4, dificultadInicial: v4.dificultad, dificultadMasBaja: v4.dificultad }) },
   // v5 → v6: el progreso de los otros pisos visitados. Hasta aquí solo existía un piso: no hay otros.
   { desde: 5, migrar: (v5) => ({ ...v5, otrosPisos: {} }) },
+  // v6 → v7: los pisos completados de la partida. Una partida v6 no los anotaba: empieza sin ninguno (si ya
+  // había pasado el Piso 4, no verá su tarjeta al bajar ni su línea en la pantalla final).
+  { desde: 6, migrar: (v6) => ({ ...v6, pisosCompletados: [] }) },
 ];
 
 const CLAVE = 'partida';
@@ -57,6 +63,16 @@ function esOtrosPisos(v: unknown): boolean {
   if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
   return Object.values(v).every((d: Partial<DatosPisoVisitado> | null) => {
     return typeof d === 'object' && d !== null && esListaDeTextos(d.banderas) && esListaDeTextos(d.documentos);
+  });
+}
+
+/** Cada piso completado: su id y nombre, tres números y si ya se vio su tarjeta. */
+function esPisosCompletados(v: unknown): boolean {
+  if (!Array.isArray(v)) return false;
+  return v.every((p: Partial<PisoCompletado> | null) => {
+    if (typeof p !== 'object' || p === null) return false;
+    const numeros = [p.tiempo, p.muertes, p.cambiosMundo].every((n) => typeof n === 'number' && Number.isFinite(n) && n >= 0);
+    return typeof p.piso === 'string' && typeof p.nombre === 'string' && numeros && typeof p.tarjetaVista === 'boolean';
   });
 }
 
@@ -72,6 +88,7 @@ function esPartida(d: Record<string, unknown>): d is Record<string, unknown> & D
     typeof d.progreso === 'object' &&
     d.progreso !== null &&
     esOtrosPisos(d.otrosPisos) &&
+    esPisosCompletados(d.pisosCompletados) &&
     typeof d.bateria === 'number' &&
     typeof d.tiempoJugado === 'number' &&
     typeof e === 'object' &&

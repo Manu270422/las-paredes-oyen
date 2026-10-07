@@ -1,0 +1,36 @@
+{
+  "piso": "piso3",
+  "dificultad": "normal",
+  "dificultadInicial": "normal",
+  "dificultadMasBaja": "normal",
+  "puntoControl": "escalera",
+  "progreso": {
+    "banderas": [
+      "llego:piso3"
+    ],
+    "inventario": [
+      "llave_escalera"
+    ],
+    "documentos": []
+  },
+  "otrosPisos": {
+    "piso4": {
+      "banderas": [
+        "medido:402",
+        "pista:linterna",
+        "objeto:llave_escalera"
+      ],
+      "documentos": []
+    }
+  },
+  "bateria": 0.9915272916666693,
+  "tiempoJugado": 16.235599999999984,
+  "estadisticas": {
+    "persecuciones": 0,
+    "muertes": 0,
+    "sustos": 0,
+    "cambiosMundo": 0
+  },
+  "version": 6,
+  "fecha": 1791403492810
+}

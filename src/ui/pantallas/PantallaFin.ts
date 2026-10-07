@@ -1,8 +1,10 @@
-// Aquí está el cierre de un piso. Dice sin ambigüedad lo que pasó ("Piso 4 completado"), las estadísticas
-// de la partida en voz baja, qué sigue y cómo volver a jugar. Sin fanfarria: el silencio es parte del final.
+// Aquí está el final de la partida. Dice sin ambigüedad lo que pasó ("Piso 3 completado"), las estadísticas
+// de la partida en voz baja, una línea por piso si fueron varios, qué sigue y cómo volver a jugar. Sin
+// fanfarria: el silencio es parte del final.
 import { crearBoton } from '../componentes/Boton';
 import type { PuenteTelemetria } from '../PuenteTelemetria';
 import type { MarcasFinal } from '../../guardado/Perfil';
+import { reloj } from '../../utilidades/Reloj';
 import { Pantalla } from './Pantalla';
 
 export interface EstadisticasFin {
@@ -19,13 +21,19 @@ export interface EstadisticasFin {
   muertes: number;
   /** Las mejores marcas del perfil (sobreviven a todas las partidas). */
   marcas: MarcasFinal;
+  /** Cada piso completado en esta partida, en orden: su nombre, lo que tardé en él y las veces que me atrapó ahí. */
+  pisos: ReadonlyArray<{ nombre: string; tiempo: number; muertes: number }>;
 }
 
-const reloj = (segundos: number) => `${Math.floor(segundos / 60)}:${Math.floor(segundos % 60).toString().padStart(2, '0')}`;
+/** Las veces que la criatura me atrapó, dicho como en el resto del final ("te oyó"). */
+export function vecesQueTeOyo(muertes: number): string {
+  return muertes === 0 ? 'no te oyó' : muertes === 1 ? 'te oyó 1 vez' : `te oyó ${muertes} veces`;
+}
 
 export class PantallaFin extends Pantalla {
   private readonly titulo: HTMLHeadingElement;
   private readonly lista: HTMLUListElement;
+  private readonly pisos: HTMLUListElement;
   private readonly siguiente: HTMLParagraphElement;
   private readonly exportar: HTMLButtonElement;
 
@@ -42,6 +50,8 @@ export class PantallaFin extends Pantalla {
     frase.textContent = 'Nadie dijo nada. Nunca. Y todo lo que se calló sigue ahí, escuchando.';
     this.lista = document.createElement('ul');
     this.lista.className = 'fin__estadisticas';
+    this.pisos = document.createElement('ul');
+    this.pisos.className = 'fin__pisos';
     this.siguiente = document.createElement('p');
     this.siguiente.className = 'subtitulo-juego fin__siguiente';
     const acciones = document.createElement('div');
@@ -55,7 +65,7 @@ export class PantallaFin extends Pantalla {
       crearBoton('Jugar otra vez', jugarOtraVez, { clase: 'boton--contorno' }),
       this.exportar,
     );
-    this.elemento.append(this.titulo, frase, this.lista, this.siguiente, acciones);
+    this.elemento.append(this.titulo, frase, this.lista, this.pisos, this.siguiente, acciones);
     this.alVolver = menu;
   }
 
@@ -83,6 +93,17 @@ export class PantallaFin extends Pantalla {
         const fuerte = document.createElement('strong');
         fuerte.textContent = valor;
         li.append(fuerte, nombre);
+        return li;
+      }),
+    );
+    // Una línea por piso, solo si fueron varios (con uno solo, repetiría los datos de arriba).
+    this.pisos.hidden = e.pisos.length < 2;
+    this.pisos.replaceChildren(
+      ...e.pisos.map((p) => {
+        const li = document.createElement('li');
+        const fuerte = document.createElement('strong');
+        fuerte.textContent = p.nombre;
+        li.append(fuerte, `${reloj(p.tiempo)} · ${vecesQueTeOyo(p.muertes)}`);
         return li;
       }),
     );

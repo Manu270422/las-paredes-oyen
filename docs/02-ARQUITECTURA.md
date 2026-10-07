@@ -92,7 +92,7 @@ cargador (`guardado/Versionado.ts` + `guardado/AlmacenVersionado.ts`):
 
 | Clave | Qué es | Versión | Se borra |
 |---|---|---|---|
-| `partida` | Piso, punto de control, banderas, batería, tiempo, estadísticas (`guardado/SistemaGuardado.ts`) | 5 (v1 → v2: toda v1 es del Piso 4; v2 → v3: "Cosas que cambiaron" empieza en 0; v3 → v4: la dificultad, Normal; v4 → v5: dificultad inicial y más baja jugada) | Al terminar o con "Nueva partida". **Pesadilla no guarda ni borra**: la de otra dificultad queda intacta |
+| `partida` | Piso, punto de control, banderas, batería, tiempo, estadísticas, lo de los otros pisos visitados y los pisos completados (`guardado/SistemaGuardado.ts`) | 7 (v1 → v2: toda v1 es del Piso 4; v2 → v3: "Cosas que cambiaron" empieza en 0; v3 → v4: la dificultad, Normal; v4 → v5: dificultad inicial y más baja jugada; v5 → v6: sin otros pisos; v6 → v7: sin pisos completados) | Al terminar o con "Nueva partida". **Pesadilla no guarda ni borra**: la de otra dificultad queda intacta |
 | `ajustes` | Ajustes del jugador (`config/Ajustes.ts`), con la dificultad preferida (la última elegida) | 1 (migra desde v0, sin versión; las claves nuevas toman su valor por defecto) | Nunca |
 | `perfil` | Mejores marcas, totales y pisos completados con su dificultad más alta (`guardado/Perfil.ts`) | 2 (v1 → v2: si llegó al final, completó el Piso 4 en Normal) | Nunca |
 | `telemetria` | Sesiones de prueba (`telemetria/`), con la dificultad y la versión de la compilación | 2 por sesión (las v1 se migran: Normal, compilación "desconocida") | Desde Ajustes → Pruebas |
@@ -176,10 +176,15 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
   Del juego solo pide lo suyo con `SalidaViaje` (su estado, `cambiarNivel`, `ponerEnPunto`, guardar), igual que
   `SecuenciaMuerte` con `SalidaMuerte`. Lo usa también el despertar tras el final del 402, sin pasos.
 - `nucleo/FinDePiso.ts`: el fin de un piso.
-  - Despertar: el piso queda completado y la partida sigue.
-  - Terminar la demo: la pantalla final; el juego deja de correr.
+  - Despertar: el piso queda completado y la partida sigue. La primera vez que bajo de él, el viaje muestra su
+    resumen en una tarjeta de capítulo **dentro del fundido**: solo se ve sobre el negro. El negro dura lo que la
+    tarjeta (unos 3.5 s más); E o Esc la adelantan.
+  - Terminar la partida (`terminarPartida`): la pantalla final, con una línea por piso si fueron varios; el juego
+    deja de correr.
 
-  Los guiones lo piden con `AccionesGuion`.
+  Cada piso completado anota lo suyo (tiempo, muertes y cambios, restando lo de los pisos anteriores), viaja en la
+  partida guardada (`pisosCompletados`, v7) y avisa con `piso-completado`, que la telemetría registra. Los guiones
+  lo piden con `AccionesGuion`.
 - `Juego.ts` tiene un tope de 700 líneas (A5), vigilado por `topeComplejidad.test.ts`. Lo que no cabe va a su propio
   archivo; por ejemplo, `ui/hud/AlimentarHUD.ts` pasa el estado del juego al HUD en cada fotograma.
 - `Juego.cambiarNivel` suelta el nivel viejo (`Nivel.destruir`: geometrías y texturas propias, no las de la biblioteca

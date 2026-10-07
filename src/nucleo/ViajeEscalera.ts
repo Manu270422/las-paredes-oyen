@@ -5,6 +5,9 @@
 // Llego con lo que traía (la linterna y sus pilas, el inventario). Lo que pasó en el piso que dejo queda en el
 // progreso: si vuelvo, sigue como lo dejé. Lo saqué de Juego.ts: del juego solo pido lo que es suyo (su
 // estado, armar el piso, ponerme en un punto de control y guardar).
+//
+// La primera vez que salgo de un piso completado, su resumen sale en una tarjeta sobre el negro, y el negro dura
+// lo que dura la tarjeta (E o Esc la adelantan). Mientras tanto el mundo está detenido: no le da ventaja a nadie.
 import { guardaAlLlegarAOtroPiso } from '../config/Dificultad';
 import { pisoPorId } from '../pisos/catalogo';
 import type { PaquetePiso } from '../pisos/TiposPiso';
@@ -15,6 +18,8 @@ import type { ContextoJuego } from './ContextoJuego';
  * oscuras oyendo mis pasos en los escalones y cuánto tarda en volver la imagen.
  */
 const VIAJE = { fundido: 0.5, cambio: 0.55, llegada: 1.5, aparecer: 1.2 };
+/** Cuánto más dura el negro con la tarjeta de un piso completado, y desde cuándo se puede adelantar (segundos). */
+const RESUMEN = { extra: 3.5, adelantarDesde: 0.8 };
 
 /** Lo que el viaje le pide al juego sin conocerlo. */
 export interface SalidaViaje {
@@ -30,10 +35,23 @@ export interface SalidaViaje {
   guardar(): void;
   /** Vuelvo a jugar (y pauso si mientras tanto se ocultó la pestaña o se soltó el ratón). */
   llegar(): void;
+  /** Al salir de `desde`: su resumen si lo completé y no lo he visto (una sola vez), o null. */
+  resumenAlSalir(desde: string): { titulo: string; subtitulo: string } | null;
 }
 
 export class ViajeEscalera {
+  /** La llegada pendiente mientras se ve una tarjeta: E o Esc la adelantan. */
+  private tarjeta: { temporizador: number; desde: number; llegar: () => void } | null = null;
+
   constructor(private readonly salida: SalidaViaje) {}
+
+  /** Adelanto la tarjeta de un piso completado (si ya lleva un momento en pantalla). */
+  adelantar(): void {
+    const t = this.tarjeta;
+    if (!t || performance.now() - t.desde < RESUMEN.adelantarDesde * 1000) return;
+    window.clearTimeout(t.temporizador);
+    t.llegar();
+  }
 
   /** Un tramo de escalera me pide ir al piso `hacia`. */
   cambiarDePiso(hacia: string, llegada: string, ctx: ContextoJuego): void {
@@ -58,15 +76,22 @@ export class ViajeEscalera {
       ctx.audio.detenerTodo();
       ctx.audio.fijarSilencioAmbiente(1);
       ctx.ambiente.olvidarFuentes();
+      // El resumen lo tomo ANTES de llegar: la llegada guarda, y así la tarjeta queda vista en la partida.
+      const resumen = destino.id === desde ? null : this.salida.resumenAlSalir(desde);
       ctx.progreso.cambiarPiso(desde, destino);
       this.salida.armarPiso(destino);
       this.llegarA(llegada, ctx);
       ctx.bus.emit('piso-cambiado', { desde, hacia: destino.id });
       if (!sinPasos) pasosEscalera(ctx, 4);
-      window.setTimeout(() => {
+      if (resumen) ctx.bus.emit('tarjeta', { ...resumen, estilo: 'capitulo' });
+      const llegar = () => {
+        this.tarjeta = null;
         this.salida.fundir(false, VIAJE.aparecer);
         this.salida.llegar();
-      }, VIAJE.llegada * 1000);
+      };
+      const espera = (VIAJE.llegada + (resumen ? RESUMEN.extra : 0)) * 1000;
+      const temporizador = window.setTimeout(llegar, espera);
+      if (resumen) this.tarjeta = { temporizador, desde: performance.now(), llegar };
     }, VIAJE.cambio * 1000);
   }
 

@@ -38,6 +38,9 @@ export class HUD {
   private readonly subtitulos = new Subtitulos();
   private readonly objetivo = new AvisoObjetivo();
   private readonly tarjeta = new TarjetaLugar();
+  /** La tarjeta de capítulo vive DENTRO del fundido: solo se ve mientras la pantalla está a negro. */
+  private readonly capitulo = new TarjetaLugar();
+  private ocultarCapitulo = 0;
   private readonly pistas: Pistas;
   private readonly interaccion = new IndicadorInteraccion();
   private readonly estado = new EstadoJugadorHUD();
@@ -60,6 +63,7 @@ export class HUD {
     this.elemento.className = 'hud hud--oculto';
     this.fundido = document.createElement('div');
     this.fundido.className = 'fundido';
+    this.fundido.append(this.capitulo.elemento);
     this.avisoRaton = document.createElement('div');
     this.avisoRaton.className = 'aviso-raton';
     this.avisoRaton.textContent = 'Haz clic para controlar la mirada';
@@ -90,7 +94,7 @@ export class HUD {
       this.subtitulos.mostrar(`[${s.descripcion} ${direccion(s.x, s.z)}]`, 2.6, true);
     });
     bus.on('objetivo', (o) => this.objetivo.mostrar(o.texto, o.nuevo));
-    bus.on('tarjeta', (t) => this.tarjeta.mostrar(t.titulo, t.subtitulo, t.estilo));
+    bus.on('tarjeta', (t) => (t.estilo === 'capitulo' ? this.capitulo : this.tarjeta).mostrar(t.titulo, t.subtitulo, t.estilo));
     bus.on('pista', (p) => {
       if (this.dificultad().pistas) this.pistas.agregar(p.texto);
     });
@@ -104,6 +108,7 @@ export class HUD {
     this.subtitulos.limpiar();
     this.objetivo.ocultar();
     this.tarjeta.ocultar();
+    this.capitulo.ocultar();
     this.pistas.limpiar();
   }
 
@@ -111,6 +116,9 @@ export class HUD {
   fundir(aNegro: boolean, segundos: number): void {
     this.fundido.style.transition = `opacity ${segundos}s ease`;
     this.fundido.style.opacity = aNegro ? '1' : '0';
+    // Al volver la imagen, la tarjeta de capítulo se va con el negro: no debe reaparecer en el próximo fundido.
+    window.clearTimeout(this.ocultarCapitulo);
+    if (!aNegro) this.ocultarCapitulo = window.setTimeout(() => this.capitulo.ocultar(), segundos * 1000);
   }
 
   actualizar(e: EstadoHUD): void {

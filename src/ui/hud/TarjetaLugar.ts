@@ -1,9 +1,10 @@
 // Aquí muestro la tarjeta de lugar. La de cine (lugar y hora, grande y centrada) abre la partida; la
-// discreta (solo el nombre, pequeña y abajo) dice a qué apartamento acabo de entrar sin tapar el cuarto.
+// discreta (solo el nombre, pequeña y abajo) dice a qué apartamento acabo de entrar sin tapar el cuarto; la
+// de capítulo (como la de cine) resume un piso completado sobre el negro de un viaje.
 import type { EstiloTarjeta } from '../../nucleo/Eventos';
 
 /** Cuánto se queda cada tarjeta en pantalla (ms), sin contar el fundido. */
-const DURACION: Record<EstiloTarjeta, number> = { cine: 4200, discreta: 2500 };
+const DURACION: Record<EstiloTarjeta, number> = { cine: 4200, discreta: 2500, capitulo: 3600 };
 
 export class TarjetaLugar {
   readonly elemento: HTMLDivElement;
@@ -25,6 +26,7 @@ export class TarjetaLugar {
       this.elemento.append(p);
     }
     this.elemento.classList.toggle('tarjeta--discreta', estilo === 'discreta');
+    this.elemento.classList.toggle('tarjeta--capitulo', estilo === 'capitulo');
     this.elemento.classList.add('tarjeta--visible');
     window.clearTimeout(this.temporizador);
     this.temporizador = window.setTimeout(() => this.elemento.classList.remove('tarjeta--visible'), DURACION[estilo]);

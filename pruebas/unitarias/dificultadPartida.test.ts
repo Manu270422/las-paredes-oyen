@@ -37,6 +37,7 @@ const partida = (d: Partial<DatosPartida> = {}): Omit<DatosPartida, 'version' | 
   puntoControl: 'escalera',
   progreso: { banderas: ['leyo:orden_trabajo'], inventario: [], documentos: [] },
   otrosPisos: {},
+  pisosCompletados: [],
   bateria: 1,
   tiempoJugado: 10,
   estadisticas: { persecuciones: 0, muertes: 0, sustos: 0, cambiosMundo: 0 },

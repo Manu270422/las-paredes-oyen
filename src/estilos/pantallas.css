@@ -571,6 +571,26 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Una línea por piso: más baja que las estadísticas, como una nota al pie. */
+.fin__pisos {
+  margin: var(--espacio-m) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-s);
+  font-variant-numeric: tabular-nums;
+}
+
+.fin__pisos li + li {
+  margin-top: var(--espacio-xs);
+}
+
+.fin__pisos strong {
+  margin-right: var(--espacio-s);
+  color: var(--color-texto);
+  font-weight: 400;
+}
+
 .creditos__texto {
   line-height: 1.7;
   color: var(--color-texto);

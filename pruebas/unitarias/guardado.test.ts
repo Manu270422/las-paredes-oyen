@@ -1,6 +1,7 @@
 // Guardado versionado (A2): una actualización del juego nunca debe borrar lo
 // que el jugador ya tenía, y una versión vieja del juego nunca debe pisar lo
 // que guardó una más nueva.
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cargarVersionado, type Migracion } from '../../src/guardado/Versionado';
 import { SistemaGuardado, VERSION_PARTIDA, type DatosPartida } from '../../src/guardado/SistemaGuardado';
@@ -62,12 +63,14 @@ describe('SistemaGuardado', () => {
     puntoControl: 'sala401',
     progreso: { banderas: ['medido:401'], inventario: [], documentos: [] },
     otrosPisos: { piso3: { banderas: ['lugar:301'], documentos: ['nota_301'] } },
+    pisosCompletados: [{ piso: 'piso4', nombre: 'Piso 4', tiempo: 95, muertes: 1, cambiosMundo: 3, tarjetaVista: true }],
     bateria: 0.8,
     tiempoJugado: 120,
     estadisticas: { persecuciones: 1, muertes: 2, sustos: 3, cambiosMundo: 4 },
   };
-  // Hasta la v5 la partida no recordaba otros pisos (solo existía uno): las partidas viejas no traen el campo.
-  const { otrosPisos: _sinOtros, ...partidaV5 } = partida;
+  // Hasta la v5 la partida no recordaba otros pisos (solo existía uno), y hasta la v6 no anotaba los pisos
+  // completados: las partidas viejas no traen esos campos.
+  const { otrosPisos: _sinOtros, pisosCompletados: _sinCompletados, ...partidaV5 } = partida;
 
   it('guarda y carga la partida actual', () => {
     const g = new SistemaGuardado();
@@ -104,9 +107,26 @@ describe('SistemaGuardado', () => {
     expect(new SistemaGuardado().cargar()).toMatchObject({ version: VERSION_PARTIDA, dificultad: 'dificil', dificultadInicial: 'dificil', dificultadMasBaja: 'dificil' });
   });
 
-  it('una partida v5 sube a v6 sin otros pisos (solo existía uno) y con todo lo demás intacto', () => {
+  it('una partida v5 sube sin otros pisos (solo existía uno) ni pisos completados, y con todo lo demás intacto', () => {
     sembrar('partida', { ...partidaV5, version: 5, fecha: 1 });
-    expect(new SistemaGuardado().cargar()).toEqual({ ...partidaV5, otrosPisos: {}, version: VERSION_PARTIDA, fecha: 1 });
+    expect(new SistemaGuardado().cargar()).toEqual({ ...partidaV5, otrosPisos: {}, pisosCompletados: [], version: VERSION_PARTIDA, fecha: 1 });
+  });
+
+  it('una partida v6 REAL (la escribió el juego al llegar al Piso 3) sube a v7 sin pisos completados y con todo lo demás intacto', () => {
+    const v6 = JSON.parse(readFileSync(new URL('../recorridos/datos/partida-v6-piso3.json', import.meta.url), 'utf8')) as Record<string, unknown>;
+    expect(v6.version, 'la fixture es de verdad v6').toBe(6);
+    sembrar('partida', v6);
+    expect(new SistemaGuardado().cargar()).toEqual({ ...v6, pisosCompletados: [], version: VERSION_PARTIDA });
+    expect(guardado('partida'), 'queda guardada ya migrada').toMatchObject({ version: VERSION_PARTIDA, piso: 'piso3', pisosCompletados: [] });
+  });
+
+  it('una partida con los pisos completados mal formados es dañada (no se inventa lo que pasó en ellos)', () => {
+    const bueno = partida.pisosCompletados[0];
+    const malos: unknown[] = [{}, null, [null], [{ ...bueno, tiempo: '95' }], [{ ...bueno, muertes: -1 }], [{ ...bueno, tarjetaVista: 'si' }], [{ ...bueno, piso: 4 }]];
+    for (const pisosCompletados of malos) {
+      sembrar('partida', { ...partida, pisosCompletados, version: VERSION_PARTIDA, fecha: 1 });
+      expect(new SistemaGuardado().cargar(), JSON.stringify(pisosCompletados)).toBeNull();
+    }
   });
 
   it('una partida con los otros pisos mal formados es dañada (no se adivina qué pasó en ellos)', () => {
