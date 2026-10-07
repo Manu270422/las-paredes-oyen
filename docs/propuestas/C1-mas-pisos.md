@@ -1,6 +1,8 @@
 # C1 — Más pisos, escaleras y ascensor (Tarea 5, solo documento)
 
 > **No implementar.** Principio: *variar antes que multiplicar*. Nada de esto empieza antes del Gate 1.
+>
+> **Actualización 2026-10-07:** el creador adelantó parte de esto sin el Gate 1. Ver "Decisiones del creador" al final.
 
 ## 1. ¿Cuántos pisos?
 
@@ -76,3 +78,18 @@ Total estimado: **1–2 semanas**, antes de cualquier contenido del Piso 3.
 
 **Más misiones sin más pisos**: B1 y "el hueco" dan contenido nuevo reutilizando el Piso 4. Es la forma más barata de
 crecer sin bajar la calidad de lo que ya funciona.
+
+## Decisiones del creador (fuera del orden de arriba)
+
+- **2026-10-06.** Los jugadores pedían más pisos, escaleras y frases de sangre. El creador decidió posponer el Gate 1 y
+  adelantar los pasos 4 y 5. Hecho desde entonces:
+  - escalera visible y motor de cambio de piso;
+  - Piso 3, tandas 1 y 2: llave al despertar, mapa, escalera de ida y vuelta, frases, manchas y humedad.
+- **Riesgo aceptado.** Lo que el Piso 3 construye encima (oír, contener el aire, la cinta) sigue sin validarse con
+  jugadores, y `sprint-4` se aleja de `main`, que es lo que prueban los testers.
+- **2026-10-07, tope.** Nada de lo caro de C2 (escaleras caminadas y cabina del ascensor) se empieza sin al menos
+  **3 testers del Piso 4**.
+- **Orden hasta entonces:**
+  1. la llave bajo la silla del 402, con una pista para que nadie se atasque (C2 §2);
+  2. las misiones de solo datos y guion (C2 §4);
+  3. lo caro, después de los testers.
