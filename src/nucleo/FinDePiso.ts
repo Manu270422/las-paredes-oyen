@@ -1,7 +1,7 @@
 // Aquí está el fin de un piso. Hay dos:
 // - despertar: el piso queda completado pero la partida sigue. El Piso 4 termina así: el jugador despierta en
-//   la escalera, con lo que el paquete le deja en la mano. La primera vez que baja de él, el viaje muestra su
-//   resumen en una tarjeta breve, sobre el negro.
+//   la escalera sin nada en la mano (lo que necesite para seguir lo encuentra jugando). La primera vez que baja
+//   de él, el viaje muestra su resumen en una tarjeta breve, sobre el negro.
 // - terminar la partida: la pantalla final, con una línea por cada piso completado; el juego deja de correr.
 // Cada piso completado queda anotado (lo que tardé en él, las veces que me atrapó, lo que cambió) y viaja en la
 // partida guardada. También lo registro en el perfil (las mejores marcas). Lo saqué de Juego.ts: del juego
@@ -69,9 +69,7 @@ export class FinDePiso {
     const cfg = ctx.piso.despertar;
     if (!cfg) return;
     this.completar(ctx);
-    // La llave está en la mano: el jugador no la recogió conscientemente.
-    ctx.progreso.agregarObjeto(cfg.objeto);
-    ctx.bus.emit('subtitulo', { texto: 'Tienes una llave en la mano que no recuerdas haber tomado.', duracion: 5 });
+    if (cfg.mensaje) ctx.bus.emit('subtitulo', { texto: cfg.mensaje, duracion: 5 });
     // Despierto a oscuras todavía (el viaje funde desde negro).
     this.piezas.viaje.viajar(ctx.piso, cfg.punto, ctx, true);
   }

@@ -218,10 +218,11 @@ export interface PaquetePiso {
   /** El guion del piso (opcional): recibe lo que puede pedirle al juego (fundidos, susto, final). */
   readonly guion?: (acciones: AccionesGuion) => GuionPiso;
   /**
-   * Qué ocurre cuando el jugador "despierta" al terminar este piso: qué objeto se deposita en su
-   * inventario y a qué punto de control se le teletransporta. Sin este campo, el piso no tiene despertar.
+   * Qué ocurre cuando el jugador "despierta" al terminar este piso: a qué punto de control llega y lo que
+   * se dice al despertar. No regala nada: lo que haga falta para seguir se encuentra jugando. Sin este campo,
+   * el piso no tiene despertar.
    */
-  readonly despertar?: { readonly objeto: string; readonly punto: string };
+  readonly despertar?: { readonly punto: string; readonly mensaje?: string };
   /** El fondo del menú: se dibuja sobre el piso real, con alguien de pie al fondo. */
   readonly menu: {
     /** Dónde está la cámara (en celdas) y hacia dónde mira (grados). */

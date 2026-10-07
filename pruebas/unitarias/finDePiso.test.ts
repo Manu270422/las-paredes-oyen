@@ -13,7 +13,7 @@ function armar() {
   const eventos: string[] = [];
   falso.bus.on('piso-completado', (p) => eventos.push(`completado:${p.piso}:${p.tiempo}:${p.muertes}`));
   falso.bus.on('fin-partida', () => eventos.push('fin-partida'));
-  const piso4 = { id: 'piso4', nombre: 'Piso 4', despertar: { objeto: 'llave', punto: 'escalera' } };
+  const piso4 = { id: 'piso4', nombre: 'Piso 4', despertar: { punto: 'escalera', mensaje: 'Despiertas.' } };
   const piso3 = { id: 'piso3', nombre: 'Piso 3' };
   const ctx = {
     ...falso.ctx,
@@ -38,11 +38,15 @@ function armar() {
 }
 
 describe('El fin de un piso', () => {
-  it('despertar anota lo que dejó el piso, lo avisa y despierta en el punto del paquete sin pasos de escalera', () => {
+  it('despertar anota lo que dejó el piso, lo avisa, dice su mensaje y despierta en el punto del paquete sin pasos y sin regalar nada', () => {
     const { f, ctx, reloj, memoria, eventos, piezas } = armar();
+    const subtitulos: string[] = [];
+    ctx.bus.on('subtitulo', (s) => subtitulos.push(s.texto));
     reloj.tiempo = 600;
     Object.assign(memoria, { muertes: 2, cambiosMundo: 5 });
     f.despertar(ctx);
+    expect(subtitulos).toEqual(['Despiertas.']);
+    expect((ctx.progreso as unknown as { agregarObjeto: { mock: { calls: unknown[] } } }).agregarObjeto.mock.calls, 'nada en la mano').toEqual([]);
     expect(f.exportar()).toEqual([{ piso: 'piso4', nombre: 'Piso 4', tiempo: 600, muertes: 2, cambiosMundo: 5, tarjetaVista: false }]);
     expect(eventos).toEqual(['completado:piso4:600:2']);
     expect(piezas.viaje.viajar).toHaveBeenCalledWith(ctx.piso, 'escalera', ctx, true);

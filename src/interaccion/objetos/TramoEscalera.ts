@@ -21,6 +21,16 @@ const ALTURA_ZONA = 0.9;
 const RADIO_ZONA = 0.5;
 const TEXTO_CERRADA = 'Por aquí no se puede pasar.';
 const TEXTO_EN_CAZA = '[La cadena se traba]';
+const PREFIJO_OBJETO = 'objeto:';
+
+/**
+ * ¿Se cumple lo que pide el tramo? Si pide un objeto, miro el bolsillo: la bandera "objeto:" se queda en el piso
+ * donde lo tomé, pero el objeto viaja conmigo.
+ */
+function cumple(ctx: ContextoJuego, requiere: string): boolean {
+  if (ctx.progreso.tiene(requiere)) return true;
+  return requiere.startsWith(PREFIJO_OBJETO) && ctx.progreso.tieneObjeto(requiere.slice(PREFIJO_OBJETO.length));
+}
 
 export class TramoEscalera implements Interactuable {
   readonly id: string;
@@ -44,7 +54,7 @@ export class TramoEscalera implements Interactuable {
       this.trabarse(ctx, TEXTO_EN_CAZA, 'efecto');
       return;
     }
-    if (requiere && !ctx.progreso.tiene(requiere)) {
+    if (requiere && !cumple(ctx, requiere)) {
       this.trabarse(ctx, cerrada ?? TEXTO_CERRADA);
       return;
     }

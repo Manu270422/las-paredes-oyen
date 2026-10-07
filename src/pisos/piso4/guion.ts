@@ -4,7 +4,7 @@
 // - La primera medición y los tres golpes que la interrumpen.
 // - Lo que aparece en cada grabación.
 // - La luz que vuelve... y el apagón que avanza hacia mí.
-// - El final en el 402.
+// - El final en el 402, y después: despierto sin la llave de la reja y la oigo caer en el 402.
 // Todo se basa en condiciones y banderas, así funciona igual al cargar partida.
 // Vive en el paquete del piso: el motor solo conoce el contrato GuionPiso. (La activación del
 // director ya no está aquí: es la regla `directorDesde` del paquete y la aplica el propio director.)
@@ -18,6 +18,11 @@ import { CONFIG } from '../../config/ConfiguracionJuego';
 export class GuionPiso4 implements GuionPiso {
   private tiempo = 0;
   private tiempoTablero = -1;
+  /**
+   * Corre la secuencia final en este guion. Al despertar, el piso se arma de nuevo con otro guion: el de
+   * después del final. Este no debe dar las pistas de la llave mientras la secuencia todavía se ve.
+   */
+  private enFinal = false;
   private readonly hechos = new Set<string>();
   private readonly cancelaciones: Array<() => void> = [];
 
@@ -41,6 +46,7 @@ export class GuionPiso4 implements GuionPiso {
   reiniciar(ctx: ContextoJuego): void {
     this.tiempo = 0;
     this.tiempoTablero = ctx.progreso.tiene('tablero_activado') ? 0 : -1;
+    this.enFinal = false;
     this.hechos.clear();
   }
 
@@ -76,6 +82,23 @@ export class GuionPiso4 implements GuionPiso {
       this.unaVez('apagon')
     ) {
       this.apagon(ctx);
+    }
+
+    // Después del final despierto sin la llave de la reja. Primero la oigo caer en el 402: es la pista que vale en
+    // toda dificultad, y usa lo que el juego ya enseña (oír). Si tardo, una pista escrita (donde hay pistas).
+    if (!this.enFinal && p.tiene('medido:402') && !p.tieneObjeto('llave_escalera')) {
+      if (this.tiempo > 3 && this.unaVez('llave-cae')) this.oirLaLlave(ctx);
+      if (this.tiempo > 75) this.pista(ctx, 'llave-escalera', 'Lo que cayó sonó en el 402. La reja de la escalera tiene candado.');
+    }
+  }
+
+  /** La llave cae y rebota en el piso del cuarto del 402: lejos, apagada por los muros, pero con su dirección. */
+  private oirLaLlave(ctx: ContextoJuego): void {
+    const llave = ctx.nivel.interactuables.find((i) => i.id === 'llaveEscalera')?.objeto.position;
+    if (!llave) return;
+    ctx.bus.emit('sonido-relevante', { descripcion: 'algo metálico cae', x: llave.x, z: llave.z });
+    for (let i = 0; i < 2; i++) {
+      ctx.audio.reproducir('llave', { posicion: { x: llave.x, y: 0.1, z: llave.z }, volumen: 1, retraso: i * 0.22, tono: 1.15 - i * 0.1 });
     }
   }
 
@@ -117,6 +140,7 @@ export class GuionPiso4 implements GuionPiso {
         ctx.bus.emit('subtitulo', { texto: 'La luz vuelve. Por un momento, el edificio parece solo un edificio.', duracion: 4 });
         break;
       case 'medido:402':
+        this.enFinal = true;
         ejecutarSecuenciaFinal(ctx, this.acciones);
         break;
     }

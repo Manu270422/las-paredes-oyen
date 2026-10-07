@@ -24,13 +24,17 @@ test('la tarjeta del piso completado sale una vez al bajar, sobre el negro, y la
     const tarjeta = () => document.querySelector('.fundido .tarjeta--visible');
     const negro = () => Number(getComputedStyle(document.querySelector('.fundido')!).opacity);
 
-    // El final del 402: su guion despierta al jugador en la escalera (con la llave, por ahora).
+    // El final del 402: su guion despierta al jugador en la escalera (un viaje al mismo piso).
+    let desperto = false;
+    ctx.bus.on('piso-cambiado', ({ desde, hacia }) => (desperto ||= desde === 'piso4' && hacia === 'piso4'));
     ctx.progreso.marcar('medido:402');
     const l1 = performance.now() + 40_000;
-    while (!(ctx.progreso.tiene('objeto:llave_escalera') && J.estado === 'jugando') && performance.now() < l1) await P.esperarReal(50);
+    while (!(desperto && J.estado === 'jugando') && performance.now() < l1) await P.esperarReal(50);
     await P.esperarJuego(0.5);
     const completadosAlDespertar = fin.exportar();
     const tarjetaAlDespertar = tarjeta() !== null;
+    // La llave de la reja está bajo la silla del 402: aquí la tomo directo (caminarla es de llaveEscalera.spec.ts).
+    ctx.nivel.interactuables.find((i) => i.id === 'llaveEscalera')!.interactuar(ctx);
 
     /** Bajo o subo por el tramo `id`; mientras viajo, anoto la tarjeta que vea (y si la pantalla estaba a negro). */
     const viajar = async (id: string, hacia: string, adelantar: boolean) => {

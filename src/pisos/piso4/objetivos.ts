@@ -10,4 +10,5 @@ export const OBJETIVOS: readonly Objetivo[] = [
   { id: 'tablero', texto: 'Restablece la luz: el tablero está en el cuarto de servicio, al fondo del pasillo', bandera: 'tablero_activado' },
   { id: 'llave', texto: 'Busca la llave del 402 en el estudio del 403', bandera: 'objeto:llave_402' },
   { id: 'medir402', texto: 'Mide la sala del apartamento 402', bandera: 'medido:402' },
+  { id: 'bajar', texto: 'Encuentra cómo bajar', bandera: 'objeto:llave_escalera' },
 ];

@@ -2,8 +2,9 @@
 // 1) leer la orden pone a trabajar al director (regla `directorDesde`); medir el 401 reproduce su cinta y
 //    despierta a la criatura; se camina al 403, se abre con E, se mide y su cinta revela la imitación completa;
 // 2) con la luz de vuelta, al entrar al pasillo las lámparas revientan una a una y ella aparece al fondo;
-// 3) medir el 402 dispara la secuencia final y el jugador despierta en la escalera con la llave en la mano:
-//    sin pantalla de fin, el edificio a oscuras y el perfil recordando el piso y la dificultad.
+// 3) medir el 402 dispara la secuencia final y el jugador despierta en la escalera sin nada en la mano: sin
+//    pantalla de fin, el edificio a oscuras, el perfil recordando el piso, y la llave de la reja cayendo en el
+//    402 (la busca llaveEscalera.spec.ts).
 // La criatura se mantiene en las paredes durante los trayectos: aquí se prueba el guion, no su caza
 // (eso lo cubren piso4.spec y director.spec).
 import { expect, test, type Page } from '@playwright/test';
@@ -176,35 +177,51 @@ test.describe.serial('Guion del Piso 4 jugado', () => {
     expect(r.estado).toBe('jugando');
   });
 
-  test('medir el 402 dispara la secuencia final: el jugador despierta en la escalera con la llave', async () => {
+  test('medir el 402 dispara la secuencia final: el jugador despierta en la escalera sin la llave, y la oye caer', async () => {
     const r = await page.evaluate(async () => {
       const J = window.__juego!;
+      const P = window.__piloto!;
       const { ctx } = J;
       const subs = (window as unknown as { __subtitulos: string[] }).__subtitulos;
+      let desperto = false;
+      const relevantes: string[] = [];
+      ctx.bus.on('piso-cambiado', ({ desde, hacia }) => (desperto ||= desde === 'piso4' && hacia === 'piso4'));
+      ctx.bus.on('sonido-relevante', (s) => relevantes.push(s.descripcion));
+      // Para medir el 402 hay que haber entrado con su llave (aquí no se camina: lo camina llave.spec.ts).
+      ctx.progreso.agregarObjeto('llave_402');
       ctx.progreso.marcar('medido:402');
-      // Espero a que 'despertar()' deposite la llave (señal de que la secuencia terminó).
-      const limite = performance.now() + 30_000;
-      while (!ctx.progreso.tiene('objeto:llave_escalera') && performance.now() < limite) await new Promise((r) => setTimeout(r, 50));
-      // Espero a que el viaje de vuelta al punto de escalera termine.
-      const limiteViaje = performance.now() + 10_000;
-      while (J.estado !== 'jugando' && performance.now() < limiteViaje) await new Promise((r) => setTimeout(r, 50));
+      // El despertar es un viaje al mismo piso (a la escalera): espero a que termine.
+      const limite = performance.now() + 40_000;
+      while (!(desperto && J.estado === 'jugando') && performance.now() < limite) await P.esperarReal(50);
       // Sin luz: las del circuito general quedan apagadas o rotas (la del 402 y las del pasillo ya reventaron).
       const lamGeneral = ctx.nivel.lamparas.filter((l) => l.circuito === 'general').every((l) => l.estado === 'apagada' || l.estado === 'rota');
       const lamEmergencia = ctx.nivel.lamparas.find((l) => l.id === 'emergencia')?.estado;
+      const llave = ctx.nivel.interactuables.find((i) => i.id === 'llaveEscalera');
+      const alDespertar = { relevantes: [...relevantes] };
+      // A los 3 s de despertar, la llave cae en el 402.
+      await P.esperarJuego(4);
       return {
         estado: J.estado,
-        tieneKey: ctx.progreso.tiene('objeto:llave_escalera'),
-        subtituloLlave: subs.some((s) => s.includes('llave en la mano')),
+        tieneLlave: ctx.progreso.tieneObjeto('llave_escalera'),
+        llaveEnElMapa: llave?.activo ?? false,
+        objetivo: ctx.progreso.objetivoActual()?.id ?? null,
+        subtituloDespertar: subs.some((s) => s.includes('Despiertas en el descanso')),
         pasos: subs.some((s) => s.includes('Los pasos ya no vienen de la grabadora')),
         piso: ctx.piso?.id,
         lamGeneralApagada: lamGeneral,
         lamEmergencia,
+        oidoAlDespertar: alDespertar.relevantes,
+        oidoDespues: relevantes,
       };
     });
     expect(r.pasos, 'la secuencia final reproduce su guion').toBe(true);
     expect(r.estado, 'el juego sigue corriendo (no hay pantalla de fin)').toBe('jugando');
-    expect(r.tieneKey, 'despertar() da la llave al jugador').toBe(true);
-    expect(r.subtituloLlave, 'el subtítulo explica la llave sin romper la inmersión').toBe(true);
+    expect(r.tieneLlave, 'despertar no regala la llave').toBe(false);
+    expect(r.llaveEnElMapa, 'la llave apareció en el 402 con el final').toBe(true);
+    expect(r.objetivo, 'el objetivo dice qué hacer ahora').toBe('bajar');
+    expect(r.subtituloDespertar).toBe(true);
+    expect(r.oidoAlDespertar, 'la llave no cae durante la secuencia final').not.toContain('algo metálico cae');
+    expect(r.oidoDespues, 'después de despertar, la oigo caer').toContain('algo metálico cae');
     expect(r.piso, 'el jugador sigue en el Piso 4 (escalera)').toBe('piso4');
     expect(r.lamGeneralApagada, 'el circuito general sigue apagado tras el despertar').toBe(true);
     expect(r.lamEmergencia, 'la emergencia sigue encendida').toBe('encendida');

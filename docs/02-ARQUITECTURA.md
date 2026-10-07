@@ -176,7 +176,8 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
   Del juego solo pide lo suyo con `SalidaViaje` (su estado, `cambiarNivel`, `ponerEnPunto`, guardar), igual que
   `SecuenciaMuerte` con `SalidaMuerte`. Lo usa también el despertar tras el final del 402, sin pasos.
 - `nucleo/FinDePiso.ts`: el fin de un piso.
-  - Despertar: el piso queda completado y la partida sigue. La primera vez que bajo de él, el viaje muestra su
+  - Despertar: el piso queda completado y la partida sigue. No regala nada: lo que haga falta para seguir se
+    encuentra jugando (un recogible puede `aparece`r con una bandera). La primera vez que bajo de él, el viaje muestra su
     resumen en una tarjeta de capítulo **dentro del fundido**: solo se ve sobre el negro. El negro dura lo que la
     tarjeta (unos 3.5 s más); E o Esc la adelantan.
   - Terminar la partida (`terminarPartida`): la pantalla final, con una línea por piso si fueron varios; el juego

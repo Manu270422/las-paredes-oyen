@@ -15,6 +15,8 @@ export class Recogible implements Interactuable {
   /** El id del objeto que entrega (una clave de `objetos` del paquete). */
   private readonly idObjeto: string;
   private readonly datos: DefObjetoRecogible;
+  /** La bandera desde la que existe (si no tiene, existe desde el principio). */
+  private readonly aparece: string | undefined;
 
   constructor(def: DefInteractuable, objetos: Readonly<Record<string, DefObjetoRecogible>>) {
     this.id = def.id;
@@ -22,6 +24,7 @@ export class Recogible implements Interactuable {
     const datos = objetos[this.idObjeto];
     if (!datos) throw new Error(`El recogible "${def.id}" entrega "${this.idObjeto}", que no está en los objetos del piso.`);
     this.datos = datos;
+    this.aparece = def.aparece;
     this.objeto.add(datos.modelo === 'pilas' ? modeloPilas() : modeloLlave(), crearZonaToque(0.18));
     this.objeto.position.set(def.x * CONFIG.celda, def.altura ?? 0.8, def.y * CONFIG.celda);
     vincular(this.objeto, this);
@@ -44,8 +47,9 @@ export class Recogible implements Interactuable {
     ctx.bus.emit('subtitulo', { texto: this.datos.mensaje, duracion: this.datos.duracionMensaje });
   }
 
-  /** Al cargar, el objeto existe solo si no lo había recogido. */
+  /** Al cargar, el objeto existe solo si ya apareció y no lo había recogido. */
   restablecer(ctx: ContextoJuego): void {
-    this.objeto.visible = !ctx.progreso.tiene(`recogido:${this.id}`);
+    const aparecio = this.aparece === undefined || ctx.progreso.tiene(this.aparece);
+    this.objeto.visible = aparecio && !ctx.progreso.tiene(`recogido:${this.id}`);
   }
 }

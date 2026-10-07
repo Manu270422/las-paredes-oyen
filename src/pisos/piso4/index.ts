@@ -34,6 +34,14 @@ export const PISO_4: PaquetePiso = {
       duracionMensaje: 3,
       guardaEnInventario: true,
     },
+    // La llave del candado de la reja de la escalera: aparece bajo la silla del cuarto del 402 con el final.
+    llave_escalera: {
+      modelo: 'llave',
+      texto: 'Tomar la llave',
+      mensaje: 'Una llave pequeña, oxidada, con un hilo rojo amarrado. Es de un candado.',
+      duracionMensaje: 4,
+      guardaEnInventario: true,
+    },
   },
   puntoInicial: 'escalera',
   puntosControl: {
@@ -42,6 +50,8 @@ export const PISO_4: PaquetePiso = {
     'medido:403': 'sala403',
     tablero_activado: 'servicio',
     'objeto:llave_402': 'estudio403',
+    // Con la llave de la escalera en la mano, si muero reaparezco junto a la reja (a donde iba).
+    'objeto:llave_escalera': 'escalera',
   },
   // En Difícil solo guardan las mediciones: el tablero y la llave hay que conseguirlos sin morir.
   puntosControlMayores: ['medido:401', 'medido:403'],
@@ -110,8 +120,9 @@ export const PISO_4: PaquetePiso = {
     { tipo: 'frase', id: 'frase_bano401', x: 11.5, y: 1, rot: 0, altura: 1.5, ancho: 0.95, alto: 0.42, lineas: ['NO LE', 'CONTESTE'] },
   ],
   escaleras: [{ id: 'bajada', hacia: 'piso3', llegada: 'escalera', x: 1.5, y: 10.5, texto: 'Bajar al Piso 3', requiere: 'objeto:llave_escalera', cerrada: 'La cadena está dada vuelta con candado.' }],
-  // Al terminar el piso, el jugador "despierta" con esta llave en la mano, en este punto de control.
-  despertar: { objeto: 'llave_escalera', punto: 'escalera' },
+  // Al terminar el piso, el jugador despierta en la escalera con las manos vacías. La llave de la reja la
+  // encuentra jugando: el guion hace sonar su caída (ver guion.ts) y, si tarda, deja una pista.
+  despertar: { punto: 'escalera', mensaje: 'Despiertas en el descanso. No recuerdas haber salido del 402.' },
   guion: (acciones) => new GuionPiso4(acciones),
   menu: {
     camara: { x: 4.4, y: 10.5, angulo: -90 },

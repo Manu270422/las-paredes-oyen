@@ -13,8 +13,8 @@ const OBJETOS: Record<string, DefObjetoRecogible> = {
   tarjeta_azul: { modelo: 'llave', texto: 'Tomar la tarjeta azul', mensaje: 'Una tarjeta azul.', duracionMensaje: 3, guardaEnInventario: true },
 };
 
-function colocar(objeto: string) {
-  const def: DefInteractuable = { tipo: 'recogible', id: 'cosa1', objeto, x: 1, y: 1 };
+function colocar(objeto: string, aparece?: string) {
+  const def: DefInteractuable = { tipo: 'recogible', id: 'cosa1', objeto, x: 1, y: 1, aparece };
   const falso = crearContextoFalso();
   const recargas: number[] = [];
   const subtitulos: Array<{ texto: string; duracion?: number }> = [];
@@ -25,6 +25,18 @@ function colocar(objeto: string) {
 }
 
 describe('Recogible', () => {
+  it('uno que aparece con una bandera no existe antes (ni se ve ni se toma); con ella, sí; tomado, ya no', () => {
+    const { recogible, ctx, progreso } = colocar('tarjeta_azul', 'final_visto');
+    recogible.restablecer(ctx);
+    expect(recogible.activo, 'antes de la bandera').toBe(false);
+    progreso.marcar('final_visto');
+    recogible.restablecer(ctx);
+    expect(recogible.activo, 'con la bandera').toBe(true);
+    recogible.interactuar(ctx);
+    recogible.restablecer(ctx);
+    expect(recogible.activo, 'tomado no vuelve aunque la bandera siga').toBe(false);
+  });
+
   it('muestra el texto de su declaración', () => {
     expect(colocar('baterias').recogible.texto()).toBe('Recoger baterías');
     expect(colocar('tarjeta_azul').recogible.texto()).toBe('Tomar la tarjeta azul');

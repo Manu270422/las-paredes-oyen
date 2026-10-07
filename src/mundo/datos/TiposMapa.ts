@@ -104,6 +104,11 @@ export interface DefInteractuable {
   bandera?: string;
   /** Id del objeto que entrega (tipo recogible): una clave de `objetos` del paquete del piso. */
   objeto?: string;
+  /**
+   * Desde qué bandera existe (tipo recogible): antes no se ve ni se toma. Se aplica al armar el piso o al
+   * cargar una partida (Nivel.restablecer).
+   */
+  aparece?: string;
   /** Apartamento que se mide (tipo medicion). */
   apartamento?: string;
 }

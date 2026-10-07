@@ -68,6 +68,17 @@ describe('TramoEscalera', () => {
     expect(viajes, 'acechar no es cazar: la escalera responde').toEqual([['abajo', 'descanso']]);
   });
 
+  it('si pide un objeto, basta tenerlo en el bolsillo aunque lo haya tomado en otro piso (la bandera se quedó allá)', () => {
+    const { t, ctx, progreso, viajes } = tramo({ ...BAJADA, requiere: 'objeto:llave', cerrada: 'Candado.' });
+    t.interactuar(ctx);
+    expect(viajes, 'sin la llave, no').toEqual([]);
+    // Como al llegar de otro piso: el inventario viaja, las banderas del piso de origen no.
+    progreso.importar({ banderas: [], inventario: ['llave'], documentos: [] });
+    expect(progreso.tiene('objeto:llave'), 'la bandera no está en este piso').toBe(false);
+    t.interactuar(ctx);
+    expect(viajes).toEqual([['abajo', 'descanso']]);
+  });
+
   it('en caza se traba antes de mirar si está cerrado (no da pistas de la llave mientras huyes)', () => {
     const { t, ctx, subtitulos, entidad } = tramo({ ...BAJADA, requiere: 'abierta:reja', cerrada: 'La reja tiene una cadena.' });
     entidad.estado = 'cazando';

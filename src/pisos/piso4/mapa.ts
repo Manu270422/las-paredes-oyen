@@ -145,6 +145,9 @@ export const MAPA_PISO_4: DefMapa = {
     { tipo: 'documento', id: 'docCinta403', documento: 'cinta_403', x: 24.9, y: 1.35, altura: 0.78 },
     { tipo: 'documento', id: 'docCarta402', documento: 'carta_402', x: 12.6, y: 17.3, altura: 0.56 },
     { tipo: 'recogible', id: 'llave402', objeto: 'llave_402', x: 24.1, y: 1.4, altura: 0.78 },
+    // La llave del candado de la escalera, en el piso bajo la silla que mira la pared: quien contaba los días
+    // la tenía y no alcanzó a usarla. Aparece con el final (antes de medir el 402 no está).
+    { tipo: 'recogible', id: 'llaveEscalera', objeto: 'llave_escalera', x: 18.2, y: 18.42, altura: 0.02, aparece: 'medido:402' },
     { tipo: 'recogible', id: 'pilas1', objeto: 'pilas', x: 7.4, y: 6.1, altura: 0.76 },
     { tipo: 'recogible', id: 'pilas2', objeto: 'pilas', x: 30.3, y: 12.4, altura: 0.02 },
     { tipo: 'recogible', id: 'pilas3', objeto: 'pilas', x: 19.2, y: 2.4, altura: 0.76 },
