@@ -6,7 +6,7 @@ import { Color, FogExp2, HemisphereLight, Scene } from 'three';
 import { CONFIG } from '../config/ConfiguracionJuego';
 import { GestorAjustes } from '../config/Ajustes';
 import { PERFILES, type NivelCalidad, type PerfilCalidad } from '../config/PerfilesCalidad';
-import { DIFICULTAD_POR_DEFECTO, puntoDeControlDe, TABLA_DIFICULTAD, type IdDificultad } from '../config/Dificultad';
+import { DIFICULTAD_POR_DEFECTO, guardaAlLlegarAOtroPiso, puntoDeControlDe, TABLA_DIFICULTAD, type IdDificultad } from '../config/Dificultad';
 import { detectarDispositivo, sugerirCalidad } from '../plataforma/DetectorDispositivo';
 import { GestorPantalla } from '../plataforma/GestorPantalla';
 import { GestorEntrada } from '../entrada/GestorEntrada';
@@ -16,7 +16,7 @@ import { crearCookieLinterna } from '../render/texturas/CookieLinterna';
 import { MotorAudio } from '../audio/MotorAudio';
 import { AmbienteSonoro } from '../audio/AmbienteSonoro';
 import { Nivel } from '../mundo/Nivel';
-import { PISO_INICIAL, siguienteDe } from '../pisos/catalogo';
+import { PISO_INICIAL, pisoPorId, siguienteDe } from '../pisos/catalogo';
 import type { GuionPiso, PaquetePiso } from '../pisos/TiposPiso';
 import { Jugador } from '../jugador/Jugador';
 import { Linterna } from '../jugador/Linterna';
@@ -25,6 +25,7 @@ import { Entidad } from '../ia/Entidad';
 import { SistemaInteraccion } from '../interaccion/SistemaInteraccion';
 import { Progreso } from '../narrativa/Progreso';
 import { conectarAnuncioLugares } from '../narrativa/AnuncioLugares';
+import type { AccionesGuion } from '../narrativa/AccionesGuion';
 import { MemoriaMundo } from '../director/MemoriaMundo';
 import { DirectorTerror } from '../director/DirectorTerror';
 import { SistemaGuardado, type DatosPartida } from '../guardado/SistemaGuardado';
@@ -43,10 +44,17 @@ import { mostrarSusto } from './Susto';
 import type { ContextoJuego } from './ContextoJuego';
 import { amortiguar, normalizarAngulo } from '../utilidades/Matematicas';
 
-type EstadoApp = 'cargando' | 'inicio' | 'menu' | 'jugando' | 'pausa' | 'documento' | 'muerte' | 'fin';
+/** 'viaje': voy por una escalera a otro piso (a oscuras, unos segundos, sin poder moverme). */
+type EstadoApp = 'cargando' | 'inicio' | 'menu' | 'jugando' | 'pausa' | 'documento' | 'muerte' | 'fin' | 'viaje';
 
 /** Cómo empiezo a jugar: una partida nueva, continuar la guardada o reintentar tras morir. */
 type OrigenPartida = 'nueva' | 'continuar' | 'reintento';
+
+/**
+ * Los tiempos del viaje por una escalera, en segundos: fundido a negro, cuándo cambio de piso (ya a oscuras),
+ * cuánto sigo a oscuras oyendo mis pasos en los escalones y cuánto tarda en volver la imagen.
+ */
+const VIAJE = { fundido: 0.5, cambio: 0.55, llegada: 1.5, aparecer: 1.2 };
 
 export class Juego {
   private readonly bus = new BusEventos<MapaEventos>();
@@ -54,8 +62,11 @@ export class Juego {
   private readonly ajustes = new GestorAjustes();
   private readonly pantalla = new GestorPantalla();
   private readonly dispositivo = detectarDispositivo();
-  /** El piso que se está jugando, como paquete de datos (mapa, objetivos, documentos, cintas). */
-  private readonly piso: PaquetePiso = PISO_INICIAL;
+  /**
+   * El piso que se está jugando, como paquete de datos (mapa, objetivos, documentos, cintas). Cambia al bajar
+   * o subir por una escalera, y al cargar una partida guardada en otro piso.
+   */
+  private piso: PaquetePiso = PISO_INICIAL;
   private readonly guardado = new SistemaGuardado();
   /** La dificultad de la partida en curso: la actual, con la que empezó y la más baja jugada. */
   private readonly dificultadPartida = new DificultadPartida(this.guardado);
@@ -78,6 +89,13 @@ export class Juego {
     },
     mostrarPantalla: (datos) => this.ui.mostrarMuerte(datos),
   };
+  /** Lo que el guion de cualquier piso le puede pedir al juego. */
+  private readonly accionesGuion: AccionesGuion = {
+    mostrarSusto: () => mostrarSusto(this.ctx, 'final'),
+    fundido: (aNegro, segundos) => this.ui.hud.fundir(aNegro, segundos),
+    fijarSoloMirar: (activo) => (this.soloMirar = activo),
+    terminarDemo: () => this.terminarDemo(),
+  };
   private readonly lienzo: HTMLCanvasElement;
   private readonly raizUI: HTMLElement;
 
@@ -99,6 +117,8 @@ export class Juego {
   private director!: DirectorTerror;
   /** El guion del piso, si tiene (los momentos escritos a mano). */
   private guion: GuionPiso | null = null;
+  /** Desengancha el anuncio de lugares del piso armado (sus placas son de ese piso). */
+  private cancelarAnuncioLugares: () => void = () => {};
   private ctx!: ContextoJuego;
   private bucle!: BucleJuego;
 
@@ -205,26 +225,16 @@ export class Juego {
     // Luz ambiente mínima: solo para intuir siluetas. Todo lo demás es linterna y lámparas.
     this.escena.add(new HemisphereLight(0x2a3242, 0x0d0a08, 0.22));
 
-    this.nivel = new Nivel(this.piso, this.materiales, this.perfil.lucesMaximas);
-    this.escena.add(this.nivel.grupo);
     this.escena.add(this.jugador.camara);
     this.linterna = new Linterna(this.escena, this.perfil, crearCookieLinterna());
     this.grabadora = new Grabadora(this.escena);
-    this.nivel.interactuables.push(this.grabadora.interactuable);
+    this.nivel = this.crearNivel(this.piso);
     this.entidad = new Entidad(this.escena, this.nivel.rejilla);
     this.ambiente = new AmbienteSonoro(this.audio);
-    this.audio.consultaOclusion = this.nivel.consultaOclusion;
     this.progreso = new Progreso(this.bus, this.piso.objetivos, this.piso.reglas);
     this.memoria = new MemoriaMundo();
     this.director = new DirectorTerror();
     this.director.conectar(this.bus, this.piso.reglas.directorDesde);
-    conectarAnuncioLugares(this.bus, this.piso, this.nivel, this.progreso);
-    this.guion = this.piso.guion?.({
-      mostrarSusto: () => mostrarSusto(this.ctx, 'final'),
-      fundido: (aNegro, segundos) => this.ui.hud.fundir(aNegro, segundos),
-      fijarSoloMirar: (activo) => (this.soloMirar = activo),
-      terminarDemo: () => this.terminarDemo(),
-    }) ?? null;
 
     this.ctx = {
       bus: this.bus,
@@ -247,9 +257,47 @@ export class Juego {
       memoria: this.memoria,
       director: this.director,
       ui: { abrirDocumento: (id) => this.abrirDocumento(id) },
+      viaje: { cambiarDePiso: (hacia, llegada) => this.cambiarDePiso(hacia, llegada) },
     };
-    this.guion?.conectar(this.ctx);
+    this.conectarPiso();
     this.redimensionar();
+  }
+
+  /** Armo el nivel de un piso y lo pongo en la escena. La grabadora tirada en el suelo se recoge en cualquier piso. */
+  private crearNivel(piso: PaquetePiso): Nivel {
+    const nivel = new Nivel(piso, this.materiales, this.perfil.lucesMaximas);
+    nivel.interactuables.push(this.grabadora.interactuable);
+    this.escena.add(nivel.grupo);
+    return nivel;
+  }
+
+  /** Engancho lo que depende del piso armado: la oclusión del sonido, el anuncio de lugares y el guion. */
+  private conectarPiso(): void {
+    this.audio.consultaOclusion = this.nivel.consultaOclusion;
+    this.cancelarAnuncioLugares = conectarAnuncioLugares(this.bus, this.piso, this.nivel, this.progreso);
+    this.guion = this.piso.guion?.(this.accionesGuion) ?? null;
+    this.guion?.conectar(this.ctx);
+  }
+
+  /**
+   * Cambio el piso armado por otro: desengancho el viejo, suelto su nivel (y lo que ocupaba en la GPU) y armo
+   * el nuevo. No coloca a nadie: eso lo hace quien me llama (llegar por una escalera o cargar una partida).
+   * El nivel nuevo trae las mismas luces que el viejo (PoolLuces es de tamaño fijo): los shaders ya compilados
+   * sirven, y lo que falta lo compilo aquí, que se hace siempre a oscuras.
+   */
+  private cambiarNivel(piso: PaquetePiso): void {
+    this.guion?.desconectar?.();
+    this.cancelarAnuncioLugares();
+    this.escena.remove(this.nivel.grupo);
+    this.nivel.destruir(this.materiales);
+    this.piso = piso;
+    this.nivel = this.crearNivel(piso);
+    this.ctx.piso = piso;
+    this.ctx.nivel = this.nivel;
+    this.entidad.cambiarRejilla(this.nivel.rejilla);
+    this.director.fijarInicio(piso.reglas.directorDesde);
+    this.conectarPiso();
+    this.renderizador.webgl.compile(this.escena, this.jugador.camara);
   }
 
   /** Compilo los shaders durante la carga para evitar tirones la primera vez que algo aparece. */
@@ -368,36 +416,117 @@ export class Juego {
 
   private cargarDesdePunto(datos: DatosPartida | null): void {
     const ctx = this.ctx;
+    // La partida dice en qué piso iba. Si ese piso no está en el catálogo (no debería pasar: solo una partida
+    // hecha a mano), la trato como si no hubiera partida y empiezo en el piso inicial.
+    const pisoGuardado = datos ? pisoPorId(datos.piso) : undefined;
+    const partida = pisoGuardado ? datos : null;
+    const piso = pisoGuardado ?? PISO_INICIAL;
     this.programador.cancelarTodo();
     this.audio.detenerTodo();
     this.audio.fijarSilencioAmbiente(1);
     this.ambiente.olvidarFuentes();
     this.soloMirar = false;
     this.interferencia = 0;
+    if (piso.id !== this.piso.id) this.cambiarNivel(piso);
 
     // "Continuar" y reintentar retoman la dificultad de la partida guardada; una partida nueva ya fijó la suya.
-    if (datos) this.dificultadPartida.retomar(datos, ctx);
-    this.progreso.importar(datos?.progreso ?? null);
-    this.puntoControl = datos?.puntoControl ?? this.piso.puntoInicial;
-    this.tiempoJugado = datos?.tiempoJugado ?? this.tiempoJugado;
-    if (datos) this.memoria.restaurarEstadisticas(datos.estadisticas);
+    if (partida) this.dificultadPartida.retomar(partida, ctx);
+    this.progreso.usarPiso(piso);
+    this.progreso.importar(partida?.progreso ?? null, partida?.otrosPisos);
+    this.puntoControl = partida?.puntoControl ?? piso.puntoInicial;
+    this.tiempoJugado = partida?.tiempoJugado ?? this.tiempoJugado;
+    if (partida) this.memoria.restaurarEstadisticas(partida.estadisticas);
+    this.linterna.reiniciar(partida?.bateria ?? 1);
+    // Si retomo más adelante en la historia, llego con la linterna encendida.
+    this.linterna.encendida = this.puntoControl !== piso.puntoInicial;
+    this.director.reiniciar(this.memoria.muertesSinProgreso, ctx.dificultad.alivio);
+    this.ponerEnPunto();
+  }
+
+  /**
+   * Pongo al jugador en su punto de control del piso armado, con el piso como lo dejó la historia: puertas y
+   * luces según el progreso, la criatura en su guarida, el director y el guion al día, el viento. Lo comparten
+   * cargar una partida y llegar a otro piso por una escalera.
+   */
+  private ponerEnPunto(): void {
+    const ctx = this.ctx;
     this.memoria.reiniciarSesion();
     this.nivel.restablecer(ctx);
     this.grabadora.reiniciar();
-    this.linterna.reiniciar(datos?.bateria ?? 1);
-    // Si retomo más adelante en la historia, llego con la linterna encendida.
-    this.linterna.encendida = this.puntoControl !== this.piso.puntoInicial;
     const punto = this.nivel.puntoControl(this.puntoControl, this.piso.puntoInicial);
     this.jugador.teletransportar(punto.x, punto.y, punto.angulo);
     const guarida = this.piso.mapa.guaridaEntidad;
     this.entidad.reiniciar(guarida.x * CONFIG.celda, guarida.y * CONFIG.celda, ctx);
     this.entidad.puedeManifestarse = this.progreso.criaturaDespierta;
-    this.director.reiniciar(this.memoria.muertesSinProgreso, ctx.dificultad.alivio);
     this.director.activo = this.progreso.tiene(this.piso.reglas.directorDesde);
     this.guion?.reiniciar(ctx);
     if (this.piso.mapa.viento) this.ambiente.iniciarViento(this.piso.mapa.viento.x * CONFIG.celda, this.piso.mapa.viento.y * CONFIG.celda);
     Object.assign(this.renderizador.efectos, { susto: 0, interferencia: 0 });
     this.progreso.anunciarObjetivo();
+  }
+
+  // ---------------------------------------------------------------------------
+  // CAMBIO DE PISO
+  // ---------------------------------------------------------------------------
+  /** Un tramo de escalera me pide ir al piso `hacia`. */
+  private cambiarDePiso(hacia: string, llegada: string): void {
+    const destino = pisoPorId(hacia);
+    if (destino) {
+      this.viajarA(destino, llegada);
+      return;
+    }
+    // No debería pasar (paquetesDePiso valida cada escalera contra el catálogo), pero si pasa no me quedo colgado.
+    this.bus.emit('subtitulo', { texto: 'La escalera no lleva a ninguna parte.', duracion: 2.5 });
+  }
+
+  /**
+   * Bajo (o subo) por una escalera: la imagen se va a negro con mis pasos en los escalones, a oscuras cambio
+   * de piso, y aparezco en `llegada` del destino con lo que traía (la linterna y sus pilas, el inventario).
+   * Lo que pasó en el piso que dejo queda guardado en el progreso: si vuelvo, sigue como lo dejé.
+   */
+  private viajarA(destino: PaquetePiso, llegada: string): void {
+    if (this.estado !== 'jugando') return;
+    const desde = this.piso.id;
+    this.estado = 'viaje';
+    this.ui.hud.fundir(true, VIAJE.fundido);
+    this.pasosEscalera(2);
+    window.setTimeout(() => {
+      this.programador.cancelarTodo();
+      this.audio.detenerTodo();
+      this.audio.fijarSilencioAmbiente(1);
+      this.ambiente.olvidarFuentes();
+      this.progreso.cambiarPiso(desde, destino);
+      this.cambiarNivel(destino);
+      this.llegarA(llegada);
+      this.bus.emit('piso-cambiado', { desde, hacia: destino.id });
+      this.pasosEscalera(4);
+      window.setTimeout(() => {
+        this.estado = 'jugando';
+        this.ui.hud.fundir(false, VIAJE.aparecer);
+        // Si mientras bajaba se ocultó la pestaña o se soltó el ratón, no pude pausar (no estaba jugando): ahora sí.
+        if (document.hidden || (this.entrada.modo === 'teclado' && !this.entrada.teclado.bloqueado)) this.pausar();
+      }, VIAJE.llegada * 1000);
+    }, VIAJE.cambio * 1000);
+  }
+
+  /** Mis pasos en los escalones, a oscuras: el viaje se oye aunque no se vea. */
+  private pasosEscalera(cuantos: number): void {
+    for (let i = 0; i < cuantos; i++) {
+      this.audio.reproducir('paso_granito', { bus: 'voz', volumen: 0.55, variacion: 0.07, reverb: 0.5, retraso: 0.05 + i * 0.38 });
+    }
+  }
+
+  /** Acabo de llegar a otro piso: aparezco en su punto de control `llegada`. */
+  private llegarA(llegada: string): void {
+    this.soloMirar = false;
+    this.interferencia = 0;
+    this.puntoControl = llegada;
+    this.director.cambiarDePiso();
+    this.ponerEnPunto();
+    // Llegar a un piso es avanzar: como un punto de control, reinicia el alivio por muertes seguidas y guarda
+    // (salvo donde no hay puntos de control: en Pesadilla, morir sigue siendo empezar de cero).
+    this.memoria.muertesSinProgreso = 0;
+    if (guardaAlLlegarAOtroPiso(this.ctx.dificultad)) this.guardarPartida();
   }
 
   private guardarPartida(): void {
@@ -408,6 +537,7 @@ export class Juego {
       ...this.dificultadPartida.campos,
       puntoControl: this.puntoControl,
       progreso: this.progreso.exportar(),
+      otrosPisos: this.progreso.exportarOtros(),
       bateria: Math.max(0.35, this.linterna.bateria),
       tiempoJugado: this.tiempoJugado,
       estadisticas: this.memoria.estadisticas,
@@ -520,6 +650,11 @@ export class Juego {
       case 'fin':
         this.navegarMenus(dt);
         break;
+      case 'viaje':
+        // A oscuras en la escalera: no me muevo ni interactúo. Leo la entrada y la descarto, para que nada de
+        // lo que pulse mientras tanto se dispare al llegar.
+        this.entrada.actualizar(dt);
+        break;
       case 'cargando':
         break;
     }
@@ -616,7 +751,7 @@ export class Juego {
   /** Paso el estado del jugador al postprocesado. */
   private actualizarEfectos(dt: number): void {
     const efectos = this.renderizador.efectos;
-    const enJuego = this.estado === 'jugando' || this.estado === 'muerte';
+    const enJuego = this.estado === 'jugando' || this.estado === 'muerte' || this.estado === 'viaje';
     efectos.estres = enJuego ? this.jugador.estres : 0;
     efectos.escuchando = enJuego ? this.jugador.nivelEscucha : 0;
     efectos.pulso = enJuego ? this.jugador.corazon.pulso : 0;

@@ -48,6 +48,84 @@ describe('Progreso con los objetivos de un piso', () => {
   });
 });
 
+describe('Progreso por piso (cada piso recuerda lo suyo; el inventario viaja conmigo)', () => {
+  const ARRIBA = { id: 'arriba', objetivos: OBJETIVOS_FALSOS, reglas: REGLAS_FALSAS };
+  const ABAJO = {
+    id: 'abajo',
+    objetivos: [{ id: 'c', texto: 'Abajo', bandera: 'hizo:c' }],
+    reglas: { directorDesde: 'hizo:c', despiertaCon: 'hizo:c', imitacionCompletaCon: 'nunca' },
+  };
+
+  /** Juego un rato arriba: dos banderas, un documento y una llave. */
+  function jugarArriba(): { p: Progreso; bus: BusEventos<MapaEventos> } {
+    const bus = new BusEventos<MapaEventos>();
+    const p = new Progreso(bus, ARRIBA.objetivos, ARRIBA.reglas);
+    p.marcar('hizo:a');
+    p.registrarDocumento('nota');
+    p.agregarObjeto('llave');
+    return { p, bus };
+  }
+
+  it('al bajar, las banderas, documentos, objetivos y reglas son los del piso nuevo; la llave sigue en el bolsillo', () => {
+    const { p } = jugarArriba();
+    p.cambiarPiso('arriba', ABAJO);
+    expect(p.tiene('hizo:a')).toBe(false);
+    expect(p.documentosLeidos).toEqual([]);
+    expect(p.objetivoActual()?.id).toBe('c');
+    expect(p.criaturaDespierta, 'despierta con las reglas de abajo, no con las de arriba').toBe(false);
+    expect(p.tieneObjeto('llave')).toBe(true);
+    p.marcar('hizo:c');
+    expect(p.criaturaDespierta).toBe(true);
+  });
+
+  it('al volver, el piso sigue como lo dejé; y el que dejo queda recordado para la partida guardada', () => {
+    const { p } = jugarArriba();
+    p.cambiarPiso('arriba', ABAJO);
+    p.marcar('hizo:c');
+    p.cambiarPiso('abajo', ARRIBA);
+    expect(p.tiene('hizo:a')).toBe(true);
+    expect(p.tiene('objeto:llave')).toBe(true);
+    expect(p.tiene('hizo:c')).toBe(false);
+    expect(p.documentosLeidos).toEqual(['nota']);
+    expect(p.objetivoActual()?.id).toBe('b');
+    expect(p.exportarOtros(), 'el piso en el que estoy no está entre los otros').toEqual({ abajo: { banderas: ['hizo:c'], documentos: [] } });
+  });
+
+  it('cambiar de piso no avisa banderas ni objetivo nuevo: el piso no las marca, solo las recuerda', () => {
+    const { p, bus } = jugarArriba();
+    const avisos: string[] = [];
+    bus.on('bandera', ({ nombre }) => avisos.push(nombre));
+    bus.on('objetivo', ({ nuevo }) => avisos.push(nuevo ? 'objetivo-nuevo' : 'objetivo'));
+    p.cambiarPiso('arriba', ABAJO);
+    p.cambiarPiso('abajo', ARRIBA);
+    expect(avisos).toEqual([]);
+    p.anunciarObjetivo();
+    expect(avisos).toEqual(['objetivo']);
+  });
+
+  it('lo de los otros pisos sale y entra como copia (la partida guardada no se cambia por debajo)', () => {
+    const { p } = jugarArriba();
+    p.cambiarPiso('arriba', ABAJO);
+    const otros = p.exportarOtros();
+    otros.arriba.banderas.push('trampa');
+    expect(p.exportarOtros().arriba.banderas).not.toContain('trampa');
+
+    const cargado = new Progreso(new BusEventos<MapaEventos>(), ABAJO.objetivos, ABAJO.reglas);
+    cargado.importar(p.exportar(), p.exportarOtros());
+    cargado.cambiarPiso('abajo', ARRIBA);
+    expect(cargado.tiene('hizo:a')).toBe(true);
+    expect(cargado.documentosLeidos).toEqual(['nota']);
+  });
+
+  it('una partida nueva (importar sin datos) olvida también los otros pisos', () => {
+    const { p } = jugarArriba();
+    p.cambiarPiso('arriba', ABAJO);
+    p.importar(null);
+    expect(p.exportarOtros()).toEqual({});
+    expect(p.tieneObjeto('llave')).toBe(false);
+  });
+});
+
 describe('MemoriaMundo.estadisticas', () => {
   it('se restauran tal cual y viajan completas (sustos, cosas que cambiaron, cazas y muertes)', () => {
     const origen = new MemoriaMundo();

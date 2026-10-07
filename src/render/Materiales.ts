@@ -1,7 +1,7 @@
 // Aquí creo y guardo todos los materiales del mundo. Cada material se
 // arma con las texturas procedurales y se comparte entre todas las mallas
 // que lo usan (así no multiplico memoria ni compilaciones de shader).
-import { Color, MeshStandardMaterial, Vector2 } from 'three';
+import { Color, MeshStandardMaterial, Vector2, type Material, type Texture } from 'three';
 import { generarConjunto, type ConjuntoTexturas } from './texturas/GeneradorTexturas';
 import { RECETAS, type IdTextura } from './texturas/RecetasTexturas';
 import { cederHilo } from '../utilidades/Esperar';
@@ -96,5 +96,14 @@ export class BibliotecaMateriales {
   /** Cuando cambio sombras en caliente, los shaders deben recompilarse. */
   marcarParaRecompilar(): void {
     for (const material of this.materiales.values()) material.needsUpdate = true;
+  }
+
+  /** Devuelve true si este material o textura pertenece a la biblioteca compartida (no lo dispongo al cambiar de piso). */
+  esPropio(recurso: Material | Texture): boolean {
+    for (const m of this.materiales.values()) {
+      if ((m as unknown) === recurso) return true;
+      if (m.map === recurso || m.normalMap === recurso || m.roughnessMap === recurso) return true;
+    }
+    return false;
   }
 }

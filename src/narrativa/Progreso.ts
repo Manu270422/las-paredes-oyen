@@ -1,10 +1,14 @@
 // Aquí guardo el progreso de la partida: banderas (cosas que pasaron),
 // inventario y documentos leídos. Todo lo demás (puertas, luces, objetivos)
 // se deriva de estas banderas, así cargar una partida es trivial y robusto.
+//
+// Con varios pisos, las banderas y los documentos son DEL PISO: al bajar guardo los del piso que dejo y
+// tomo los del piso al que llego (vacíos la primera vez). Si vuelvo a subir, todo sigue como lo dejé. El
+// inventario no: lo que llevo en el bolsillo baja y sube conmigo.
 import type { BusEventos } from '../nucleo/BusEventos';
 import type { MapaEventos } from '../nucleo/Eventos';
 import type { Objetivo } from './TiposNarrativa';
-import type { ReglasPiso } from '../pisos/TiposPiso';
+import type { PaquetePiso, ReglasPiso } from '../pisos/TiposPiso';
 
 export interface DatosProgreso {
   banderas: string[];
@@ -12,18 +16,29 @@ export interface DatosProgreso {
   documentos: string[];
 }
 
+/** Lo que queda guardado de un piso que no estoy jugando: lo que pasó en él y lo que leí ahí. */
+export interface DatosPisoVisitado {
+  banderas: string[];
+  documentos: string[];
+}
+
+/** Lo que necesito de un piso para seguir su historia: cuál es, sus objetivos y sus reglas. */
+export type PisoDeProgreso = Pick<PaquetePiso, 'id' | 'objetivos' | 'reglas'>;
+
 export class Progreso {
   private banderas = new Set<string>();
   private inventario: string[] = [];
   private documentos: string[] = [];
   private objetivoAnterior: string | null = null;
+  /** Las banderas y documentos de los pisos que no estoy jugando, por id de piso. */
+  private otros = new Map<string, DatosPisoVisitado>();
 
   constructor(
     private readonly bus: BusEventos<MapaEventos>,
-    /** Los objetivos del piso que se juega, en orden. */
-    private readonly objetivos: readonly Objetivo[],
+    /** Los objetivos del piso que se juega, en orden (cambian al cambiar de piso). */
+    private objetivos: readonly Objetivo[],
     /** Las banderas de la historia a las que reacciona el motor (despertar a la criatura, imitación completa). */
-    private readonly reglas: ReglasPiso,
+    private reglas: ReglasPiso,
   ) {}
 
   /** ¿Ya despertó la criatura? Desde ahí sale de las paredes y se puede dejar el señuelo. */
@@ -82,11 +97,40 @@ export class Progreso {
     return { banderas: [...this.banderas], inventario: [...this.inventario], documentos: [...this.documentos] };
   }
 
-  importar(datos: DatosProgreso | null): void {
+  /** Lo de los otros pisos que visité, para la partida guardada (copias: nadie me lo cambia desde fuera). */
+  exportarOtros(): Record<string, DatosPisoVisitado> {
+    const salida: Record<string, DatosPisoVisitado> = {};
+    for (const [id, d] of this.otros) salida[id] = { banderas: [...d.banderas], documentos: [...d.documentos] };
+    return salida;
+  }
+
+  /** Retomo una partida: lo del piso que se juega y, si los hay, lo de los otros pisos que visité. */
+  importar(datos: DatosProgreso | null, otros: Readonly<Record<string, DatosPisoVisitado>> = {}): void {
     this.banderas = new Set(datos?.banderas ?? []);
     this.inventario = [...(datos?.inventario ?? [])];
     this.documentos = [...(datos?.documentos ?? [])];
+    this.otros = new Map(Object.entries(otros).map(([id, d]) => [id, { banderas: [...d.banderas], documentos: [...d.documentos] }]));
     this.objetivoAnterior = this.objetivoActual()?.id ?? null;
+  }
+
+  /** Juego en otro piso sin cambiar las banderas (al cargar una partida de ese piso, antes de importarla). */
+  usarPiso(piso: PisoDeProgreso): void {
+    this.objetivos = piso.objetivos;
+    this.reglas = piso.reglas;
+    this.objetivoAnterior = this.objetivoActual()?.id ?? null;
+  }
+
+  /**
+   * Cambio de piso: guardo lo del piso que dejo (`desde`) y retomo lo del piso al que llego, vacío si es la
+   * primera vez. No aviso nada por el bus: el piso nuevo no "marca" banderas, solo las recuerda.
+   */
+  cambiarPiso(desde: string, hacia: PisoDeProgreso): void {
+    this.otros.set(desde, { banderas: [...this.banderas], documentos: [...this.documentos] });
+    const recordado = this.otros.get(hacia.id);
+    this.otros.delete(hacia.id);
+    this.banderas = new Set(recordado?.banderas ?? []);
+    this.documentos = [...(recordado?.documentos ?? [])];
+    this.usarPiso(hacia);
   }
 
   /** Vuelvo a anunciar el objetivo actual (al empezar o cargar). */

@@ -2,7 +2,7 @@
 // jugada; qué se guarda al cambiarla en plena partida, y qué pasa al bajar desde la que no guarda (Pesadilla).
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TABLA_DIFICULTAD } from '../../src/config/Dificultad';
-import { SistemaGuardado, type DatosPartida } from '../../src/guardado/SistemaGuardado';
+import { SistemaGuardado, VERSION_PARTIDA, type DatosPartida } from '../../src/guardado/SistemaGuardado';
 import { BusEventos } from '../../src/nucleo/BusEventos';
 import type { ContextoJuego } from '../../src/nucleo/ContextoJuego';
 import { DificultadPartida } from '../../src/nucleo/DificultadPartida';
@@ -36,6 +36,7 @@ const partida = (d: Partial<DatosPartida> = {}): Omit<DatosPartida, 'version' | 
   dificultadMasBaja: 'normal',
   puntoControl: 'escalera',
   progreso: { banderas: ['leyo:orden_trabajo'], inventario: [], documentos: [] },
+  otrosPisos: {},
   bateria: 1,
   tiempoJugado: 10,
   estadisticas: { persecuciones: 0, muertes: 0, sustos: 0, cambiosMundo: 0 },
@@ -107,7 +108,7 @@ describe('La dificultad de la partida en curso', () => {
     g.fijarSinGuardado(true);
     const d = new DificultadPartida(g);
     const { ctx } = contexto();
-    d.retomar({ ...partida({ dificultad: 'normal', dificultadInicial: 'dificil', dificultadMasBaja: 'historia' }), version: 5, fecha: 1 }, ctx);
+    d.retomar({ ...partida({ dificultad: 'normal', dificultadInicial: 'dificil', dificultadMasBaja: 'historia' }), version: VERSION_PARTIDA, fecha: 1 }, ctx);
     expect(d.actual).toBe('normal');
     expect(d.texto).toBe('Difícil → Historia');
     expect(g.sinGuardado, 'una partida guardada guarda').toBe(false);

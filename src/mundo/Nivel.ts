@@ -2,7 +2,7 @@
 // lámparas, muebles e interactuables. También respondo consultas del mundo
 // (¿en qué habitación estoy?, ¿qué me bloquea?) y restauro su estado
 // según las banderas de progreso al cargar una partida.
-import { Group } from 'three';
+import { Group, Texture, type Material } from 'three';
 import { CONFIG } from '../config/ConfiguracionJuego';
 import type { BibliotecaMateriales } from '../render/Materiales';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
@@ -21,6 +21,7 @@ import { Puerta } from './Puerta';
 import { Lampara } from './Lampara';
 import { colgarPlaca, pintarRotulo } from './Letreros';
 import { ponerRastro, VigiaRastros } from './Rastros';
+import { TramoEscalera } from '../interaccion/objetos/TramoEscalera';
 import { PoolLuces } from './PoolLuces';
 import { crearMueble, type Mueble } from './Muebles';
 import type { CajaColision } from './Colisiones';
@@ -137,6 +138,13 @@ export class Nivel {
       this.grupo.add(objeto.objeto);
     }
 
+    // Los tramos de escalera: zonas que llevan a otro piso al pulsar E.
+    for (const d of piso.escaleras ?? []) {
+      const tramo = new TramoEscalera(d);
+      this.interactuables.push(tramo);
+      this.grupo.add(tramo.objeto);
+    }
+
     this.pool = new PoolLuces(this.grupo, lucesMaximas);
   }
 
@@ -231,5 +239,29 @@ export class Nivel {
     for (const i of this.interactuables) i.restablecer?.(ctx);
 
     for (const bandera of Object.keys(this.piso.luzPorBandera)) if (p.tiene(bandera)) this.aplicarLuzDe(bandera);
+  }
+
+  /**
+   * Libero la memoria de la GPU que le pertenece a este nivel. Llamo esto al cambiar de piso.
+   * Solo dispongo los recursos propios; los materiales de BibliotecaMateriales son compartidos.
+   */
+  destruir(materiales: BibliotecaMateriales): void {
+    this.grupo.traverse((objeto) => {
+      const mesh = objeto as { geometry?: { dispose(): void }; material?: Material | Material[] };
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) {
+        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        for (const m of mats) {
+          // Solo dispongo lo que NO pertenece a la biblioteca compartida.
+          if (!materiales.esPropio(m)) {
+            // Dispongo todas las ranuras de textura del material, no solo map.
+            for (const valor of Object.values(m as unknown as Record<string, unknown>)) {
+              if (valor instanceof Texture && !materiales.esPropio(valor)) valor.dispose();
+            }
+            m.dispose();
+          }
+        }
+      }
+    });
   }
 }

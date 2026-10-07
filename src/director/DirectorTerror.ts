@@ -50,6 +50,8 @@ export class DirectorTerror {
   private bloqueo = 0;
   private entidadSalio = false;
   private alivio = 0;
+  /** La bandera del piso con la que empiezo a trabajar (sus reglas.directorDesde). */
+  private desde = '';
   /** Cómo aplico el alivio (de la dificultad): bajando el techo o espaciando los eventos. */
   private modoAlivio: ParametrosAlivio['modo'] = 'techo';
   private dominanteAnterior: RasgoJugador | null = null;
@@ -70,13 +72,31 @@ export class DirectorTerror {
     return this.activo && (this.fase === 'pico' || (this.fase === 'acumulacion' && this.tiempoFase > 35));
   }
 
-  /** Me engancho al bus una sola vez al construir el juego. */
   /** Me engancho al bus una sola vez al construir el juego. Empiezo a trabajar cuando se marca `desde`. */
   conectar(bus: BusEventos<MapaEventos>, desde: string): void {
+    this.desde = desde;
     this.presupuesto.conectar(bus);
     bus.on('bandera', ({ nombre }) => {
-      if (nombre === desde) this.activo = true;
+      if (nombre === this.desde) this.activo = true;
     });
+  }
+
+  /** Cada piso dice con qué bandera empiezo a trabajar en él (sus reglas): la cambio al cambiar de piso. */
+  fijarInicio(desde: string): void {
+    this.desde = desde;
+  }
+
+  /**
+   * El jugador llegó a otro piso: vuelvo a la calma, pero sin olvidar lo vivido. Conservo la tensión (baja
+   * sola), el presupuesto (si venía de un susto, no apilo otro al llegar), el alivio y el perfil.
+   */
+  cambiarDePiso(): void {
+    this.fase = 'calma';
+    this.tiempoFase = 0;
+    this.duracionFase = aleatorio(...DURACION.calma) * (1 + this.alivio);
+    this.proximoEvento = aleatorio(15, 25);
+    this.bloqueo = 0;
+    this.entidadSalio = false;
   }
 
   /**

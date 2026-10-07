@@ -36,6 +36,8 @@ export interface MarcoHueco {
 }
 
 const MINIMO_CELDAS = 2;
+/** Las cuatro vecinas de lado de una celda. */
+const VECINAS: ReadonlyArray<readonly [number, number]> = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
 /** Las celdas de afuera que tocan cada lado del rectángulo. */
 function vecinasDelLado(h: Omit<HuecoEscalera, 'boca'>, lado: Direccion): Array<[number, number]> {
@@ -125,4 +127,13 @@ export function aMundo(m: MarcoHueco, u: number, v: number): { x: number; z: num
   const c = Math.cos(m.angulo);
   const s = Math.sin(m.angulo);
   return { x: m.origenX + u * c + v * s, z: m.origenZ - u * s + v * c };
+}
+
+/**
+ * ¿Puede arrancar aquí un tramo que lleva a otro piso? Tiene que ser una celda por donde se camina pegada de
+ * lado a un hueco: como un hueco solo se abre por su boca, eso es una celda de la boca, al borde de los escalones.
+ */
+export function esArranqueDeTramo(rejilla: Rejilla, gx: number, gy: number): boolean {
+  if (!rejilla.esTransitable(gx, gy)) return false;
+  return VECINAS.some(([dx, dy]) => rejilla.esHueco(gx + dx, gy + dy));
 }

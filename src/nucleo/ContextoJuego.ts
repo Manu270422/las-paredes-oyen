@@ -26,6 +26,12 @@ export interface PuenteUI {
   abrirDocumento(id: string): void;
 }
 
+/** Lo que un tramo de escalera le pide al juego: llevarme a otro piso. */
+export interface PuenteViaje {
+  /** Bajo (o subo) al piso `hacia` (su id en el catálogo) y aparezco en su punto de control `llegada`. */
+  cambiarDePiso(hacia: string, llegada: string): void;
+}
+
 export interface ContextoJuego {
   readonly bus: BusEventos<MapaEventos>;
   readonly programador: Programador;
@@ -35,12 +41,16 @@ export interface ContextoJuego {
   readonly ambiente: AmbienteSonoro;
   readonly renderizador: Renderizador;
   readonly escena: Scene;
-  /** El piso que se está jugando: mapa, objetivos, documentos y cintas. */
-  readonly piso: PaquetePiso;
+  /**
+   * El piso que se está jugando: mapa, objetivos, documentos y cintas. No es readonly: cambia al bajar o
+   * subir por una escalera (con su nivel). Nadie debe guardarse el piso ni el nivel: se leen de aquí.
+   */
+  piso: PaquetePiso;
   /** Los valores de la dificultad que se juega (config/Dificultad.ts). No es readonly: se puede cambiar en plena partida. */
   dificultad: ValoresDificultad;
   readonly camara: PerspectiveCamera;
-  readonly nivel: Nivel;
+  /** El nivel armado del piso que se juega (cambia con el piso). */
+  nivel: Nivel;
   readonly jugador: Jugador;
   readonly linterna: Linterna;
   readonly grabadora: Grabadora;
@@ -49,4 +59,5 @@ export interface ContextoJuego {
   readonly memoria: MemoriaMundo;
   readonly director: DirectorTerror;
   readonly ui: PuenteUI;
+  readonly viaje: PuenteViaje;
 }

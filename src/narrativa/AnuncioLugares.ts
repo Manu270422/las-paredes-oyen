@@ -18,10 +18,11 @@ export function conectarAnuncioLugares(
   piso: PaquetePiso,
   nivel: Pick<Nivel, 'habitacionPorId'>,
   progreso: Pick<Progreso, 'tiene' | 'marcar'>,
-): void {
+): () => void {
   // Cada placa con "lugar" es la de su apartamento (lo comprueba paquetesDePiso: su puerta da a él).
   const lugares = new Map((piso.placas ?? []).flatMap((p) => (p.lugar ? [[p.texto, p.lugar] as const] : [])));
-  bus.on('habitacion-cambiada', ({ anterior, actual }) => {
+  // Devuelvo cómo desengancharme: al cambiar de piso, las placas y el nivel son otros.
+  return bus.on('habitacion-cambiada', ({ anterior, actual }) => {
     // Sin cuarto anterior es que acabo de aparecer (partida nueva, Continuar o reintento): no crucé nada.
     if (anterior === null) return;
     const apartamento = nivel.habitacionPorId(actual)?.apartamento;

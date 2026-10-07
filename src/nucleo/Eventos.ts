@@ -94,4 +94,6 @@ export interface MapaEventos {
    * Si me quedo quieto y en silencio, se va. Es el momento central del juego.
    */
   encuentro: { estado: 'inicio' | 'superado' | 'fallido'; distancia: number };
+  /** El motor terminó de montar el piso nuevo (ya estoy en él y puedo moverme). */
+  'piso-cambiado': { desde: string; hacia: string };
 }

@@ -5,16 +5,16 @@
 // MÁS NUEVA del juego (se volvió a publicar una versión vieja), no la toco.
 import { esDificultad, type IdDificultad } from '../config/Dificultad';
 import type { EstadisticasPartida } from '../director/MemoriaMundo';
-import type { DatosProgreso } from '../narrativa/Progreso';
+import type { DatosPisoVisitado, DatosProgreso } from '../narrativa/Progreso';
 import { borrar, escribirJSON } from '../utilidades/Almacenamiento';
 import { leerVersionado } from './AlmacenVersionado';
 import type { Migracion } from './Versionado';
 
-export const VERSION_PARTIDA = 5;
+export const VERSION_PARTIDA = 6;
 
 export interface DatosPartida {
   version: typeof VERSION_PARTIDA;
-  /** El id del piso (paquete) de esta partida: 'piso4'. */
+  /** El id del piso (paquete) que se está jugando: 'piso4'. */
   piso: string;
   /** La dificultad de la partida: "Continuar" la retoma con sus mismos valores y puntos de control. */
   dificultad: IdDificultad;
@@ -22,7 +22,10 @@ export interface DatosPartida {
   dificultadInicial: IdDificultad;
   dificultadMasBaja: IdDificultad;
   puntoControl: string;
+  /** El progreso del piso que se está jugando (y el inventario, que viaja conmigo). */
   progreso: DatosProgreso;
+  /** Lo que pasó en los otros pisos que visité, por id de piso: si vuelvo, sigue como lo dejé. */
+  otrosPisos: Record<string, DatosPisoVisitado>;
   bateria: number;
   tiempoJugado: number;
   fecha: number;
@@ -41,9 +44,21 @@ const MIGRACIONES: readonly Migracion[] = [
   { desde: 3, migrar: (v3) => ({ ...v3, dificultad: 'normal' }) },
   // v4 → v5: con qué dificultad empezó y la más baja jugada. Hasta aquí no se podía cambiar en plena partida.
   { desde: 4, migrar: (v4) => ({ ...v4, dificultadInicial: v4.dificultad, dificultadMasBaja: v4.dificultad }) },
+  // v5 → v6: el progreso de los otros pisos visitados. Hasta aquí solo existía un piso: no hay otros.
+  { desde: 5, migrar: (v5) => ({ ...v5, otrosPisos: {} }) },
 ];
 
 const CLAVE = 'partida';
+
+const esListaDeTextos = (v: unknown): boolean => Array.isArray(v) && v.every((x) => typeof x === 'string');
+
+/** Cada piso visitado guarda sus banderas y documentos como listas de textos. */
+function esOtrosPisos(v: unknown): boolean {
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
+  return Object.values(v).every((d: Partial<DatosPisoVisitado> | null) => {
+    return typeof d === 'object' && d !== null && esListaDeTextos(d.banderas) && esListaDeTextos(d.documentos);
+  });
+}
 
 function esPartida(d: Record<string, unknown>): d is Record<string, unknown> & DatosPartida {
   const e = d.estadisticas as Record<string, unknown> | undefined;
@@ -56,6 +71,7 @@ function esPartida(d: Record<string, unknown>): d is Record<string, unknown> & D
     typeof d.puntoControl === 'string' &&
     typeof d.progreso === 'object' &&
     d.progreso !== null &&
+    esOtrosPisos(d.otrosPisos) &&
     typeof d.bateria === 'number' &&
     typeof d.tiempoJugado === 'number' &&
     typeof e === 'object' &&

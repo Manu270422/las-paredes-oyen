@@ -44,6 +44,27 @@ export interface GuionPiso {
   conectar(ctx: ContextoJuego): void;
   reiniciar(ctx: ContextoJuego): void;
   actualizar(dt: number, ctx: ContextoJuego): void;
+  /** Me desconecto del bus al salir del piso. Si no lo implemento, el motor no llama nada. */
+  desconectar?(): void;
+}
+
+/** Un tramo de escalera que lleva a otro piso: la zona que el jugador puede pulsar con E en la boca del hueco. */
+export interface DefEscaleraPiso {
+  /** Identificador estable (único dentro del piso y entre todos los interactuables del mapa). */
+  readonly id: string;
+  /** El id del piso al que lleva (clave del catálogo). */
+  readonly hacia: string;
+  /** El punto de control del piso destino donde aparezco al llegar. */
+  readonly llegada: string;
+  /** Posición del tramo en CELDAS (el centro de la zona de interacción). */
+  readonly x: number;
+  readonly y: number;
+  /** Lo que dice el indicador al mirarlo ("Bajar al Piso 3", "Subir al Piso 4"). */
+  readonly texto: string;
+  /** Si es necesaria esta bandera para pasar. Sin ella suena la cadena y no se viaja. */
+  readonly requiere?: string;
+  /** El subtítulo al intentar pasar sin la bandera. Solo si hay `requiere`. */
+  readonly cerrada?: string;
 }
 
 /** Qué luces cambian cuando se marca una bandera de progreso. */
@@ -166,6 +187,11 @@ export interface PaquetePiso {
   readonly rastros?: readonly DefRastro[];
   /** El piso que sigue en la historia, aunque todavía no exista: el final dice "Próximamente: Piso 3". */
   readonly siguiente?: { readonly id: string; readonly nombre: string };
+  /**
+   * Las escaleras que llevan a otro piso. Cada tramo ocupa una zona en la boca del hueco (al borde de una celda
+   * 'E'): al pulsar E, el motor funde a negro, pone pasos y monta el piso de destino.
+   */
+  readonly escaleras?: readonly DefEscaleraPiso[];
   /** El guion del piso (opcional): recibe lo que puede pedirle al juego (fundidos, susto, final). */
   readonly guion?: (acciones: AccionesGuion) => GuionPiso;
   /** El fondo del menú: se dibuja sobre el piso real, con alguien de pie al fondo. */

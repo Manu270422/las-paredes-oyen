@@ -40,7 +40,6 @@ export class Entidad {
   readonly imitador = new Imitador();
   /** Cómo sueno en cada estado: el jugador me lee por el oído. */
   readonly firma = new FirmaSonora();
-  readonly navegacion: Navegacion;
   rumbo = 0;
   /** true cuando tiene cuerpo en el mundo. */
   fisica = false;
@@ -64,8 +63,12 @@ export class Entidad {
   private abriendo = 0;
   private distanciaPaso = 0;
   private temporizadorInterferencia = 0;
+  /** El plano del piso por el que me muevo (cambia cuando el jugador baja o sube de piso). */
+  private rejilla: Rejilla;
+  private navegacion: Navegacion;
 
-  constructor(escena: Scene, private readonly rejilla: Rejilla) {
+  constructor(escena: Scene, rejilla: Rejilla) {
+    this.rejilla = rejilla;
     this.navegacion = new Navegacion(rejilla);
     escena.add(this.modelo.raiz);
     for (const estado of [new EstadoParedes(), new EstadoInvestigando(), new EstadoCazando(), new EstadoAcechando(), new EstadoRetirada()]) {
@@ -102,6 +105,16 @@ export class Entidad {
     this.desvanecer();
     this.firma.detener(ctx);
     this.cambiarEstado('paredes', ctx);
+  }
+
+  /**
+   * El jugador cambió de piso: me muevo por el plano del nuevo. Me sigue a donde vaya (vivo en las paredes de
+   * todo el edificio). Después de esto toca reiniciar() en la guarida del piso: mi camino era del plano viejo.
+   */
+  cambiarRejilla(rejilla: Rejilla): void {
+    this.rejilla = rejilla;
+    this.navegacion = new Navegacion(rejilla);
+    this.camino = [];
   }
 
   distanciaAlJugador(ctx: ContextoJuego): number {

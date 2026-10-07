@@ -161,6 +161,14 @@ export function puntoDeControlDe(piso: PaquetePiso, valores: ValoresDificultad, 
   return punto;
 }
 
+/**
+ * ¿Llegar a otro piso guarda la partida? Sí, salvo donde no hay puntos de control (Pesadilla): bajar una
+ * escalera es el hito más grande que hay, así que en Difícil (solo los mayores) también cuenta.
+ */
+export function guardaAlLlegarAOtroPiso(valores: ValoresDificultad): boolean {
+  return valores.puntosControl !== 'ninguno';
+}
+
 /** La más fácil de las dos (el orden es el de DIFICULTADES). */
 export const masFacil = (a: IdDificultad, b: IdDificultad): IdDificultad => (DIFICULTADES.indexOf(a) <= DIFICULTADES.indexOf(b) ? a : b);
 

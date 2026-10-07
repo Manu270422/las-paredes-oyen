@@ -33,6 +33,11 @@ export class GuionPiso4 implements GuionPiso {
     );
   }
 
+  /** El jugador se fue a otro piso: me desengancho (si vuelve, el juego me arma de nuevo). */
+  desconectar(): void {
+    for (const cancelar of this.cancelaciones.splice(0)) cancelar();
+  }
+
   reiniciar(ctx: ContextoJuego): void {
     this.tiempo = 0;
     this.tiempoTablero = ctx.progreso.tiene('tablero_activado') ? 0 : -1;
