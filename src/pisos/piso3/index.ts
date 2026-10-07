@@ -22,7 +22,9 @@ export const PISO_3: PaquetePiso = {
   transcripciones: {},
   // llego:piso3 se marca en silencio al llegar (banderasAlLlegar). Con ella el director ya está activo
   // y la criatura ya despierta: el Piso 3 es más agresivo que el 4 desde el primer segundo.
-  // imitacion:piso3 se marca en Tanda 2 (al descubrir los rastros clave del 302).
+  // PENDIENTE TANDA 2: imitacionCompletaCon apunta a 'imitacion:piso3', que nunca se marca
+  // hasta que el guion del Piso 3 exista. La criatura no llega a la imitación completa
+  // (etapa 3) mientras tanto: investigar y acechar funcionan, pero el ritmo no se copia.
   reglas: { directorDesde: 'llego:piso3', despiertaCon: 'llego:piso3', imitacionCompletaCon: 'imitacion:piso3' },
   banderasAlLlegar: ['llego:piso3'],
   objetos: {},

@@ -28,10 +28,10 @@ test.describe.serial('Piso 3: bajar, explorar y volver a subir', () => {
     await page.waitForFunction(() => window.__juego?.estado === 'jugando');
     await instalarPiloto(page);
     // La prueba da la llave directamente: no hace falta jugar toda la secuencia final.
+    // marcarSilencioso evita que el bus emita 'medido:402' y dispare ejecutarSecuenciaFinal.
     await page.evaluate(() => {
       window.__juego!.ctx.progreso.agregarObjeto('llave_escalera');
-      // Marcar medido:402 y aplicar su luz (circuito general apagado, emergencia encendida).
-      window.__juego!.ctx.progreso.marcar('medido:402');
+      window.__juego!.ctx.progreso.marcarSilencioso('medido:402');
       window.__juego!.ctx.nivel.aplicarLuzDe('medido:402');
     });
   });
@@ -110,6 +110,44 @@ test.describe.serial('Piso 3: bajar, explorar y volver a subir', () => {
     expect(r, 'ningún mueble, lámpara ni punto de control en celdas E').toEqual([]);
   });
 
+  test('BFS: todas las habitaciones del Piso 3 salvo servicio son alcanzables desde la escalera', async () => {
+    const faltantes = await page.evaluate(() => {
+      const { ctx } = window.__juego!;
+      const rejilla = ctx.nivel.rejilla;
+      const habitaciones = ctx.piso.mapa.habitaciones;
+
+      // Flood-fill desde el centro de la escalera (celda 2,10 es transitable dentro del cuarto escalera).
+      const visited = new Set<string>();
+      const queue: [number, number][] = [[2, 10]];
+      visited.add('2,10');
+      while (queue.length > 0) {
+        const [x, y] = queue.shift()!;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as [number, number][]) {
+          const nx = x + dx, ny = y + dy;
+          const k = `${nx},${ny}`;
+          if (!visited.has(k) && rejilla.esTransitable(nx, ny)) {
+            visited.add(k);
+            queue.push([nx, ny]);
+          }
+        }
+      }
+
+      // Una habitación es alcanzable si alguna de sus celdas está en el conjunto visitado.
+      const alcanzadas = habitaciones
+        .filter((h) => {
+          for (let y = h.y0; y <= h.y1; y++)
+            for (let x = h.x0; x <= h.x1; x++)
+              if (visited.has(`${x},${y}`)) return true;
+          return false;
+        })
+        .map((h) => h.id);
+
+      const esperadas = habitaciones.filter((h) => h.id !== 'servicio').map((h) => h.id);
+      return esperadas.filter((id) => !alcanzadas.includes(id));
+    });
+    expect(faltantes, 'todas las habitaciones (menos servicio) son alcanzables desde la escalera').toEqual([]);
+  });
+
   test('subir de vuelta al Piso 4', async () => {
     const r = await page.evaluate(async () => {
       const J = window.__juego!;
@@ -137,5 +175,31 @@ test.describe.serial('Piso 3: bajar, explorar y volver a subir', () => {
     expect(r.enfocado, 'el tramo de subida está enfocado').toBe('subida');
     expect(r.estado, 'el juego sigue corriendo tras subir').toBe('jugando');
     expect(r.piso, 'el jugador está de vuelta en el Piso 4').toBe('piso4');
+  });
+
+  test('volver al Piso 4 no repite la secuencia final ni enciende el circuito general', async () => {
+    const r = await page.evaluate(async () => {
+      const J = window.__juego!;
+      const { ctx } = J;
+      // Espero 15 s de juego: si la secuencia final se disparara de nuevo, cambiaría el estado.
+      const inicio = ctx.programador.ahora;
+      while (ctx.programador.ahora < inicio + 15) await new Promise((r) => setTimeout(r, 100));
+      const lamGeneral = ctx.nivel.lamparas.filter((l) => l.circuito === 'general').every((l) => l.estado === 'apagada');
+      const lamEmergencia = ctx.nivel.lamparas.find((l) => l.id === 'emergencia')?.estado;
+      return {
+        estado: J.estado,
+        piso: ctx.piso?.id,
+        medido402: ctx.progreso.tiene('medido:402'),
+        tieneKey: ctx.progreso.tiene('objeto:llave_escalera'),
+        lamGeneralApagada: lamGeneral,
+        lamEmergencia,
+      };
+    });
+    expect(r.estado, 'el juego sigue en modo jugando (la secuencia no se repitió)').toBe('jugando');
+    expect(r.piso, 'el jugador sigue en el Piso 4').toBe('piso4');
+    expect(r.medido402, 'medido:402 sigue marcado').toBe(true);
+    expect(r.tieneKey, 'la llave de la escalera sigue en el inventario').toBe(true);
+    expect(r.lamGeneralApagada, 'el circuito general sigue apagado (el edificio no se re-encendió)').toBe(true);
+    expect(r.lamEmergencia, 'la emergencia sigue encendida').toBe('encendida');
   });
 });
