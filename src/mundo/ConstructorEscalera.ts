@@ -1,8 +1,10 @@
 // Aquí dibujo cada hueco de escalera: el pozo de concreto, el tramo que baja hacia la oscuridad (cerrado
-// con una reja y una cadena: el piso de abajo todavía no se visita), el tramo que sube (tapado con tablas y
-// escombros) y las barandas. Nadie camina por aquí: es escenario. La colisión la pone la rejilla (una celda
-// 'E' bloquea como un muro) y lo que se ve coincide con ella: la reja, las tablas y la baranda están en la
-// boca misma del hueco.
+// con una reja y una cadena con candado), el tramo que sube (tapado con tablas y escombros) y las barandas.
+// Nadie camina por aquí: es escenario. La colisión la pone la rejilla (una celda 'E' bloquea como un muro) y
+// lo que se ve coincide con ella: la reja, las tablas y la baranda están en la boca misma del hueco.
+//
+// La reja es lo único que se mueve: sus dos hojas, la cadena y el candado van aparte, cada uno en un grupo con
+// su eje (la bisagra, o su centro), dentro de un grupo "reja". Lo anima RejaEscalera.
 //
 // Pensé la escalera como una de verdad, de ida y vuelta: desde la boca, un tramo baja y otro sube, los dos
 // hacia el fondo; allá cada uno llega a su descanso (medio piso abajo, medio piso arriba) y da la vuelta por
@@ -166,13 +168,36 @@ function construirHueco(m: MarcoHueco, materiales: BibliotecaMateriales, azar: G
   tramo(piezas, medidas, derecha, { vInicio: inicioDescanso, yInicio: -H / 2, sentidoV: -1, sentidoY: -1, extraInicio: 0.1, extraFin: 0 });
   tramo(piezas, medidas, izquierda, { vInicio: inicioDescanso, yInicio: H / 2, sentidoV: -1, sentidoY: 1, extraInicio: 0.1, extraFin: -0.1 });
 
-  if (opciones.rejaAbajo !== false) construirReja(piezas, izquierda.u0 + 0.02, izquierda.baranda - 0.06, 0.09, -contrahuella);
+  const reja = opciones.rejaAbajo !== false ? construirReja(piezas, aMundo, materiales, izquierda.u0 + 0.02, izquierda.baranda - 0.06, 0.09, -contrahuella) : null;
   if (opciones.escombrosArriba !== false) {
     construirTablas(piezas, derecha.baranda, A, 0.07);
     construirEscombros(piezas, azar, A, L, H, anchoTramo, medidas);
   }
 
-  return crearMallas(piezas, materiales);
+  const grupo = crearMallas(piezas, materiales);
+  if (reja) grupo.add(reja);
+  return grupo;
+}
+
+/**
+ * Una pieza de la reja que se mueve: la armo con sus coordenadas locales relativas a su eje (u, y, v) y la
+ * pongo en el mundo dentro de un grupo en ese eje, girado como el hueco. La malla es el hijo que se mueve.
+ */
+function piezaMovil(nombre: string, eje: Vector3, aMundo: Matrix4, materiales: BibliotecaMateriales, armar: (p: Piezas) => void): Group {
+  const p = new Piezas(new Matrix4().makeTranslation(-eje.x, -eje.y, -eje.z));
+  armar(p);
+  const lista = p.porMaterial.get('metal') ?? [];
+  const malla = new Mesh(mergeGeometries(lista, false), materiales.obtener('metal'));
+  for (const g of lista) g.dispose();
+  malla.name = `${nombre}-malla`;
+  malla.castShadow = true;
+  malla.receiveShadow = true;
+  const grupo = new Group();
+  grupo.name = nombre;
+  grupo.position.copy(eje.clone().applyMatrix4(aMundo));
+  grupo.quaternion.setFromRotationMatrix(new Matrix4().extractRotation(aMundo));
+  grupo.add(malla);
+  return grupo;
 }
 
 /** Las cuatro paredes del pozo, su techo y las caras que tapan los pisos de arriba y de abajo en la boca. */
@@ -280,34 +305,65 @@ function barandaRecta(piezas: Piezas, u0: number, u1: number, v: number, piso: n
 
 /**
  * La reja que cierra el tramo que baja: dos hojas de barrotes que se juntan en el centro, amarradas con una
- * cadena y un candado. Se ve el primer escalón a través de ella... y nada más.
+ * cadena y un candado. Se ve el primer escalón a través de ella... y nada más. Los dos marcos de los lados son
+ * fijos (van con el resto del metal); las hojas giran en su bisagra y la cadena y el candado pueden caer.
  */
-function construirReja(piezas: Piezas, u0: number, u1: number, v: number, piso: number): void {
+function construirReja(piezas: Piezas, aMundo: Matrix4, materiales: BibliotecaMateriales, u0: number, u1: number, v: number, piso: number): Group {
   const arriba = 2.05;
   const centro = (u0 + u1) / 2;
-  const columna = (u: number, grosor: number, y0: number, y1: number) =>
-    piezas.barra('metal', grosor, new Vector3(u, y0, v), new Vector3(u, y1, v));
-  const travesano = (y: number) => piezas.barra('metal', 0.035, new Vector3(u0, y, v), new Vector3(u1, y, v));
+  const columna = (p: Piezas, u: number, grosor: number, y0: number, y1: number) => p.barra('metal', grosor, new Vector3(u, y0, v), new Vector3(u, y1, v));
+  const travesano = (p: Piezas, a: number, b: number, y: number) => p.barra('metal', 0.035, new Vector3(a, y, v), new Vector3(b, y, v));
 
-  columna(u0 + 0.025, 0.05, piso, arriba + 0.05);
-  columna(u1 - 0.025, 0.05, piso, arriba + 0.05);
-  columna(centro - 0.02, 0.035, piso + 0.02, arriba);
-  columna(centro + 0.02, 0.035, piso + 0.02, arriba);
-  travesano(piso + 0.1);
-  travesano(1.0);
-  travesano(arriba - 0.03);
+  columna(piezas, u0 + 0.025, 0.05, piso, arriba + 0.05);
+  columna(piezas, u1 - 0.025, 0.05, piso, arriba + 0.05);
   const cuantos = Math.round((u1 - u0) / 0.11);
-  for (let k = 1; k < cuantos; k++) {
-    const u = u0 + ((u1 - u0) * k) / cuantos;
-    if (Math.abs(u - centro) < 0.05) continue;
-    // Los barrotes sobresalen un poco arriba, como lanzas.
-    columna(u, 0.016, piso + 0.02, arriba + 0.09);
-  }
-  construirCadena(piezas, centro, 1.0, v);
+  /** Una hoja: su larguero del centro, sus travesaños y sus barrotes (que sobresalen arriba, como lanzas). */
+  const hoja = (p: Piezas, desde: number, hasta: number, larguero: number) => {
+    columna(p, larguero, 0.035, piso + 0.02, arriba);
+    for (const y of [piso + 0.1, 1.0, arriba - 0.03]) travesano(p, desde, hasta, y);
+    for (let k = 1; k < cuantos; k++) {
+      const u = u0 + ((u1 - u0) * k) / cuantos;
+      if (Math.abs(u - centro) < 0.05 || u < Math.min(desde, hasta) || u > Math.max(desde, hasta)) continue;
+      columna(p, u, 0.016, piso + 0.02, arriba + 0.09);
+    }
+  };
+  const reja = new Group();
+  reja.name = 'reja';
+  const bisagraIzq = new Vector3(u0 + 0.025, 0, v);
+  const bisagraDer = new Vector3(u1 - 0.025, 0, v);
+  reja.add(
+    piezaMovil('reja-hoja-izq', bisagraIzq, aMundo, materiales, (p) => hoja(p, u0 + 0.05, centro - 0.02, centro - 0.02)),
+    piezaMovil('reja-hoja-der', bisagraDer, aMundo, materiales, (p) => hoja(p, centro + 0.02, u1 - 0.05, centro + 0.02)),
+  );
+  const cadena = construirCadena(centro, 1.0, v);
+  reja.add(
+    piezaMovil('reja-cadena', new Vector3(centro, 1.0, v), aMundo, materiales, cadena.eslabones),
+    piezaMovil('reja-candado', cadena.ejeCandado, aMundo, materiales, cadena.candado),
+  );
+  // Hasta dónde caen la cadena y el candado: al escalón (medido desde su eje).
+  reja.userData.caida = { cadena: 1.0 - piso - 0.03, candado: cadena.ejeCandado.y - piso - 0.03 };
+  return reja;
 }
 
-/** Eslabones alrededor de los dos largueros del centro, y un tramo colgando con el candado. */
-function construirCadena(piezas: Piezas, u: number, y: number, v: number): void {
+/**
+ * Eslabones alrededor de los dos largueros del centro y un tramo colgando con el candado. Devuelvo cómo
+ * armarlos (en dos piezas que se mueven aparte) y dónde queda el centro del candado.
+ */
+function construirCadena(u: number, y: number, v: number): { eslabones: (p: Piezas) => void; candado: (p: Piezas) => void; ejeCandado: Vector3 } {
+  const delante = v - 0.045;
+  const yCandado = y - 0.045 * 5 - 0.03;
+  const uCandado = u + 0.05;
+  return {
+    eslabones: (p) => armarEslabones(p, u, y, v),
+    candado: (p) => {
+      p.caja('metal', 0.05, 0.06, 0.022, uCandado, yCandado, delante);
+      p.agregar('metal', new TorusGeometry(0.015, 0.004, 5, 10, Math.PI), new Matrix4().makeTranslation(uCandado, yCandado + 0.03, delante));
+    },
+    ejeCandado: new Vector3(uCandado, yCandado, delante),
+  };
+}
+
+function armarEslabones(piezas: Piezas, u: number, y: number, v: number): void {
   const eslabon = () => new TorusGeometry(0.02, 0.006, 6, 10).scale(1.5, 1, 1);
   const arriba = new Vector3(0, 1, 0);
   const poner = (centro: Vector3, tangente: Vector3, acostado: boolean) => {
@@ -339,11 +395,6 @@ function construirCadena(piezas: Piezas, u: number, y: number, v: number): void 
       : new Matrix4().makeBasis(t, new Vector3().crossVectors(new Vector3(0, 0, 1), t).normalize(), new Vector3(0, 0, 1));
     piezas.agregar('metal', eslabon(), base.setPosition(centro));
   }
-  const yCandado = y - 0.045 * 5 - 0.03;
-  const uCandado = u + 0.05;
-  piezas.caja('metal', 0.05, 0.06, 0.022, uCandado, yCandado, delante);
-  const arco = new TorusGeometry(0.015, 0.004, 5, 10, Math.PI);
-  piezas.agregar('metal', arco, new Matrix4().makeTranslation(uCandado, yCandado + 0.03, delante));
 }
 
 /** Tablas clavadas de la baranda al muro: alguien cerró el tramo que sube, y no fue con cuidado. */

@@ -22,6 +22,7 @@ import { Lampara } from './Lampara';
 import { colgarPlaca, pintarRotulo } from './Letreros';
 import { ponerRastro, VigiaRastros } from './Rastros';
 import { TramoEscalera } from '../interaccion/objetos/TramoEscalera';
+import { RejaEscalera } from './RejaEscalera';
 import { PoolLuces } from './PoolLuces';
 import { crearMueble, type Mueble } from './Muebles';
 import type { CajaColision } from './Colisiones';
@@ -35,6 +36,8 @@ export class Nivel {
   readonly muebles: Mueble[] = [];
   readonly interactuables: Interactuable[] = [];
   readonly puntosMedicion: PuntoMedicion[] = [];
+  /** Las rejas de los tramos que bajan (con cadena y candado): se abren con la llave de su tramo. */
+  readonly rejas: RejaEscalera[] = [];
   radio: Radio | null = null;
   /** Avisa la primera vez que el jugador ve cada rastro del piso (para la telemetría). */
   readonly vigiaRastros: VigiaRastros;
@@ -77,7 +80,11 @@ export class Nivel {
     this.cajasEstaticas = cajasEstaticas;
     this.grupo.add(grupo);
     // Los huecos de escalera (celdas 'E'): el pozo, los tramos, la reja y los escombros (opcionales por piso).
-    this.grupo.add(construirEscaleras(this.rejilla, materiales, piso.opcionesEscalera as OpcionesEscalera | undefined));
+    const escaleras = construirEscaleras(this.rejilla, materiales, piso.opcionesEscalera as OpcionesEscalera | undefined);
+    this.grupo.add(escaleras);
+    escaleras.traverse((o) => {
+      if (o.name === 'reja') this.rejas.push(new RejaEscalera(o as Group));
+    });
 
     for (const d of def.puertas) {
       const pasoEnZ = this.rejilla.esMuro(d.x - 1, d.y) && this.rejilla.esMuro(d.x + 1, d.y);
@@ -138,9 +145,18 @@ export class Nivel {
       this.grupo.add(objeto.objeto);
     }
 
-    // Los tramos de escalera: zonas que llevan a otro piso al pulsar E.
+    // Los tramos de escalera: zonas que llevan a otro piso al pulsar E. Uno cerrado (pide algo) se queda con la
+    // reja que tiene delante, si hay una a menos de 2 m: esa es la que se abre con su llave.
     for (const d of piso.escaleras ?? []) {
       const tramo = new TramoEscalera(d);
+      if (d.requiere) {
+        const p = tramo.objeto.position;
+        const cerca = this.rejas
+          .map((reja) => ({ reja, d: Math.hypot(reja.posicion().x - p.x, reja.posicion().z - p.z) }))
+          .filter((r) => r.d < 2)
+          .sort((a, b) => a.d - b.d)[0];
+        if (cerca) tramo.enlazarReja(cerca.reja);
+      }
       this.interactuables.push(tramo);
       this.grupo.add(tramo.objeto);
     }
@@ -225,6 +241,7 @@ export class Nivel {
     this.pool.actualizar(this.lamparas, jugadorX, jugadorZ);
     if (ctx) this.radio?.actualizar(dt, ctx);
     if (ctx) this.vigiaRastros.actualizar(dt, ctx);
+    if (ctx) for (const reja of this.rejas) reja.actualizar(dt, ctx);
   }
 
   /** Dejo el mundo como corresponde a las banderas de progreso actuales. */

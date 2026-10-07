@@ -14,6 +14,8 @@ export type IdSonido =
   | 'portazo'
   | 'cerradura'
   | 'llave'
+  | 'candado'
+  | 'cadena'
   | 'clic'
   | 'respira_in'
   | 'respira_out'

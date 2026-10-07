@@ -4,7 +4,9 @@
 // dónde aparezco son datos del paquete del piso (sus `escaleras`); yo no conozco ningún piso.
 //
 // Un tramo puede estar cerrado (la reja con cadena): hasta que exista su bandera, suena la cerradura y lo
-// digo con un subtítulo. Sacudir una reja hace ruido: la criatura lo oye como una puerta.
+// digo con un subtítulo. Sacudir una reja hace ruido: la criatura lo oye como una puerta. Si tiene su reja
+// enlazada, con la llave la primera vez la ABRO (candado, cadena, chirrido: ver RejaEscalera) y queda abierta
+// para siempre (bandera "abierta:<id>"); desde ahí, E baja.
 //
 // Mientras ella caza, la escalera tampoco me deja pasar: la cadena se traba. El viaje de hoy es un fundido
 // instantáneo, y pulsar E a la carrera sería una huida gratis que nadie diseñó. Cuando la escalera se camine,
@@ -12,6 +14,7 @@
 import { Group } from 'three';
 import { CONFIG } from '../../config/ConfiguracionJuego';
 import type { ContextoJuego } from '../../nucleo/ContextoJuego';
+import type { RejaEscalera } from '../../mundo/RejaEscalera';
 import type { DefEscaleraPiso } from '../../pisos/TiposPiso';
 import { crearZonaToque, vincular, type Interactuable } from '../Interactuable';
 
@@ -21,6 +24,7 @@ const ALTURA_ZONA = 0.9;
 const RADIO_ZONA = 0.5;
 const TEXTO_CERRADA = 'Por aquí no se puede pasar.';
 const TEXTO_EN_CAZA = '[La cadena se traba]';
+const TEXTO_ABRIR = 'Abrir el candado';
 const PREFIJO_OBJETO = 'objeto:';
 
 /**
@@ -35,7 +39,8 @@ function cumple(ctx: ContextoJuego, requiere: string): boolean {
 export class TramoEscalera implements Interactuable {
   readonly id: string;
   readonly objeto = new Group();
-  readonly activo = true;
+  /** La reja que tengo delante (la que se abre con mi llave), si hay una. */
+  private reja: RejaEscalera | null = null;
 
   constructor(private readonly def: DefEscaleraPiso) {
     this.id = def.id;
@@ -44,8 +49,28 @@ export class TramoEscalera implements Interactuable {
     vincular(this.objeto, this);
   }
 
-  texto(): string {
-    return this.def.texto;
+  /** Mientras la reja se abre no respondo (el momento se ve hasta el final). */
+  get activo(): boolean {
+    return !this.reja?.abriendo;
+  }
+
+  enlazarReja(reja: RejaEscalera): void {
+    this.reja = reja;
+  }
+
+  /** La bandera que dice que abrí mi reja (es del piso: la reja de este piso). */
+  private get banderaAbierta(): string {
+    return `abierta:${this.id}`;
+  }
+
+  /** Con la llave y la reja todavía cerrada, lo que hago es abrirla; si no, lo que dice el paquete. */
+  texto(ctx: ContextoJuego): string {
+    return this.porAbrir(ctx) ? TEXTO_ABRIR : this.def.texto;
+  }
+
+  private porAbrir(ctx: ContextoJuego): boolean {
+    const { requiere } = this.def;
+    return !!this.reja && !this.reja.abierta && !!requiere && cumple(ctx, requiere);
   }
 
   interactuar(ctx: ContextoJuego): void {
@@ -58,7 +83,16 @@ export class TramoEscalera implements Interactuable {
       this.trabarse(ctx, cerrada ?? TEXTO_CERRADA);
       return;
     }
+    if (this.porAbrir(ctx)) {
+      this.reja!.abrir(() => ctx.progreso.marcar(this.banderaAbierta));
+      return;
+    }
     ctx.viaje.cambiarDePiso(hacia, llegada);
+  }
+
+  /** Al cargar o al armar el piso: mi reja, abierta si ya la abrí. */
+  restablecer(ctx: ContextoJuego): void {
+    this.reja?.fijar(ctx.progreso.tiene(this.banderaAbierta));
   }
 
   /** Suena la cadena, lo digo con un subtítulo y hace ruido (la criatura lo oye como una puerta). No viajo. */

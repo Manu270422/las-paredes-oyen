@@ -57,7 +57,8 @@ export const PISO_3: PaquetePiso = {
   // El tramo de la escalera que sube al Piso 4 está abierto (el jugador acaba de bajar por aquí).
   // La reja de abajo (Piso 2, todavía cerrado) sí se muestra.
   opcionesEscalera: { rejaAbajo: true, escombrosArriba: false },
-  escaleras: [{ id: 'subida', hacia: 'piso4', llegada: 'escalera', x: 1.5, y: 10.5, texto: 'Subir al Piso 4' }],
+  // El tramo que sube está a la derecha de la boca (celda x 3); el de la izquierda (x 1) baja, con su reja al Piso 2.
+  escaleras: [{ id: 'subida', hacia: 'piso4', llegada: 'escalera', x: 3.5, y: 10.5, texto: 'Subir al Piso 4' }],
   siguiente: { id: 'piso2', nombre: 'Piso 2' },
   menu: {
     camara: { x: 4.4, y: 10.5, angulo: -90 },

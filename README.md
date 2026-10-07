@@ -234,7 +234,7 @@ de dibujo sobre WebGL 2: la IA, el audio, el director, la física, la interacci�
 - Web Audio API nativa, audio 3D binaural (**HRTF**)
 - **Oclusión por muros**: un golpe detrás de dos paredes suena apagado y grave
 - Reverberación por convolución distinta en cada habitación
-- **39 sonidos sintetizados por código**, con variantes
+- **41 sonidos sintetizados por código**, con variantes
 - **Audio híbrido**: cualquier sonido se puede reemplazar por una grabación real desde `public/audio/manifiesto.json`
   (hoy está vacío: todo lo que suena sigue siendo síntesis)
 - **Firma sonora** de El Inquilino por estado: su jadeo al cazar te dice dónde está
@@ -469,7 +469,7 @@ while something blind that lives inside the walls listens for you. Every step, e
 flashlight is information for it.
 
 Built without a commercial engine: TypeScript, WebGL 2 (Three.js as a drawing library only) and the Web Audio API,
-with binaural HRTF audio, wall occlusion, per-room convolution reverb, 39 procedurally synthesized sounds, an acoustic
+with binaural HRTF audio, wall occlusion, per-room convolution reverb, 41 procedurally synthesized sounds, an acoustic
 AI, and a horror director. It runs in the browser on PC, phones and tablets. The game is currently Spanish-only.
 Play it at [almendros.elmundodemanu.com](https://almendros.elmundodemanu.com). Headphones required.
 

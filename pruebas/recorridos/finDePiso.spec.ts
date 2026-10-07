@@ -43,6 +43,15 @@ test('la tarjeta del piso completado sale una vez al bajar, sobre el negro, y la
       P.mirarA(zona.x, zona.y, zona.z);
       await P.esperarJuego(0.3);
       await P.pulsar('KeyE');
+      // La reja con candado: la primera vez, E la abre; ya abierta, E baja.
+      await P.esperarJuego(0.2);
+      const reja = ctx.nivel.rejas[0];
+      if (id === 'bajada' && reja?.abriendo) {
+        const fin = performance.now() + 8000;
+        while (!reja.abierta && performance.now() < fin) await P.esperarReal(30);
+        await P.esperarJuego(0.3);
+        await P.pulsar('KeyE');
+      }
       const inicio = performance.now();
       let vista: { titulo: string; subtitulo: string; negro: number; desde: number } | null = null;
       let adelantada = false;

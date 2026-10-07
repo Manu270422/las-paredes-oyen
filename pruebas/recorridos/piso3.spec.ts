@@ -42,6 +42,9 @@ test.describe.serial('Piso 3: bajar, explorar y volver a subir', () => {
       // marcarSilencioso evita que el bus emita 'medido:402' y dispare ejecutarSecuenciaFinal.
       ctx.progreso.agregarObjeto('llave_escalera');
       ctx.progreso.marcarSilencioso('medido:402');
+      // La reja ya abierta: abrirla con la llave lo prueba llaveEscalera.spec.ts.
+      ctx.progreso.marcarSilencioso('abierta:bajada');
+      ctx.nivel.interactuables.find((i) => i.id === 'bajada')!.restablecer?.(ctx);
       ctx.nivel.aplicarLuzDe('medido:402');
     });
   });

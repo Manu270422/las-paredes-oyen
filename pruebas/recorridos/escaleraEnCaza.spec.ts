@@ -25,6 +25,9 @@ test('durante la caza la escalera no responde (suena la cadena); al terminar la 
     // La llave, sin disparar el final del 402: así lo único que puede impedir el viaje es la caza.
     ctx.progreso.agregarObjeto('llave_escalera');
     ctx.progreso.marcarSilencioso('medido:402');
+    // La reja ya abierta: abrirla con la llave lo prueba llaveEscalera.spec.ts.
+    ctx.progreso.marcarSilencioso('abierta:bajada');
+    ctx.nivel.interactuables.find((i) => i.id === 'bajada')!.restablecer?.(ctx);
     await P.caminar([[2.2, 9.5]]);
     const zona = ctx.nivel.interactuables.find((i) => i.id === 'bajada')!.objeto.position;
     const asomarme = async () => {

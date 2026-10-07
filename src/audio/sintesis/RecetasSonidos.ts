@@ -406,6 +406,46 @@ export const RECETAS_SONIDO: Record<IdSonido, RecetaSonido> = {
     },
   },
 
+  // Un candado pequeño que cae sobre un escalón de concreto: el golpe metálico y dos rebotes más débiles.
+  candado: {
+    variantes: 2,
+    generar: (tasa) => {
+      const bandas = [new PasaBanda(1750, 25, tasa), new PasaBanda(3150, 30, tasa), new PasaBanda(5200, 20, tasa)];
+      const seco = new PasaBajos(900, tasa);
+      const golpes: Array<[number, number]> = [
+        [0.005, 1],
+        [0.17 + azar(-0.02, 0.02), 0.5],
+        [0.29 + azar(-0.02, 0.02), 0.22],
+      ];
+      return terminar(
+        crearMuestras(0.7, tasa, (t) => {
+          let imp = 0;
+          for (const [g, fuerza] of golpes) if (t >= g && t < g + 0.0015) imp += fuerza;
+          const metal = bandas[0].procesar(imp) + bandas[1].procesar(imp) * 0.6 + bandas[2].procesar(imp) * 0.35;
+          return metal + seco.procesar(imp * ruido()) * 0.8;
+        }),
+        tasa,
+      );
+    },
+  },
+
+  // Una cadena que se desliza entre barrotes: eslabones que chocan, cada vez menos, y el roce del metal.
+  cadena: {
+    variantes: 2,
+    generar: (tasa) => {
+      const a = new PasaBanda(2900, 18, tasa);
+      const b = new PasaBanda(4300, 14, tasa);
+      const roce = new PasaBanda(3500, 2, tasa);
+      return terminar(
+        crearMuestras(1.0, tasa, (t) => {
+          const imp = Math.random() < 0.012 * envolvente(t, 0.05, 0.6) ? azar(0.4, 1) : 0;
+          return a.procesar(imp) + b.procesar(imp) * 0.6 + roce.procesar(ruido()) * 0.05 * envolvente(t, 0.05, 0.5);
+        }),
+        tasa,
+      );
+    },
+  },
+
   clic: {
     variantes: 2,
     generar: (tasa) => {

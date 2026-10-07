@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { ContextoJuego } from '../../src/nucleo/ContextoJuego';
 import { Progreso } from '../../src/narrativa/Progreso';
 import { TramoEscalera } from '../../src/interaccion/objetos/TramoEscalera';
+import type { RejaEscalera } from '../../src/mundo/RejaEscalera';
 import { escalerasSinVuelta, problemasDeEscaleras } from '../../src/pisos/EnlacesEscalera';
 import { PISOS } from '../../src/pisos/catalogo';
 import type { DefEscaleraPiso, PaquetePiso } from '../../src/pisos/TiposPiso';
@@ -30,8 +31,8 @@ function tramo(def: DefEscaleraPiso) {
 
 describe('TramoEscalera', () => {
   it('dice su texto y queda a la altura de la cintura sobre su punto (en metros)', () => {
-    const { t } = tramo(BAJADA);
-    expect(t.texto()).toBe('Bajar');
+    const { t, ctx } = tramo(BAJADA);
+    expect(t.texto(ctx)).toBe('Bajar');
     expect(t.objeto.position.toArray().map((n) => Math.round(n * 100) / 100)).toEqual([1.95, 0.9, 14.04]);
     expect(t.objeto.userData.interactuable, 'el rayo de la mirada sabe de quién es la zona').toBe(t);
   });
@@ -77,6 +78,39 @@ describe('TramoEscalera', () => {
     expect(progreso.tiene('objeto:llave'), 'la bandera no está en este piso').toBe(false);
     t.interactuar(ctx);
     expect(viajes).toEqual([['abajo', 'descanso']]);
+  });
+
+  it('con su reja: la llave la ABRE la primera vez (sin viajar), queda abierta con su bandera, y desde ahí E baja', () => {
+    const { t, ctx, progreso, viajes, subtitulos } = tramo({ ...BAJADA, requiere: 'objeto:llave', cerrada: 'Candado.' });
+    let alTerminar: (() => void) | null = null;
+    const reja = {
+      abierta: false,
+      abriendo: false,
+      abrir: (fin: () => void) => {
+        reja.abriendo = true;
+        alTerminar = fin;
+      },
+      fijar: (abierta: boolean) => (reja.abierta = abierta),
+      posicion: () => ({ x: 0, y: 0, z: 0 }),
+    };
+    t.enlazarReja(reja as unknown as RejaEscalera);
+    t.interactuar(ctx);
+    expect(subtitulos, 'sin la llave sigue cerrada').toEqual(['Candado.']);
+    progreso.agregarObjeto('llave');
+    expect(t.texto(ctx), 'con la llave, lo que hago es abrir').toBe('Abrir el candado');
+    t.interactuar(ctx);
+    expect(viajes, 'abrir no es bajar').toEqual([]);
+    expect(t.activo, 'mientras se abre no respondo').toBe(false);
+    reja.abriendo = false;
+    reja.abierta = true;
+    alTerminar!();
+    expect(progreso.tiene('abierta:bajada'), 'queda abierta para siempre').toBe(true);
+    expect(t.texto(ctx)).toBe('Bajar');
+    t.interactuar(ctx);
+    expect(viajes).toEqual([['abajo', 'descanso']]);
+    reja.abierta = false;
+    t.restablecer(ctx);
+    expect(reja.abierta, 'al cargar, la reja vuelve a estar abierta').toBe(true);
   });
 
   it('en caza se traba antes de mirar si está cerrado (no da pistas de la llave mientras huyes)', () => {

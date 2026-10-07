@@ -31,6 +31,9 @@ test('los rastros del Piso 3 están donde dicen los datos, se ven con la lintern
     // La llave de la escalera, sin disparar el final del 402 (en silencio, con su luz).
     ctx.progreso.agregarObjeto('llave_escalera');
     ctx.progreso.marcarSilencioso('medido:402');
+    // La reja ya abierta: abrirla con la llave lo prueba llaveEscalera.spec.ts.
+    ctx.progreso.marcarSilencioso('abierta:bajada');
+    ctx.nivel.interactuables.find((i) => i.id === 'bajada')!.restablecer?.(ctx);
     ctx.nivel.aplicarLuzDe('medido:402');
     await P.caminar([[2.2, 9.5]]);
     const tramo = ctx.nivel.interactuables.find((i) => i.id === 'bajada')!.objeto.position;

@@ -152,6 +152,15 @@ test('una partida v6 real (en el Piso 3) carga con "Continuar", sin pisos comple
       P.mirarA(zona.x, zona.y, zona.z);
       await P.esperarJuego(0.3);
       await P.pulsar('KeyE');
+      // Una partida v6 no sabía de la reja abierta: con la llave, la primera E la abre y la segunda baja.
+      await P.esperarJuego(0.2);
+      const reja = ctx.nivel.rejas[0];
+      if (id === 'bajada' && reja?.abriendo) {
+        const fin = performance.now() + 8000;
+        while (!reja.abierta && performance.now() < fin) await P.esperarReal(30);
+        await P.esperarJuego(0.3);
+        await P.pulsar('KeyE');
+      }
       const limite = performance.now() + 20_000;
       while (!(J.estado === 'jugando' && ctx.piso.id === hacia) && performance.now() < limite) {
         if (document.querySelector('.fundido .tarjeta--visible')) tarjeta = true;

@@ -28,7 +28,7 @@ LasParedesOyen/
    │  ├─ shaders/              GLSL del postprocesado
    │  └─ texturas/             Generador procedural, recetas, cookie de la linterna, pintor de rastros
    ├─ audio/                   Motor, fuentes 3D, reverberación, ambiente, biblioteca
-   │  └─ sintesis/             Sintetizador y recetas de los 39 sonidos
+   │  └─ sintesis/             Sintetizador y recetas de los 41 sonidos
    ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, letreros, rastros, colisiones
    │  └─ datos/                Tipos de mapa (la forma; los mapas viven en cada piso)
    ├─ jugador/                 Jugador, cámara, respiración, corazón, linterna, grabadora
@@ -131,6 +131,12 @@ La rejilla de un mapa tiene cuatro caracteres: `#` muro, `.` piso, `P` puerta y 
 - `mundo/ConstructorEscalera.ts` dibuja la escalera en el marco local del hueco (u a lo largo de la boca, v hacia
   dentro): el pozo, dos tramos de ida y vuelta con sus descansos, la reja con cadena del tramo que baja, las tablas y
   escombros del que sube y la oscuridad del fondo (capas negras semitransparentes, sin un piso que la cierre).
+- La reja es lo único que se mueve. Sus dos hojas, la cadena y el candado van aparte, cada uno con su eje, en un grupo
+  `reja`, y los anima `mundo/RejaEscalera.ts`.
+  - `Nivel` enlaza cada tramo cerrado (`requiere`) con la reja que tiene a menos de 2 m.
+  - Con lo que pide el tramo, la primera E la abre. La llave gira, el candado cae (ruido de puerta: la criatura va a
+    investigar) y la cadena se desliza. Las hojas se abren en 3.4 s y queda la bandera `abierta:<tramo>`.
+  - Ya abierta, E baja. Al cargar, `TramoEscalera.restablecer` la pone abierta sin animación.
 - `Rejilla.muroMasCercano` (de donde el director saca los golpes "dentro de la pared") acepta un muro que da al aire
   del hueco: es superficie igual. Por eso el director de Normal sigue idéntico al golden master de gate1.
 - Pruebas: `huecoEscalera.test.ts` (rejilla, navegación, reglas y marco), `paquetesDePiso.test.ts` (nada del mapa cae

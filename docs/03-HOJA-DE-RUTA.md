@@ -103,8 +103,8 @@ este contenido sin esperar la ronda de testers de la Fase 10 (el Gate 1), que si
 | `Juego.ts` bajo 700 líneas, con prueba del tope; la escalera no es salida durante la caza | ✅ |
 | Pantalla de fin reconectada: tarjeta "Piso 4 superado" al bajar por primera vez, pantalla final con una línea por piso (partida v7) | ✅ |
 | La llave de la reja ya no se regala: aparece bajo la silla del cuarto del 402 con el final; al despertar se oye caer, y si se tarda, una pista escrita | ✅ |
-| Abrir la reja con peso (candado que cae, cadena, chirrido; hace ruido) | Siguiente |
-| Rastros y documentos del 302 (carta del administrador en el 301, libreta de Andrés en el 302) | Pendiente |
+| Abrir la reja con peso: la llave gira, el candado cae (hace ruido), la cadena se desliza y las hojas se abren; queda abierta | ✅ |
+| Rastros y documentos del 302 (carta del administrador en el 301, libreta de Andrés en el 302) | Siguiente |
 | Guion del Piso 3 (golpe en la pared, apagón al leer la libreta, la criatura en el pasillo al volver) | Pendiente |
 | Ascensor: solo el sonido del hueco | Pendiente |
 
