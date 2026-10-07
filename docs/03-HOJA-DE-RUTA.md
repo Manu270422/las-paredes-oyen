@@ -92,8 +92,8 @@ La telemetría ahora guarda el `motivo` de cada caza.
 - Afinar con los datos: umbrales de audición, duración del encuentro, límites del presupuesto, afinidades y alivio.
 
 ### Contenido adelantado: escaleras, otros pisos y el Piso 3 (desde 2026-10-06)
-Los jugadores se quejaban de estar siempre en el mismo piso y pedían frases de sangre. El creador decidió
-adelantar este contenido y posponer la ronda de testers de la Fase 10.
+El creador pidió más pisos, escaleras y frases de sangre (todavía no hay datos de jugadores), y decidió adelantar
+este contenido sin esperar la ronda de testers de la Fase 10 (el Gate 1), que sigue pendiente.
 
 | Tarea | Estado |
 |---|---|

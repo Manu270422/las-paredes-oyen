@@ -81,8 +81,8 @@ crecer sin bajar la calidad de lo que ya funciona.
 
 ## Decisiones del creador (fuera del orden de arriba)
 
-- **2026-10-06.** Los jugadores pedían más pisos, escaleras y frases de sangre. El creador decidió posponer el Gate 1 y
-  adelantar los pasos 4 y 5. Hecho desde entonces:
+- **2026-10-06.** El creador pidió más pisos, escaleras y frases de sangre, y decidió adelantar los pasos 4 y 5 sin
+  esperar el Gate 1, que sigue pendiente. Hecho desde entonces:
   - escalera visible y motor de cambio de piso;
   - Piso 3, tandas 1 y 2: llave al despertar, mapa, escalera de ida y vuelta, frases, manchas y humedad.
 - **Riesgo aceptado.** Lo que el Piso 3 construye encima (oír, contener el aire, la cinta) sigue sin validarse con
