@@ -1,6 +1,7 @@
 // Un piso de prueba para el motor de cambio de piso: el plano del Piso 4 con otro id, sin guion ni rastros, con
 // un objetivo propio y una escalera que sube de vuelta al Piso 4. NO está en el catálogo (nadie lo juega):
-// lo usa cambioPiso.spec.ts, que lo carga en la página con import() y baja a él con viajarA. Así pruebo el
+// lo usa cambioPiso.spec.ts, que lo carga en la página con import() y baja a él con el viaje por escalera
+// del juego (ViajeEscalera). Así pruebo el
 // motor sin esperar al Piso 3 (y sin que un error del Piso 3 se confunda con uno del motor).
 import { PISO_4 } from '../../src/pisos/piso4';
 import type { PaquetePiso } from '../../src/pisos/TiposPiso';

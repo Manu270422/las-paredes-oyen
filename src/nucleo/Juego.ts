@@ -6,7 +6,7 @@ import { Color, FogExp2, HemisphereLight, Scene } from 'three';
 import { CONFIG } from '../config/ConfiguracionJuego';
 import { GestorAjustes } from '../config/Ajustes';
 import { PERFILES, type NivelCalidad, type PerfilCalidad } from '../config/PerfilesCalidad';
-import { DIFICULTAD_POR_DEFECTO, guardaAlLlegarAOtroPiso, puntoDeControlDe, TABLA_DIFICULTAD, type IdDificultad } from '../config/Dificultad';
+import { DIFICULTAD_POR_DEFECTO, puntoDeControlDe, TABLA_DIFICULTAD, type IdDificultad } from '../config/Dificultad';
 import { detectarDispositivo, sugerirCalidad } from '../plataforma/DetectorDispositivo';
 import { GestorPantalla } from '../plataforma/GestorPantalla';
 import { GestorEntrada } from '../entrada/GestorEntrada';
@@ -38,6 +38,7 @@ import type { MapaEventos } from './Eventos';
 import { Programador } from './Programador';
 import { BucleJuego } from './BucleJuego';
 import { SecuenciaMuerte, type SalidaMuerte } from './SecuenciaMuerte';
+import { ViajeEscalera } from './ViajeEscalera';
 import { FondoMenu } from './FondoMenu';
 import { DificultadPartida } from './DificultadPartida';
 import { mostrarSusto } from './Susto';
@@ -49,12 +50,6 @@ type EstadoApp = 'cargando' | 'inicio' | 'menu' | 'jugando' | 'pausa' | 'documen
 
 /** Cómo empiezo a jugar: una partida nueva, continuar la guardada o reintentar tras morir. */
 type OrigenPartida = 'nueva' | 'continuar' | 'reintento';
-
-/**
- * Los tiempos del viaje por una escalera, en segundos: fundido a negro, cuándo cambio de piso (ya a oscuras),
- * cuánto sigo a oscuras oyendo mis pasos en los escalones y cuánto tarda en volver la imagen.
- */
-const VIAJE = { fundido: 0.5, cambio: 0.55, llegada: 1.5, aparecer: 1.2 };
 
 export class Juego {
   private readonly bus = new BusEventos<MapaEventos>();
@@ -89,6 +84,25 @@ export class Juego {
     },
     mostrarPantalla: (datos) => this.ui.mostrarMuerte(datos),
   };
+  /** El viaje por una escalera a otro piso: la secuencia vive en ViajeEscalera; aquí, lo que es del juego. */
+  private readonly viajeEscalera = new ViajeEscalera({
+    puedeSalir: () => this.estado === 'jugando',
+    salir: () => (this.estado = 'viaje'),
+    fundir: (aNegro, segundos) => this.ui.hud.fundir(aNegro, segundos),
+    armarPiso: (destino) => this.cambiarNivel(destino),
+    ponerEn: (llegada) => {
+      this.soloMirar = false;
+      this.interferencia = 0;
+      this.puntoControl = llegada;
+      this.ponerEnPunto();
+    },
+    guardar: () => this.guardarPartida(),
+    llegar: () => {
+      this.estado = 'jugando';
+      // Si mientras viajaba se ocultó la pestaña o se soltó el ratón, no pude pausar (no estaba jugando): ahora sí.
+      if (document.hidden || (this.entrada.modo === 'teclado' && !this.entrada.teclado.bloqueado)) this.pausar();
+    },
+  });
   /** Lo que el guion de cualquier piso le puede pedir al juego. */
   private readonly accionesGuion: AccionesGuion = {
     mostrarSusto: () => mostrarSusto(this.ctx, 'final'),
@@ -258,7 +272,7 @@ export class Juego {
       memoria: this.memoria,
       director: this.director,
       ui: { abrirDocumento: (id) => this.abrirDocumento(id) },
-      viaje: { cambiarDePiso: (hacia, llegada) => this.cambiarDePiso(hacia, llegada) },
+      viaje: { cambiarDePiso: (hacia, llegada) => this.viajeEscalera.cambiarDePiso(hacia, llegada, this.ctx) },
     };
     this.conectarPiso();
     this.redimensionar();
@@ -466,72 +480,6 @@ export class Juego {
     this.progreso.anunciarObjetivo();
   }
 
-  // ---------------------------------------------------------------------------
-  // CAMBIO DE PISO
-  // ---------------------------------------------------------------------------
-  /** Un tramo de escalera me pide ir al piso `hacia`. */
-  private cambiarDePiso(hacia: string, llegada: string): void {
-    const destino = pisoPorId(hacia);
-    if (destino) {
-      this.viajarA(destino, llegada);
-      return;
-    }
-    // No debería pasar (paquetesDePiso valida cada escalera contra el catálogo), pero si pasa no me quedo colgado.
-    this.bus.emit('subtitulo', { texto: 'La escalera no lleva a ninguna parte.', duracion: 2.5 });
-  }
-
-  /**
-   * Bajo (o subo) por una escalera: la imagen se va a negro con mis pasos en los escalones, a oscuras cambio
-   * de piso, y aparezco en `llegada` del destino con lo que traía (la linterna y sus pilas, el inventario).
-   * Lo que pasó en el piso que dejo queda guardado en el progreso: si vuelvo, sigue como lo dejé.
-   */
-  private viajarA(destino: PaquetePiso, llegada: string, sinPasos = false): void {
-    if (this.estado !== 'jugando') return;
-    const desde = this.piso.id;
-    this.estado = 'viaje';
-    this.ui.hud.fundir(true, VIAJE.fundido);
-    if (!sinPasos) this.pasosEscalera(2);
-    window.setTimeout(() => {
-      this.programador.cancelarTodo();
-      this.audio.detenerTodo();
-      this.audio.fijarSilencioAmbiente(1);
-      this.ambiente.olvidarFuentes();
-      this.progreso.cambiarPiso(desde, destino);
-      this.cambiarNivel(destino);
-      this.llegarA(llegada);
-      this.bus.emit('piso-cambiado', { desde, hacia: destino.id });
-      if (!sinPasos) this.pasosEscalera(4);
-      window.setTimeout(() => {
-        this.estado = 'jugando';
-        this.ui.hud.fundir(false, VIAJE.aparecer);
-        // Si mientras bajaba se ocultó la pestaña o se soltó el ratón, no pude pausar (no estaba jugando): ahora sí.
-        if (document.hidden || (this.entrada.modo === 'teclado' && !this.entrada.teclado.bloqueado)) this.pausar();
-      }, VIAJE.llegada * 1000);
-    }, VIAJE.cambio * 1000);
-  }
-
-  /** Mis pasos en los escalones, a oscuras: el viaje se oye aunque no se vea. */
-  private pasosEscalera(cuantos: number): void {
-    for (let i = 0; i < cuantos; i++) {
-      this.audio.reproducir('paso_granito', { bus: 'voz', volumen: 0.55, variacion: 0.07, reverb: 0.5, retraso: 0.05 + i * 0.38 });
-    }
-  }
-
-  /** Acabo de llegar a otro piso: aparezco en su punto de control `llegada`. */
-  private llegarA(llegada: string): void {
-    this.soloMirar = false;
-    this.interferencia = 0;
-    this.puntoControl = llegada;
-    // Banderas de arranque del piso: el director y la criatura las leen en ponerEnPunto().
-    for (const b of this.piso.banderasAlLlegar ?? []) this.progreso.marcarSilencioso(b);
-    this.director.cambiarDePiso();
-    this.ponerEnPunto();
-    // Llegar a un piso es avanzar: como un punto de control, reinicia el alivio por muertes seguidas y guarda
-    // (salvo donde no hay puntos de control: en Pesadilla, morir sigue siendo empezar de cero).
-    this.memoria.muertesSinProgreso = 0;
-    if (guardaAlLlegarAOtroPiso(this.ctx.dificultad)) this.guardarPartida();
-  }
-
   private guardarPartida(): void {
     // Un punto de control: desde aquí la partida tiene guardado propio (también si venía bajada de Pesadilla).
     this.guardado.fijarSinGuardado(false);
@@ -612,8 +560,8 @@ export class Juego {
     // La llave está en la mano: el jugador no la recogió conscientemente.
     this.progreso.agregarObjeto(cfg.objeto);
     this.bus.emit('subtitulo', { texto: 'Tienes una llave en la mano que no recuerdas haber tomado.', duracion: 5 });
-    // Despierta en el punto que el paquete indica, a oscuras todavía (viajarA funde desde negro).
-    this.viajarA(this.piso, cfg.punto, true);
+    // Despierta en el punto que el paquete indica, a oscuras todavía (el viaje funde desde negro).
+    this.viajeEscalera.viajar(this.piso, cfg.punto, this.ctx, true);
   }
 
   private terminarDemo(): void {

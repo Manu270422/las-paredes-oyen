@@ -24,7 +24,8 @@ test('bajo a otro piso y vuelvo: cada piso recuerda lo suyo, se guarda al llegar
     const C = 1.3;
     const ruta = '/pruebas/recorridos/pisoDePrueba.ts';
     const { PISO_DE_PRUEBA } = (await import(/* @vite-ignore */ ruta)) as typeof import('./pisoDePrueba');
-    const viajarA = (piso: unknown, llegada: string) => (J as unknown as { viajarA(p: unknown, l: string): void }).viajarA(piso, llegada);
+    const viaje = (J as unknown as { viajeEscalera: { viajar(p: unknown, l: string, c: unknown): void } }).viajeEscalera;
+    const viajarA = (piso: unknown, llegada: string) => viaje.viajar(piso, llegada, ctx);
     const partida = () => JSON.parse(localStorage.getItem(prefijo + 'partida') ?? 'null') as Record<string, unknown> & { otrosPisos: Record<string, { banderas: string[] }> };
     const cambios: string[] = [];
     ctx.bus.on('piso-cambiado', ({ desde, hacia }) => cambios.push(`${desde}→${hacia}`));

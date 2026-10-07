@@ -138,8 +138,10 @@ La rejilla de un mapa tiene cuatro caracteres: `#` muro, `.` piso, `P` puerta y 
 
 ## Rastros (sangre narrativa)
 
-Un piso declara sus `rastros` como **datos** (`DefRastro` en `pisos/TiposPiso.ts`): `charco` en el piso; `mano`, `estatura`
-y `conteo` en un muro (con `rot`, `altura`, `ancho` y `alto`). No brillan ni salen en la interfaz: sin linterna casi no se ven.
+Un piso declara sus `rastros` como **datos** (`DefRastro` en `pisos/TiposPiso.ts`): `charco` en el piso; `mano`, `estatura`,
+`conteo` y `frase` en un muro (con `rot`, `altura`, `ancho` y `alto`); `humedad` en el techo. No brillan ni salen en la
+interfaz: sin linterna casi no se ven. Las letras de una `frase` las traza el navegador como máscara (`TrazarLetras`) y el
+pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
 
 - `render/texturas/PintorRastros.ts` (lógica pura, sin navegador) pinta cada tipo píxel a píxel con el ruido de
   `utilidades/Ruido.ts`, con densidad fija en píxeles por metro y semilla sacada del `id`: el mismo rastro sale siempre
@@ -161,9 +163,24 @@ y `conteo` en un muro (con `rot`, `altura`, `ancho` y `alto`). No brillan ni sal
   cuántos deberían cambiar (área del cuadro en pantalla × parte pintada). Debe superar 0,3 con linterna y verse menos
   sin ella. Comprobado que falla si los rastros quedan detrás de la superficie (bajan a 0).
 
+## Cambio de piso (motor de la Tarea 3)
+
+- Un tramo de escalera (`interaccion/objetos/TramoEscalera.ts`, datos en `escaleras` del paquete) pide el viaje por
+  `ctx.viaje.cambiarDePiso`.
+- `nucleo/ViajeEscalera.ts` hace la secuencia:
+  - fundido a negro y pasos;
+  - ya a oscuras, callar el piso que dejo, `progreso.cambiarPiso`, armar el destino, marcar sus `banderasAlLlegar` y
+    ponerme en la llegada;
+  - guardar según la dificultad y volver a jugar.
+
+  Del juego solo pide lo suyo con `SalidaViaje` (su estado, `cambiarNivel`, `ponerEnPunto`, guardar), igual que
+  `SecuenciaMuerte` con `SalidaMuerte`. Lo usa también el despertar tras el final del 402, sin pasos.
+- `Juego.cambiarNivel` suelta el nivel viejo (`Nivel.destruir`: geometrías y texturas propias, no las de la biblioteca
+  compartida) y arma el nuevo. Lo comparten el viaje y cargar una partida guardada en otro piso.
+
 ## Estados de la aplicación
 
-`cargando → inicio (gesto: audio + pantalla completa) → menú ⇄ jugando ⇄ pausa / documento → muerte | fin`
+`cargando → inicio (gesto: audio + pantalla completa) → menú ⇄ jugando ⇄ pausa / documento / viaje → muerte | fin`
 
 ## Extensibilidad prevista (sin implementar todavía)
 
