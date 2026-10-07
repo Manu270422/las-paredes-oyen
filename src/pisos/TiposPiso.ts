@@ -109,12 +109,15 @@ export type TipoRastro = DefRastro['tipo'];
 interface DefRastroBase {
   /** Identificador estable: la malla se llama `rastro:<id>` y la telemetría avisa la primera vez que se ve. */
   readonly id: string;
-  /** El punto en CELDAS: en un muro, sobre la cara del muro (como un rótulo); en el piso, el centro del rastro. */
+  /**
+   * El punto en CELDAS: en un muro, sobre la cara del muro (como un rótulo); en el piso o en el techo, el
+   * centro del rastro.
+   */
   readonly x: number;
   readonly y: number;
   /**
-   * Hacia dónde mira, en grados (la regla de `rot`: 0 = hacia +y del mapa). En el piso es hacia dónde apunta
-   * la parte de ARRIBA del dibujo (por ejemplo, la puerta hacia la que va un arrastre).
+   * Hacia dónde mira, en grados (la regla de `rot`: 0 = hacia +y del mapa). En el piso y en el techo es hacia
+   * dónde apunta la parte de ARRIBA del dibujo (por ejemplo, la puerta hacia la que va un arrastre).
    */
   readonly rot: number;
   /** Cuánto mide el cuadro del rastro, en metros (lo que cae fuera del dibujo es transparente). */
@@ -154,7 +157,23 @@ export interface DefConteo extends DefRastroBase {
   readonly cuenta: number;
 }
 
-export type DefRastro = DefCharco | DefMano | DefEstatura | DefConteo;
+/**
+ * Una frase escrita con el dedo, en sangre. Pocas, y nunca de la criatura: la gente del edificio dejó de
+ * hablar porque él repite las voces, y lo que había que advertir lo escribieron.
+ */
+export interface DefFrase extends DefRastroBase {
+  readonly tipo: 'frase';
+  readonly altura: number;
+  /** Cada renglón, de arriba hacia abajo, en mayúsculas (así se escribe con el dedo). */
+  readonly lineas: readonly string[];
+}
+
+/** Humedad roja en el TECHO: algo se filtró desde el piso de arriba. La parte de arriba del dibujo va hacia donde se corrió. */
+export interface DefHumedad extends DefRastroBase {
+  readonly tipo: 'humedad';
+}
+
+export type DefRastro = DefCharco | DefMano | DefEstatura | DefConteo | DefFrase | DefHumedad;
 
 export interface PaquetePiso {
   /** Identificador estable ('piso4'): es la clave del catálogo y, más adelante, de la partida guardada. */

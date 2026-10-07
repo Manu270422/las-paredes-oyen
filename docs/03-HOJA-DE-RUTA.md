@@ -91,6 +91,27 @@ La telemetría ahora guarda el `motivo` de cada caza.
   tensión, el estilo detectado (`adaptacion`) y lo que captó cada cinta (`cinta`).
 - Afinar con los datos: umbrales de audición, duración del encuentro, límites del presupuesto, afinidades y alivio.
 
+### Contenido adelantado: escaleras, otros pisos y el Piso 3 (desde 2026-10-06)
+Los jugadores se quejaban de estar siempre en el mismo piso y pedían frases de sangre. El creador decidió
+adelantar este contenido y posponer la ronda de testers de la Fase 10.
+
+| Tarea | Estado |
+|---|---|
+| Hueco de escalera visible (celdas `E`), sangre narrativa del 402, motor de cambio de piso | ✅ |
+| Piso 3, tanda 1: el final del 402 despierta al jugador con la llave de la escalera; mapa del Piso 3; escalera de ida y vuelta | ✅ |
+| Piso 3, tanda 2: frases escritas con el dedo (2 en el Piso 4, 3 en el Piso 3), manchas en escena (pasillo del 402, sala del 303) y la humedad roja en el techo del pasillo del Piso 3, justo bajo el charco del Piso 4 | ✅ |
+| Rastros y documentos del 302 (carta del administrador en el 301, libreta de Andrés en el 302) | Siguiente |
+| Guion del Piso 3 (golpe en la pared, apagón al leer la libreta, la criatura en el pasillo al volver) | Pendiente |
+| Ascensor: solo el sonido del hueco | Pendiente |
+
+**Pendiente conocido:** la regla `imitacionCompletaCon` del Piso 3 apunta a la bandera `imitacion:piso3`, que
+nadie marca hasta que exista el guion del Piso 3. Mientras tanto la criatura del Piso 3 investiga, acecha y caza,
+pero no llega a la imitación completa (etapa 3: repetir tu ritmo cuando te detienes).
+
+**Regla de las frases:** pocas y con razón. Las escribió gente que ya no podía hablar (él repite las voces, como
+cuenta el diario del 401); nunca son mensajes de la criatura. Viejas y oscuras como el resto de la sangre: sin
+linterna casi no se ven.
+
 ### Fase 11 — Calidad visual (3–4 semanas)
 - Modelo de la criatura en glTF con esqueleto (Blender) manteniendo la animación a 12 fps.
 - Texturas escaneadas CC0 (ambientCG, Poly Haven) mezcladas con el desgaste procedural.

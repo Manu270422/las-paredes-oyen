@@ -96,6 +96,18 @@ export const PISO_4: PaquetePiso = {
     // En el cuarto, frente a la silla que mira la pared: a la altura de los ojos de un niño sentado, días
     // contados con la uña en el yeso. Treinta y siete. El último quedó a medias.
     { tipo: 'conteo', id: 'conteo_402', x: 18.2, y: 19, rot: 180, altura: 0.95, ancho: 0.55, alto: 0.24, cuenta: 37 },
+    // En el pasillo, frente a la puerta del 402: lo que sacaron de ahí lo dejaron un momento en el piso y
+    // después lo arrastraron hacia la escalera (al oeste). Une el charco del umbral con la mano del descanso.
+    // Justo debajo, en el techo del Piso 3, está la humedad roja.
+    { tipo: 'charco', id: 'charco_pasillo402', x: 14.25, y: 10.5, rot: -90, ancho: 0.95, alto: 1.5 },
+    // En el muro del pasillo frente al 402 (el muro del hueco, donde vive), a ras del piso: alguien se agarró
+    // de la pared mientras lo arrastraban. La mano resbala hacia la escalera.
+    { tipo: 'mano', id: 'mano_hueco', x: 15.3, y: 10, rot: 0, altura: 0.7, ancho: 0.9, alto: 0.7 },
+    // Las frases las escribió gente que ya no podía hablar: él repite las voces (el diario del 401).
+    // En el servicio, donde el jugador busca el tablero: la palanca es lo más ruidoso de todo el piso.
+    { tipo: 'frase', id: 'frase_servicio', x: 31, y: 10.6, rot: -90, altura: 1.55, ancho: 1.05, alto: 0.27, lineas: ['EL TE OYE'] },
+    // En el baño del 401, sobre la tina: lo mismo que repite la última página del diario de Rosalba.
+    { tipo: 'frase', id: 'frase_bano401', x: 11.5, y: 1, rot: 0, altura: 1.5, ancho: 0.95, alto: 0.42, lineas: ['NO LE', 'CONTESTE'] },
   ],
   escaleras: [{ id: 'bajada', hacia: 'piso3', llegada: 'escalera', x: 1.5, y: 10.5, texto: 'Bajar al Piso 3', requiere: 'objeto:llave_escalera', cerrada: 'La cadena está dada vuelta con candado.' }],
   // Al terminar el piso, el jugador "despierta" con esta llave en la mano, en este punto de control.

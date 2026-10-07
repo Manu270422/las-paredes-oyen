@@ -81,12 +81,14 @@ export const MAPA_PISO_3: DefMapa = {
   muebles: [
     // Escalera
     { tipo: 'caja', x: 1.5, y: 8.6 },
-    // Pasillo: más desordenado que el 4.
+    // Pasillo: más desordenado que el 4, pero siempre pegado a un muro y lejos de las puertas. Una bolsa
+    // (60 cm) en medio del pasillo (130 cm) lo cierra para un jugador de 56 cm: en (20.7, 10.5) tapaba el 303
+    // y el final del pasillo, y en (14.3, 10.75), la puerta del 302.
     { tipo: 'bolsa', x: 8.5, y: 10.25 },
-    { tipo: 'bolsa', x: 14.3, y: 10.75, rot: 55 },
-    { tipo: 'bolsa', x: 20.7, y: 10.5, rot: -20 },
-    // La puerta del servicio está tapiada: una caja y una bolsa la bloquean desde el pasillo.
-    { tipo: 'caja', x: 28.8, y: 9.5, rot: 15 },
+    { tipo: 'bolsa', x: 12.2, y: 10.8 },
+    { tipo: 'bolsa', x: 23.5, y: 10.22, rot: -20 },
+    // Contra el muro que tapió el servicio: lo que quedó de la barricada.
+    { tipo: 'caja', x: 27.6, y: 10.72, rot: 15 },
     // Sala 301: muebles sin cubrir, alguien vivía aquí.
     { tipo: 'sofa', x: 9.4, y: 8.4 },
     { tipo: 'mesa', x: 7.4, y: 6.1 },

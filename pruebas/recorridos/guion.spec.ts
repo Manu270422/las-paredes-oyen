@@ -2,8 +2,8 @@
 // 1) leer la orden pone a trabajar al director (regla `directorDesde`); medir el 401 reproduce su cinta y
 //    despierta a la criatura; se camina al 403, se abre con E, se mide y su cinta revela la imitación completa;
 // 2) con la luz de vuelta, al entrar al pasillo las lámparas revientan una a una y ella aparece al fondo;
-// 3) medir el 402 dispara la secuencia final y termina en "Piso 4 completado": el perfil recuerda el piso y
-//    la dificultad, y el menú lo marca en voz baja.
+// 3) medir el 402 dispara la secuencia final y el jugador despierta en la escalera con la llave en la mano:
+//    sin pantalla de fin, el edificio a oscuras y el perfil recordando el piso y la dificultad.
 // La criatura se mantiene en las paredes durante los trayectos: aquí se prueba el guion, no su caza
 // (eso lo cubren piso4.spec y director.spec).
 import { expect, test, type Page } from '@playwright/test';
@@ -188,7 +188,8 @@ test.describe.serial('Guion del Piso 4 jugado', () => {
       // Espero a que el viaje de vuelta al punto de escalera termine.
       const limiteViaje = performance.now() + 10_000;
       while (J.estado !== 'jugando' && performance.now() < limiteViaje) await new Promise((r) => setTimeout(r, 50));
-      const lamGeneral = ctx.nivel.lamparas.filter((l) => l.circuito === 'general').every((l) => l.estado === 'apagada');
+      // Sin luz: las del circuito general quedan apagadas o rotas (la del 402 y las del pasillo ya reventaron).
+      const lamGeneral = ctx.nivel.lamparas.filter((l) => l.circuito === 'general').every((l) => l.estado === 'apagada' || l.estado === 'rota');
       const lamEmergencia = ctx.nivel.lamparas.find((l) => l.id === 'emergencia')?.estado;
       return {
         estado: J.estado,

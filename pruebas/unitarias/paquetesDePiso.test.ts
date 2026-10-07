@@ -53,6 +53,18 @@ describe.each(PISOS.map((p) => [p.id, p] as const))('Paquete %s', (_id, piso) =>
     expect(transitable(piso.menu.figura.x, piso.menu.figura.y), 'figura del menú').toBe(true);
   });
 
+  it('ningún mueble, interactuable ni lámpara tiene su centro dentro de un muro o del hueco de la escalera', () => {
+    const m = piso.mapa;
+    const rotos = [
+      ...m.muebles.map((d) => [`mueble ${d.tipo}`, d.x, d.y] as const),
+      ...m.interactuables.map((d) => [`interactuable ${d.id}`, d.x, d.y] as const),
+      ...m.lamparas.map((d) => [`lámpara ${d.id}`, d.x, d.y] as const),
+    ]
+      .filter(([, x, y]) => !transitable(x, y))
+      .map(([que, x, y]) => `${que} en (${x}, ${y})`);
+    expect(rotos).toEqual([]);
+  });
+
   it('todo objetivo se completa con una bandera distinta (no hay dos objetivos con la misma)', () => {
     const banderas = piso.objetivos.map((o) => o.bandera);
     expect(new Set(banderas).size).toBe(banderas.length);

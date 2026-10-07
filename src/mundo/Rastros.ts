@@ -1,6 +1,6 @@
 // Aquí pongo en el mundo los RASTROS de un piso a partir de sus DATOS: sangre vieja en el piso o en un muro,
-// rayas de lápiz, un conteo rayado. No brillan ni se marcan en la interfaz: casi no se ven sin linterna, y
-// el jugador los descubre solo. Cada uno cuenta un pedazo de la historia sin una palabra en pantalla.
+// rayas de lápiz, un conteo rayado, una frase escrita con el dedo, la humedad de un techo. No brillan ni se
+// marcan en la interfaz: casi no se ven sin linterna, y el jugador los descubre solo.
 //
 // También vigilo la primera vez que el jugador VE cada uno (de cerca, de frente, sin muros en medio y con
 // luz) para la telemetría: un rastro que nadie encuentra no está contando nada, y eso lo quiero saber.
@@ -17,9 +17,11 @@ import type { ConsultaPuertaCerrada, Rejilla } from './Rejilla';
 const SEPARACION = 0.004;
 /**
  * Qué tan liso es cada rastro bajo la linterna. La sangre seca de un charco sobre madera todavía devuelve
- * un poco de brillo (así la linterna lo "descubre" al pasar); el lápiz brilla apenas; el yeso rayado, nada.
+ * un poco de brillo (así la linterna lo "descubre" al pasar); el lápiz brilla apenas; el yeso rayado y el techo
+ * empapado, nada. Una frase casi nada: con brillo, la linterna (que va junto a los ojos) la aclaraba más que la
+ * pared y parecía pintura pálida; mate, queda más oscura que el muro, como la sangre seca.
  */
-const RUGOSIDAD: Record<TipoRastro, number> = { charco: 0.42, mano: 0.62, estatura: 0.72, conteo: 0.95 };
+const RUGOSIDAD: Record<TipoRastro, number> = { charco: 0.42, mano: 0.62, estatura: 0.72, conteo: 0.95, frase: 0.82, humedad: 0.92 };
 
 /** Lo que necesito saber del detalle de las texturas del juego (del perfil de calidad). */
 export interface DetalleTexturas {
@@ -27,14 +29,19 @@ export interface DetalleTexturas {
   readonly anisotropia: number;
 }
 
-/** ¿El rastro va en el piso? (los demás van en un muro). */
+/** ¿El rastro va en el piso? */
 export function rastroEnPiso(def: DefRastro): boolean {
   return def.tipo === 'charco';
 }
 
+/** ¿El rastro va en el techo? (los que no van ni en el piso ni en el techo van en un muro). */
+export function rastroEnTecho(def: DefRastro): boolean {
+  return def.tipo === 'humedad';
+}
+
 /**
  * Pongo un rastro en su sitio. Se llama "rastro:<id>". En un muro se pega a la cara como un rótulo; en el
- * piso queda acostado, con la parte de ARRIBA del dibujo hacia donde dice `rot`.
+ * piso queda acostado y en el techo, boca abajo, los dos con la parte de ARRIBA del dibujo hacia donde dice `rot`.
  */
 export function ponerRastro(def: DefRastro, detalle: DetalleTexturas): Mesh {
   // Con texturas de 256 (gama baja) pinto a la mitad de resolución: la cuarta parte del trabajo al cargar.
@@ -61,6 +68,10 @@ export function ponerRastro(def: DefRastro, detalle: DetalleTexturas): Mesh {
     // Acostado (mirando arriba) y girado: la parte de arriba del dibujo apunta a (sin rot, cos rot).
     malla.rotation.set(-Math.PI / 2, angulo + Math.PI, 0, 'YXZ');
     malla.position.set(def.x * C, SEPARACION, def.y * C);
+  } else if (rastroEnTecho(def)) {
+    // Boca abajo, mirando al que está debajo; la parte de arriba del dibujo también apunta a (sin rot, cos rot).
+    malla.rotation.set(Math.PI / 2, angulo, 0, 'YXZ');
+    malla.position.set(def.x * C, CONFIG.alturaTecho - SEPARACION, def.y * C);
   } else {
     malla.rotation.y = angulo;
     malla.position.set(def.x * C + Math.sin(angulo) * SEPARACION, alturaDe(def), def.y * C + Math.cos(angulo) * SEPARACION);
@@ -68,15 +79,18 @@ export function ponerRastro(def: DefRastro, detalle: DetalleTexturas): Mesh {
   return malla;
 }
 
-/** La altura del centro de un rastro de muro (los de piso quedan a ras del suelo). */
+/** La altura del centro de un rastro: los de piso, a ras del suelo; los de techo, pegados a él. */
 function alturaDe(def: DefRastro): number {
-  return def.tipo === 'charco' ? 0 : def.altura;
+  if (def.tipo === 'charco') return 0;
+  if (def.tipo === 'humedad') return CONFIG.alturaTecho;
+  return def.altura;
 }
 
 /** El punto que miro para decidir si el jugador vio un rastro: su centro, un poco fuera de la superficie. */
 export function puntoDelRastro(def: DefRastro): Vector3 {
   const C = CONFIG.celda;
   if (rastroEnPiso(def)) return new Vector3(def.x * C, 0.05, def.y * C);
+  if (rastroEnTecho(def)) return new Vector3(def.x * C, CONFIG.alturaTecho - 0.05, def.y * C);
   const angulo = def.rot * GRADOS;
   return new Vector3(def.x * C + Math.sin(angulo) * 0.05, alturaDe(def), def.y * C + Math.cos(angulo) * 0.05);
 }

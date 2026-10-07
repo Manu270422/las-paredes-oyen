@@ -1,15 +1,18 @@
 // Aquí pinto, píxel a píxel, los RASTROS de lo que pasó en un piso: una mancha vieja que alguien quiso
 // limpiar, una mano que bajó apoyándose en la pared, las rayas de lápiz de la estatura de un niño, un conteo
-// rayado en la pintura. Es lógica pura (un arreglo RGBA, sin lienzo ni navegador): así la pruebo en Node.
+// rayado en la pintura, una frase escrita con el dedo, la humedad que baja por un techo. Es lógica pura (un
+// arreglo RGBA, sin lienzo ni navegador): así la pruebo en Node. Las letras de una frase las traza quien
+// tenga un lienzo, y yo las convierto en sangre.
 //
 // Las reglas que me puse:
 // - Todo es VIEJO: café oscuro, casi negro, nada de rojo brillante. Sin linterna casi no se distingue.
-// - Nada de mensajes escritos con sangre: un edificio de Bucaramanga de los años 60 no habla así.
+// - Frases, pocas y con razón: las escribió gente que ya no podía hablar (él repite las voces, como cuenta el
+//   diario del 401). Nunca un mensaje de la criatura, y nunca una frase solo para asustar.
 // - El borde del cuadro siempre queda transparente (alfa 0): nunca se ve el rectángulo del calco.
 //
 // Mido todo en METROS sobre la superficie (x a la derecha, y hacia abajo desde la esquina de arriba a la
 // izquierda del cuadro) y lo paso a píxeles al final: así un rastro mide lo mismo con cualquier resolución.
-import type { DefCharco, DefConteo, DefEstatura, DefMano, DefRastro, TipoRastro } from '../../pisos/TiposPiso';
+import type { DefCharco, DefConteo, DefEstatura, DefFrase, DefHumedad, DefMano, DefRastro, TipoRastro } from '../../pisos/TiposPiso';
 import { Ruido2D } from '../../utilidades/Ruido';
 
 type Rgb = readonly [number, number, number];
@@ -17,6 +20,8 @@ type Rgb = readonly [number, number, number];
 /** La sangre seca de hace años: café casi negro. El borde de una mancha seca es más oscuro que el centro. */
 const SANGRE: Rgb = [58, 25, 19];
 const SANGRE_BORDE: Rgb = [30, 13, 10];
+/** Lo que tiñe el yeso de un techo empapado: un rojo sucio, apagado (agua con sangre), nada que brille. */
+const HUMEDAD: Rgb = [112, 40, 34];
 /** Lo que queda donde alguien restregó con un trapo: una película sucia, entre café y rosa. */
 const PELICULA: Rgb = [88, 60, 48];
 /** El lápiz de las rayas de estatura (y de lo que le escribieron al lado). */
@@ -28,7 +33,7 @@ const YESO: Rgb = [200, 193, 176];
 const SOMBRA_SURCO: Rgb = [40, 36, 30];
 
 /** Píxeles por metro de cada rastro: lo pequeño y con trazos finos (lápiz, rayas) necesita más. */
-const PX_POR_METRO: Record<TipoRastro, number> = { charco: 320, mano: 512, estatura: 1024, conteo: 1024 };
+const PX_POR_METRO: Record<TipoRastro, number> = { charco: 320, mano: 512, estatura: 1024, conteo: 1024, frase: 512, humedad: 320 };
 const LADO_MAXIMO = 1024;
 /** El alto de lo escrito a lápiz junto a las rayas de estatura (2.6 cm: lo que escribe un adulto en la pared). */
 export const ALTO_LETRA_ESTATURA = 0.026;
@@ -42,6 +47,42 @@ export interface PinturaRastro {
   datos: Uint8ClampedArray;
   /** Las letras a lápiz (solo la estatura): el texto, su punto de inicio a media altura y su alto, en píxeles. */
   letras: Array<{ texto: string; x: number; y: number; alto: number }>;
+}
+
+/** Un renglón de una frase, listo para trazar (todo en píxeles, menos la inclinación, en radianes). */
+export interface RenglonFrase {
+  readonly texto: string;
+  /** El centro del renglón y su línea base. */
+  readonly x: number;
+  readonly y: number;
+  /** El alto de las mayúsculas, el grosor del dedo y el ancho que no puede pasar. */
+  readonly alto: number;
+  readonly grosor: number;
+  readonly anchoMax: number;
+  readonly inclinacion: number;
+  /** Para torcer cada letra a su manera (siempre igual para la misma frase). */
+  readonly semilla: number;
+}
+
+/** Quien sabe dibujar letras (el navegador): me devuelve la cobertura de cada píxel (0..255), fila por fila. */
+export type TrazarLetras = (renglones: readonly RenglonFrase[], ancho: number, alto: number) => Uint8ClampedArray;
+
+/**
+ * Cómo se escribe una frase en la pared, en metros: los márgenes (abajo hay más, para que chorree), el espacio
+ * entre renglones y cuánto ocupa de ancho cada letra respecto a su alto (mayúsculas de palo, con el espacio).
+ */
+export const FRASE = { margen: 0.04, margenAbajo: 0.11, entreRenglones: 0.045, anchoPorLetra: 0.85 } as const;
+
+/** El alto de las mayúsculas de una frase: lo que deja su cuadro después de márgenes y renglones. */
+export function letraFrase(def: DefFrase): number {
+  const n = def.lineas.length;
+  return (def.alto - FRASE.margen - FRASE.margenAbajo - FRASE.entreRenglones * (n - 1)) / n;
+}
+
+/** Cuánto ancho necesita una frase para que sus letras no se aprieten (para validar los datos). */
+export function anchoNecesarioFrase(def: DefFrase): number {
+  const mas = Math.max(...def.lineas.map((l) => l.length));
+  return 2 * FRASE.margen + mas * letraFrase(def) * FRASE.anchoPorLetra;
 }
 
 const limitar01 = (x: number) => Math.min(1, Math.max(0, x));
@@ -141,8 +182,9 @@ class Lamina {
 /**
  * Pinto un rastro según su tipo. El tamaño en píxeles sale de su tamaño en metros; `escala` baja la
  * resolución en los equipos modestos (0.5 = la mitad de píxeles por metro, una cuarta parte del trabajo).
+ * Una frase necesita `trazar`: alguien que sepa dibujar las letras.
  */
-export function pintarRastro(def: DefRastro, escala = 1): PinturaRastro {
+export function pintarRastro(def: DefRastro, escala = 1, trazar?: TrazarLetras): PinturaRastro {
   let k = PX_POR_METRO[def.tipo] * escala;
   // Si un lado pasa del máximo, bajo la resolución de todo el rastro (no lo deformo).
   k = Math.min(k, LADO_MAXIMO / Math.max(def.ancho, def.alto));
@@ -161,6 +203,13 @@ export function pintarRastro(def: DefRastro, escala = 1): PinturaRastro {
       break;
     case 'conteo':
       pintarConteo(lamina, ruido, def);
+      break;
+    case 'frase':
+      if (!trazar) throw new Error(`La frase "${def.id}" necesita quien trace sus letras.`);
+      pintarFrase(lamina, ruido, def, trazar);
+      break;
+    case 'humedad':
+      pintarHumedad(lamina, ruido, def);
       break;
   }
   lamina.desvanecerBorde();
@@ -502,5 +551,174 @@ function pintarConteo(l: Lamina, r: Ruido2D, def: DefConteo): void {
       const fin = ultima ? 0.45 : 1;
       surco(x0 - 0.004 + j(1), y0 + alto * 0.8 + j(2), x0 - 0.004 + (3 * paso + 0.008) * fin + j(3), y0 + alto * (0.8 - 0.6 * fin) + j(4), 1, i);
     }
+  }
+}
+
+/**
+ * Una frase escrita con el dedo: el dedo se moja, escribe hasta que se le acaba la sangre (el trazo se va
+ * secando y deja las vetas de la piel) y se vuelve a mojar al empezar cada palabra. Donde quedó más cargado,
+ * escurrió hacia abajo. Las letras me las traza `trazar`; yo decido dónde va cada renglón y lo vuelvo sangre.
+ */
+function pintarFrase(l: Lamina, r: Ruido2D, def: DefFrase, trazar: TrazarLetras): void {
+  const W = def.ancho;
+  const letra = letraFrase(def);
+  const grosor = Math.min(0.022, letra * 0.17);
+  const anchoMax = W - 2 * FRASE.margen;
+  // Escrito a pulso en una pared: cada renglón se corre y se tuerce un poco.
+  const renglones = def.lineas.map((texto, i) => {
+    const base = FRASE.margen + letra * (i + 1) + FRASE.entreRenglones * i;
+    const centro = W / 2 + (r.valor(i * 7.1, 3.3) - 0.5) * 0.04;
+    const largo = Math.min(anchoMax, texto.length * letra * FRASE.anchoPorLetra);
+    // Dónde empieza y termina cada palabra a lo largo del renglón: al empezar, el dedo se volvió a mojar.
+    const palabras: Array<{ desde: number; hasta: number }> = [];
+    let letraInicial = 0;
+    for (const p of texto.split(' ')) {
+      const desde = centro - largo / 2 + (largo * letraInicial) / texto.length;
+      palabras.push({ desde, hasta: desde + (largo * p.length) / texto.length });
+      letraInicial += p.length + 1;
+    }
+    return { texto, base, centro, largo, palabras, inclinacion: (r.valor(i * 4.3, 8.8) - 0.5) * 0.06 };
+  });
+  const semilla = semillaRastro(def.id);
+  const mascara = trazar(
+    renglones.map((g, i) => ({
+      texto: g.texto,
+      x: g.centro * l.k,
+      y: g.base * l.k,
+      alto: letra * l.k,
+      grosor: grosor * l.k,
+      anchoMax: anchoMax * l.k,
+      inclinacion: g.inclinacion,
+      semilla: semilla + i * 101,
+    })),
+    l.ancho,
+    l.alto,
+  );
+  if (mascara.length !== l.ancho * l.alto) throw new Error(`Las letras de "${def.id}" no miden lo que su cuadro.`);
+
+  /** Cuánta sangre llevaba el dedo en un punto: 1 recién mojado, cerca de 0.55 al final de una palabra. */
+  const presion = (mx: number, my: number) => {
+    let g = renglones[0];
+    for (const otro of renglones) if (Math.abs(my - (otro.base - letra / 2)) < Math.abs(my - (g.base - letra / 2))) g = otro;
+    const p = g.palabras.find((w) => mx <= w.hasta + letra * 0.3) ?? g.palabras[g.palabras.length - 1];
+    const t = limitar01((mx - p.desde) / Math.max(letra, p.hasta - p.desde));
+    return limitar01(1 - 0.45 * Math.pow(t, 1.5) + (r.valor(mx * 20, my * 20) - 0.5) * 0.1);
+  };
+
+  // El dedo no traza limpio: leo las letras con el espacio torcido unos milímetros, así el borde tiembla y el
+  // trazo engorda donde apretó más. Así no parecen impresas.
+  const desvio = grosor * l.k * 0.35;
+  const cobertura = (x: number, y: number, mx: number, my: number) => {
+    const sx = Math.round(x + (r.fractal(mx * 18 + 7, my * 18, 2, 256) - 0.5) * 2 * desvio);
+    const sy = Math.round(y + (r.fractal(mx * 18, my * 18 + 13, 2, 256) - 0.5) * 2 * desvio);
+    if (sx < 0 || sy < 0 || sx >= l.ancho || sy >= l.alto) return 0;
+    return mascara[sy * l.ancho + sx] / 255;
+  };
+
+  // 1. Las letras: donde el dedo iba seco, la sangre deja vetas y huecos (las crestas de la piel). Siempre más
+  //    oscuras que la pared: la sangre seca no aclara nada.
+  l.cadaPixel((x, y, mx, my) => {
+    const m = cobertura(x, y, mx, my);
+    if (m <= 0.02) return;
+    const p = presion(mx, my);
+    const seco = 1 - p;
+    const cubre = suave(seco * 0.6 - 0.1, seco * 0.6 + 0.1, r.fractal(mx * 55, my * 55, 2, 256));
+    const oscuro = suave(0.35, 0.8, r.valor(mx * 90, my * 90));
+    const color = mezclar(mezclar(SANGRE, SANGRE_BORDE, 0.2 + 0.45 * oscuro), PELICULA, seco * 0.12);
+    l.sobre(x, y, color, m * cubre * (0.8 + 0.18 * p));
+  });
+
+  // 2. Los chorreones: desde el borde de abajo de los trazos más cargados, derecho hacia abajo.
+  const paso = 0.03;
+  renglones.forEach((g, i) => {
+    for (let s = g.centro - g.largo / 2; s <= g.centro + g.largo / 2; s += paso) {
+      const j = Math.round(s / paso);
+      const mx = s + (r.valor(j * 3.7, i * 9.1 + 2) - 0.5) * paso;
+      const carga = presion(mx, g.base - letra / 2);
+      if (r.valor(j * 2.3 + 0.5, i * 5.7 + 11) > 0.22 + 0.3 * carga) continue;
+      // El punto más bajo del trazo en esa columna, dentro del renglón.
+      const px = Math.round(mx * l.k);
+      if (px < 0 || px >= l.ancho) continue;
+      let fondo = -1;
+      const yDesde = Math.max(0, Math.floor((g.base - letra * 0.6) * l.k));
+      const yHasta = Math.min(l.alto - 1, Math.ceil((g.base + grosor * 1.5) * l.k));
+      for (let py = yDesde; py <= yHasta; py++) if (mascara[py * l.ancho + px] > 128) fondo = py;
+      if (fondo < 0) continue;
+      const inicio = (fondo + 0.5) / l.k - grosor * 0.25;
+      const largo = Math.min((0.02 + 0.08 * r.valor(j * 6.1, i * 3.3 + 7)) * (0.5 + 0.5 * carga), def.alto - 0.03 - inicio);
+      if (largo <= 0.005) continue;
+      const fin = inicio + largo;
+      const xFin = mx + (r.valor(j * 1.9, i * 7.7 + 3) - 0.5) * 0.004;
+      const ancho = grosor * (0.22 + 0.12 * r.valor(j * 4.4, i + 1));
+      l.trazo(mx, inicio, xFin, fin, ancho, SANGRE, (t) => 0.82 - 0.2 * t);
+      // La cabeza del chorreón: ahí se juntó lo que bajaba antes de secarse.
+      const cabeza = ancho * 0.85;
+      l.cadaPixelCerca(xFin, fin, cabeza * 1.5, (x, y, qx, qy) => {
+        const d = distancia(qx - xFin, (qy - fin) * 0.85) / cabeza;
+        if (d < 1.2) l.sobre(x, y, SANGRE_BORDE, (1 - suave(0.7, 1.05, d)) * 0.85);
+      });
+    }
+  });
+}
+
+/**
+ * Humedad roja en un techo: algo empapó el entrepiso y se filtró. El yeso se manchó en anillos (cada vez que
+ * se secó quedó un borde más oscuro), con el centro más cargado, una grieta por donde baja y unas gotas
+ * colgando, a punto de caer. Se corrió hacia ARRIBA del dibujo: por donde siguió lo que pasó en el piso de arriba.
+ */
+function pintarHumedad(l: Lamina, r: Ruido2D, def: DefHumedad): void {
+  const W = def.ancho;
+  const H = def.alto;
+  const cx = W * 0.5;
+  const cy = H * 0.58;
+  const radio = Math.min(W, H) * 0.36;
+
+  l.cadaPixel((x, y, mx, my) => {
+    const u = mx / W;
+    const v = my / H;
+    const n1 = r.fractal(u * 4, v * 4, 3, 256);
+    const n2 = r.fractal(u * 4 + 40, v * 4 + 23, 3, 256);
+    // El contorno irregular, estirado hacia arriba del dibujo (hacia donde se corrió).
+    const qx = mx + (n1 - 0.5) * radio * 0.7;
+    const qy = my + (n2 - 0.5) * radio * 0.7;
+    const d = distancia((qx - cx) / radio, (qy - cy) / (radio * (qy < cy ? 1.45 : 1)));
+    if (d > 1.05) return;
+    const cuerpo = 1 - suave(0.9, 1.0, d);
+    // Los anillos de marea: cada secado dejó un borde más oscuro. El de afuera es el borde de la mancha; los de
+    // adentro se corren por su cuenta y se cortan a trechos (parejos y concéntricos parecían una diana).
+    let anillos = 0;
+    [0.97, 0.72, 0.48].forEach((frente, i) => {
+      const corrido = (r.fractal(u * 6 + i * 17, v * 6 + i * 29, 2, 256) - 0.5) * (i === 0 ? 0.04 : 0.24);
+      const entero = i === 0 ? 1 : suave(0.32, 0.56, r.fractal(u * 3 + i * 41, v * 3 + i * 7, 2, 256));
+      anillos = Math.max(anillos, (1 - suave(0, 0.045, Math.abs(d - frente + corrido))) * entero);
+    });
+    const centro = 1 - suave(0, 0.55, d);
+    const grano = 0.85 + 0.3 * r.valor(x * 0.5, y * 0.5);
+    const color = mezclar(mezclar(HUMEDAD, SANGRE, centro * 0.8), SANGRE_BORDE, anillos * 0.6);
+    l.sobre(x, y, escalar(color, grano), Math.min(0.92, cuerpo * (0.22 + 0.2 * n2 + 0.3 * centro + anillos * 0.35)));
+  });
+
+  // La grieta por donde se filtró: una línea quebrada que cruza el centro.
+  const grieta = Array.from({ length: 9 }, (_, i) => {
+    const t = i / 8;
+    return [cx - W * 0.32 + W * 0.64 * t, cy + (t - 0.5) * H * 0.18 + (r.valor(i * 2.3, 9.9) - 0.5) * 0.05] as const;
+  });
+  for (let i = 0; i < grieta.length - 1; i++) {
+    const [ax, ay] = grieta[i];
+    const [bx, by] = grieta[i + 1];
+    l.trazo(ax, ay, bx, by, 0.0025, SANGRE_BORDE, (t) => 0.55 * suave(0.2, 0.6, r.valor((ax + (bx - ax) * t) * 80, 4.4)));
+  }
+
+  // Las gotas colgando, donde más se cargó: cerca del centro.
+  for (let i = 0; i < 5; i++) {
+    const ang = r.valor(i * 5.3, 2.7) * Math.PI * 2;
+    const dist = radio * 0.45 * r.valor(i * 3.9, 6.1);
+    const gx = cx + Math.cos(ang) * dist;
+    const gy = cy + Math.sin(ang) * dist;
+    const g = 0.007 + 0.009 * r.valor(i * 8.1, 1.7);
+    l.cadaPixelCerca(gx, gy, g * 1.6, (x, y, mx, my) => {
+      const dg = distancia(mx - gx, my - gy) / g;
+      if (dg < 1.5) l.sobre(x, y, SANGRE_BORDE, (1 - suave(0.7, 1.0, dg)) * 0.9 + (1 - suave(1.0, 1.5, dg)) * 0.15);
+    });
   }
 }
