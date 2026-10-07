@@ -14,7 +14,7 @@ test('sin telemetría, la pantalla final no muestra "Exportar registro de la pru
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');
   await page.waitForTimeout(1000);
   // Es la pantalla final, abierta por código: aquí solo se prueba cómo se dibuja.
-  await page.evaluate(() => (window.__juego as unknown as { terminarDemo(): void }).terminarDemo());
+  await page.evaluate(() => (window.__juego as unknown as { accionesGuion: { terminarDemo(): void } }).accionesGuion.terminarDemo());
   await expect(page.locator('.fin__estadisticas')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Exportar registro de la prueba' })).toBeHidden();
   await expect(page.getByRole('button', { name: 'Volver al menú' })).toBeVisible();
@@ -41,7 +41,7 @@ test('con ?telemetria=1, el botón de exportar sí aparece', async ({ page }) =>
   await page.getByRole('button', { name: 'Empezar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');
   await page.waitForTimeout(1000);
-  await page.evaluate(() => (window.__juego as unknown as { terminarDemo(): void }).terminarDemo());
+  await page.evaluate(() => (window.__juego as unknown as { accionesGuion: { terminarDemo(): void } }).accionesGuion.terminarDemo());
   await expect(page.getByRole('button', { name: 'Exportar registro de la prueba' })).toBeVisible();
 });
 

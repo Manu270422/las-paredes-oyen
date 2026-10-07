@@ -175,6 +175,13 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
 
   Del juego solo pide lo suyo con `SalidaViaje` (su estado, `cambiarNivel`, `ponerEnPunto`, guardar), igual que
   `SecuenciaMuerte` con `SalidaMuerte`. Lo usa también el despertar tras el final del 402, sin pasos.
+- `nucleo/FinDePiso.ts`: el fin de un piso.
+  - Despertar: el piso queda completado y la partida sigue.
+  - Terminar la demo: la pantalla final; el juego deja de correr.
+
+  Los guiones lo piden con `AccionesGuion`.
+- `Juego.ts` tiene un tope de 700 líneas (A5), vigilado por `topeComplejidad.test.ts`. Lo que no cabe va a su propio
+  archivo; por ejemplo, `ui/hud/AlimentarHUD.ts` pasa el estado del juego al HUD en cada fotograma.
 - `Juego.cambiarNivel` suelta el nivel viejo (`Nivel.destruir`: geometrías y texturas propias, no las de la biblioteca
   compartida) y arma el nuevo. Lo comparten el viaje y cargar una partida guardada en otro piso.
 

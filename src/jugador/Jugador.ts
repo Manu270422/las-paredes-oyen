@@ -9,7 +9,7 @@ import type { ContextoJuego } from '../nucleo/ContextoJuego';
 import type { AcabadoPiso } from '../mundo/datos/TiposMapa';
 import type { IdSonido } from '../audio/TiposAudio';
 import { resolverCirculo } from '../mundo/Colisiones';
-import { amortiguar, GRADOS, limitar } from '../utilidades/Matematicas';
+import { amortiguar, GRADOS, limitar, normalizarAngulo } from '../utilidades/Matematicas';
 import { EfectosCamara } from './EfectosCamara';
 import { Respiracion } from './Respiracion';
 import { Corazon } from './Corazon';
@@ -48,6 +48,16 @@ export class Jugador {
   constructor(aspecto: number) {
     this.camara = new PerspectiveCamera(72, aspecto, 0.05, 60);
     this.camara.rotation.order = 'YXZ';
+  }
+
+  /** Hacia dónde queda un punto del mundo respecto a donde miro, como flecha (para los subtítulos con dirección). */
+  direccionHacia(x: number, z: number): string {
+    const angulo = Math.atan2(-(x - this.posicion.x), -(z - this.posicion.z));
+    const relativo = normalizarAngulo(angulo - this.yaw);
+    const abs = Math.abs(relativo);
+    if (abs < Math.PI / 4) return '↑';
+    if (abs > (3 * Math.PI) / 4) return '↓';
+    return relativo > 0 ? '←' : '→';
   }
 
   /** Coloco al jugador en un punto (en celdas) mirando hacia un ángulo (grados). */

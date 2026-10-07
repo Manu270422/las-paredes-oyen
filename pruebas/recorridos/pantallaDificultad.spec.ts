@@ -11,7 +11,7 @@ import { abrirAjustesEnPausa, abrirEleccion, elegirYEmpezar, esperarJugando, lee
 
 interface JuegoInterno {
   dificultadPartida: { actual: string };
-  terminarDemo(): void;
+  accionesGuion: { terminarDemo(): void };
 }
 
 const actual = (page: Page) => page.evaluate(() => (window.__juego as unknown as JuegoInterno).dificultadPartida.actual);
@@ -85,7 +85,7 @@ test('elegir: líneas claras y Pesadilla bloqueada; Difícil sin pistas ni aire;
   expect(await indicadorDelAire(page), 'en Normal vuelve el indicador del aire').toBe(true);
 
   // 4. El final dice la verdad, sin castigo: empezó en Difícil y se jugó en Normal; el perfil cuenta Normal.
-  await page.evaluate(() => (window.__juego as unknown as JuegoInterno).terminarDemo());
+  await page.evaluate(() => (window.__juego as unknown as JuegoInterno).accionesGuion.terminarDemo());
   await expect(page.locator('.fin__estadisticas')).toContainText('Difícil → Normal');
   const perfil = await page.evaluate((p) => JSON.parse(localStorage.getItem(p + 'perfil') ?? 'null'), PREFIJO);
   expect(perfil.pisosCompletados).toEqual({ piso4: 'normal' });

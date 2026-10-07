@@ -16,7 +16,7 @@ import { crearCookieLinterna } from '../render/texturas/CookieLinterna';
 import { MotorAudio } from '../audio/MotorAudio';
 import { AmbienteSonoro } from '../audio/AmbienteSonoro';
 import { Nivel } from '../mundo/Nivel';
-import { PISO_INICIAL, pisoPorId, siguienteDe } from '../pisos/catalogo';
+import { PISO_INICIAL, pisoPorId } from '../pisos/catalogo';
 import type { GuionPiso, PaquetePiso } from '../pisos/TiposPiso';
 import { Jugador } from '../jugador/Jugador';
 import { Linterna } from '../jugador/Linterna';
@@ -31,6 +31,7 @@ import { DirectorTerror } from '../director/DirectorTerror';
 import { SistemaGuardado, type DatosPartida } from '../guardado/SistemaGuardado';
 import { Perfil } from '../guardado/Perfil';
 import { GestorUI } from '../ui/GestorUI';
+import { alimentarHUD } from '../ui/hud/AlimentarHUD';
 import { Telemetria } from '../telemetria/Telemetria';
 import { aplicarParametroTelemetria } from '../telemetria/ParametroUrl';
 import { BusEventos } from './BusEventos';
@@ -39,11 +40,12 @@ import { Programador } from './Programador';
 import { BucleJuego } from './BucleJuego';
 import { SecuenciaMuerte, type SalidaMuerte } from './SecuenciaMuerte';
 import { ViajeEscalera } from './ViajeEscalera';
+import { FinDePiso } from './FinDePiso';
 import { FondoMenu } from './FondoMenu';
 import { DificultadPartida } from './DificultadPartida';
 import { mostrarSusto } from './Susto';
 import type { ContextoJuego } from './ContextoJuego';
-import { amortiguar, normalizarAngulo } from '../utilidades/Matematicas';
+import { amortiguar } from '../utilidades/Matematicas';
 
 /** 'viaje': voy por una escalera a otro piso (a oscuras, unos segundos, sin poder moverme). */
 type EstadoApp = 'cargando' | 'inicio' | 'menu' | 'jugando' | 'pausa' | 'documento' | 'muerte' | 'fin' | 'viaje';
@@ -103,13 +105,23 @@ export class Juego {
       if (document.hidden || (this.entrada.modo === 'teclado' && !this.entrada.teclado.bloqueado)) this.pausar();
     },
   });
+  /** El fin de un piso (despertar o la pantalla final): vive en FinDePiso; aquí, lo que es del juego. */
+  private readonly finDePiso = new FinDePiso(
+    { perfil: this.perfilGuardado, dificultad: this.dificultadPartida, guardado: this.guardado, telemetria: this.telemetria, viaje: this.viajeEscalera },
+    {
+      tiempoJugado: () => this.tiempoJugado,
+      terminar: () => (this.estado = 'fin'),
+      mostrarFin: (datos) => this.ui.mostrarFin(datos),
+      fundir: (aNegro, segundos) => this.ui.hud.fundir(aNegro, segundos),
+    },
+  );
   /** Lo que el guion de cualquier piso le puede pedir al juego. */
   private readonly accionesGuion: AccionesGuion = {
     mostrarSusto: () => mostrarSusto(this.ctx, 'final'),
     fundido: (aNegro, segundos) => this.ui.hud.fundir(aNegro, segundos),
     fijarSoloMirar: (activo) => (this.soloMirar = activo),
-    terminarDemo: () => this.terminarDemo(),
-    despertar: () => this.despertar(),
+    terminarDemo: () => this.finDePiso.terminarDemo(this.ctx),
+    despertar: () => this.finDePiso.despertar(this.ctx),
   };
   private readonly lienzo: HTMLCanvasElement;
   private readonly raizUI: HTMLElement;
@@ -191,7 +203,7 @@ export class Juego {
         },
         telemetria: this.telemetria.puente,
       },
-      (x, z) => this.direccionRelativa(x, z),
+      (x, z) => this.jugador.direccionHacia(x, z),
     );
     this.ui.mostrarCarga();
     this.redimensionar();
@@ -552,40 +564,6 @@ export class Juego {
     if (datos) this.guardado.guardar({ ...datos, estadisticas: this.memoria.estadisticas });
   }
 
-  private despertar(): void {
-    const cfg = this.piso.despertar;
-    if (!cfg) return;
-    // El piso queda registrado como completado (el perfil lo recuerda aunque no haya pantalla de fin).
-    this.perfilGuardado.registrarFinal(this.piso.id, this.dificultadPartida.masBaja, this.tiempoJugado, this.memoria.muertes);
-    // La llave está en la mano: el jugador no la recogió conscientemente.
-    this.progreso.agregarObjeto(cfg.objeto);
-    this.bus.emit('subtitulo', { texto: 'Tienes una llave en la mano que no recuerdas haber tomado.', duracion: 5 });
-    // Despierta en el punto que el paquete indica, a oscuras todavía (el viaje funde desde negro).
-    this.viajeEscalera.viajar(this.piso, cfg.punto, this.ctx, true);
-  }
-
-  private terminarDemo(): void {
-    this.bus.emit('fin-demo', { tiempo: this.tiempoJugado });
-    // Cierro la sesión de prueba ANTES de la pantalla final, para poder exportarla desde ahí.
-    this.telemetria.cerrarSesion('fin');
-    this.estado = 'fin';
-    this.entrada.fijarEnJuego(false);
-    this.audio.detenerTodo();
-    this.ambiente.olvidarFuentes();
-    this.guardado.borrar();
-    this.ui.mostrarFin({
-      piso: this.piso.nombre,
-      dificultad: this.dificultadPartida.texto,
-      siguiente: siguienteDe(this.piso),
-      tiempo: this.tiempoJugado,
-      cambiosMundo: this.memoria.cambiosMundo,
-      persecuciones: this.memoria.persecuciones,
-      muertes: this.memoria.muertes,
-      marcas: this.perfilGuardado.registrarFinal(this.piso.id, this.dificultadPartida.masBaja, this.tiempoJugado, this.memoria.muertes),
-    });
-    this.ui.hud.fundir(false, 0.5);
-  }
-
   // ---------------------------------------------------------------------------
   // BUCLE PRINCIPAL
   // ---------------------------------------------------------------------------
@@ -691,24 +669,7 @@ export class Juego {
       return;
     }
 
-    // HUD.
-    const enfocado = this.interaccion.enfocado;
-    const texto = enfocado ? enfocado.texto(ctx) : null;
-    this.entrada.tactil.fijarInteraccionDisponible(texto !== null, texto ?? '');
-    this.entrada.tactil.fijarEstadoBoton('agacharse', this.jugador.agachado);
-    this.entrada.tactil.fijarEstadoBoton('linterna', this.linterna.encendida);
-    this.ui.hud.actualizar({
-      interaccion: texto,
-      aire: this.jugador.respiracion.aire,
-      aguantando: this.jugador.respiracion.aguantando,
-      energia: this.jugador.estamina,
-      bateria: this.linterna.bateria,
-      linterna: this.linterna.encendida,
-      medicion: this.grabadora.midiendo ? this.grabadora.progresoMedicion : null,
-      dtReal: this.bucle.dtReal,
-      escalaResolucion: this.renderizador.resolucionDinamica,
-      ratonLibre: this.entrada.modo === 'teclado' && !this.entrada.teclado.bloqueado,
-    });
+    alimentarHUD(this.ui.hud, ctx, this.interaccion.enfocado, this.bucle.dtReal);
   }
 
   /** Paso el estado del jugador al postprocesado. */
@@ -722,16 +683,5 @@ export class Juego {
     this.interferencia = Math.max(0, this.interferencia - dt * 1.6);
     const cercania = this.entidad?.fisica ? Math.max(0, 1 - this.entidad.distanciaAlJugador(this.ctx) / 8) * 0.25 : 0;
     efectos.interferencia = Math.min(1, this.interferencia + (enJuego ? cercania : 0));
-  }
-
-  /** Traduzco una posición del mundo a una flecha relativa a donde miro (para subtítulos). */
-  private direccionRelativa(x: number, z: number): string {
-    const j = this.jugador.posicion;
-    const angulo = Math.atan2(-(x - j.x), -(z - j.z));
-    const relativo = normalizarAngulo(angulo - this.jugador.yaw);
-    const abs = Math.abs(relativo);
-    if (abs < Math.PI / 4) return '↑';
-    if (abs > (3 * Math.PI) / 4) return '↓';
-    return relativo > 0 ? '←' : '→';
   }
 }
