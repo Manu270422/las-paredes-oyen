@@ -1,6 +1,7 @@
 // Aquí está el menú de pausa: muestra el objetivo actual (para quien
 // retoma la partida después de un rato) y las opciones.
 import { crearBoton } from '../componentes/Boton';
+import type { PuenteTelemetria } from '../PuenteTelemetria';
 import { Pantalla } from './Pantalla';
 
 export interface AccionesPausa {
@@ -12,11 +13,14 @@ export interface AccionesPausa {
   /** Si "volver al punto de control" es en realidad empezar de cero (Pesadilla). */
   reinicioDesdeCero(): boolean;
   salirAlMenu(): void;
+  /** Para los probadores: exportar el registro desde aquí, sin buscar en Ajustes ni esperar un final. */
+  telemetria: PuenteTelemetria;
 }
 
 export class MenuPausa extends Pantalla {
   private readonly objetivo: HTMLDivElement;
   private readonly reiniciar: HTMLButtonElement;
+  private readonly exportar: HTMLButtonElement;
 
   constructor(private readonly acciones: AccionesPausa) {
     super('pausa');
@@ -34,6 +38,9 @@ export class MenuPausa extends Pantalla {
       crearBoton('Documentos', () => acciones.documentos()),
       crearBoton('Ajustes', () => acciones.ajustes()),
       (this.reiniciar = crearBoton('Volver al último punto de control', () => acciones.reiniciarPunto())),
+      (this.exportar = crearBoton('Exportar registro de la prueba', () => {
+        this.exportar.textContent = acciones.telemetria.exportarTodo() ? 'Registro descargado' : 'Todavía no hay registro';
+      })),
       crearBoton('Salir al menú principal', () => acciones.salirAlMenu(), { clase: 'boton--peligro' }),
     );
     contenido.append(izquierda, opciones);
@@ -46,5 +53,7 @@ export class MenuPausa extends Pantalla {
     this.objetivo.innerHTML = '<small>Objetivo</small>';
     this.objetivo.append(document.createTextNode(texto ?? 'Sal de aquí.'));
     this.reiniciar.textContent = this.acciones.reinicioDesdeCero() ? 'Empezar de nuevo' : 'Volver al último punto de control';
+    this.exportar.hidden = !this.acciones.telemetria.activa();
+    this.exportar.textContent = 'Exportar registro de la prueba';
   }
 }

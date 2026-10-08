@@ -90,6 +90,10 @@ La telemetría ahora guarda el `motivo` de cada caza.
 - **Probar con 5+ personas con `?telemetria=1`** siguiendo el protocolo: ahora la telemetría también guarda la carga de
   tensión, el estilo detectado (`adaptacion`) y lo que captó cada cinta (`cinta`).
 - Afinar con los datos: umbrales de audición, duración del encuentro, límites del presupuesto, afinidades y alivio.
+- **Pruebas a distancia (2026-10-08):** los compañeros del creador juegan solos, cuando pueden. Enlace:
+  `https://almendros.elmundodemanu.com/?telemetria=1`; mandan el `.json` y una nota de voz (protocolo §2). La pausa
+  trae "Exportar registro de la prueba" con la telemetría encendida, porque desde el despertar en la escalera el
+  Piso 4 ya no termina en la pantalla final; exportar a media partida guarda antes lo jugado, con su resumen.
 
 ### Contenido adelantado: escaleras, otros pisos y el Piso 3 (desde 2026-10-06)
 El creador pidió más pisos, escaleras y frases de sangre (todavía no hay datos de jugadores), y decidió adelantar

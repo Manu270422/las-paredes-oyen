@@ -30,10 +30,30 @@
 - Si es posible: grabar pantalla + audio del juego + la cara del probador (solo con su permiso).
 
 **Enlace de prueba**
-- Abrir el juego con `?telemetria=1` al final de la dirección, por ejemplo
-  `http://192.168.1.10:5173/?telemetria=1`. Eso enciende la telemetría local en ese dispositivo.
+- El enlace de los probadores es **`https://almendros.elmundodemanu.com/?telemetria=1`**: el mismo juego, con la
+  telemetría local encendida en ese dispositivo (queda encendida aunque después entren sin el `?telemetria=1`).
+  En una red local sirve igual: `http://192.168.1.10:5173/?telemetria=1`.
 - Alternativa: Ajustes → **Pruebas** → "Registrar sesiones de prueba".
 - Empezar con **Nueva partida** (no "Continuar").
+
+**Prueba a distancia (el probador juega solo, cuando pueda)**
+Sin observador no hay F9 ni hoja de observación: se pierde la parte más fina, pero el JSON y una nota de voz
+siguen valiendo. Mensaje para mandarle:
+
+> 1. Abre `https://almendros.elmundodemanu.com/?telemetria=1` (en PC con Chrome o Edge; en celular, acostado).
+> 2. Audífonos puestos, luz apagada, unos 30 minutos sin interrupciones. Nueva partida, dificultad **Normal**.
+> 3. Juega sin buscar ayuda. Si te cansas o te frustras, para: eso también me sirve.
+> 4. Cuando pares, o al terminar el Piso 4: **Pausa (Esc o el botón de pausa) → Ajustes → pestaña Pruebas →
+>    Exportar (.json)**. Si llegaste a la pantalla final, el botón "Exportar registro de la prueba" hace lo mismo.
+>    Se descarga un archivo `.json`; mándamelo por WhatsApp o correo.
+
+Ajustes → Pruebas → Exportar existe en todas las versiones publicadas; el atajo "Exportar registro de la prueba" en
+la pausa llega con la versión que lo trae (`sprint-4` desde 2026-10-08).
+> 5. Mándame una nota de voz de 2–3 minutos: qué pasó, cuándo te dio miedo, si alguna muerte te pareció injusta,
+>    qué no entendiste y si quisiste dejar de jugar (en qué momento).
+
+La nota de voz reemplaza la entrevista: con las preguntas 1, 2, 6, 8 y 11 de la sección 5 basta. Las hipótesis que
+dependen del observador (reacciones, F9) quedan sin dato para ese probador: marcar "—" en el resumen de la ronda.
 
 **Participantes (mínimo 5)**
 - Mezcla recomendada: 2 que jueguen terror seguido, 2 que casi no jueguen, 1 que juegue en celular.
@@ -209,8 +229,10 @@ Hacerla **justo al terminar**, con las luces aún bajas. Preguntas abiertas, en 
 
 ## 6. Exportar y nombrar los datos
 
-1. Al terminar, en la pantalla final: **"Exportar registro de la prueba"**.
-   Si murió y salió, o cerró antes: Ajustes → Pruebas → **Exportar (.json)** (exporta todas).
+1. Al parar, en cualquier momento: **Pausa → "Exportar registro de la prueba"** (exporta todas las sesiones de
+   ese dispositivo, la de ahora incluida, con su resumen). Solo aparece con la telemetría encendida.
+   También: Ajustes → Pruebas → **Exportar (.json)**, o el botón de la pantalla final cuando la haya.
+   Si cerró la pestaña sin exportar no se pierde nada: vuelve a abrir el enlace y exporta desde Ajustes → Pruebas.
 2. Renombrar el archivo: `P1-pc-2026-10-02.json`, `P2-movil-…` (P = probador, sin nombres reales).
 3. Guardar junto con la hoja de observación y las notas de la entrevista.
 4. Después de exportar, **Borrar** los registros del dispositivo si no es el tuyo.

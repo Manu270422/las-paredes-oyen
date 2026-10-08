@@ -93,6 +93,7 @@ export class GestorUI {
       reiniciarPunto: () => acciones.reiniciarPunto(),
       reinicioDesdeCero: () => acciones.dificultad.enCursoSinGuardado(),
       salirAlMenu: () => void this.confirmarSalir(),
+      telemetria: acciones.telemetria,
     });
     this.ajustesPantalla = new PantallaAjustes(ajustes, raiz, () => this.cerrarActual(), acciones.telemetria, acciones.dificultad);
     this.lector = new LectorDocumento((id) => acciones.documento(id));

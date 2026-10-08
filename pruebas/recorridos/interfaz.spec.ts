@@ -1,5 +1,7 @@
 // Errores de interfaz que no se ven en el tipado: se prueban en el juego real.
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
+import { abrirEleccion, elegirYEmpezar, esperarJugando, leerLaOrden } from './acciones';
 
 async function iniciar(page: Page): Promise<void> {
   await page.goto('/');
@@ -65,4 +67,35 @@ test('una pantalla oculta sale del árbol de accesibilidad y no se puede enfocar
   // Lo que ve un lector de pantalla: la pantalla de inicio ya no existe, el menú sí.
   await expect(page.getByRole('button', { name: /Este juego se escucha/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Nueva partida', exact: true })).toBeVisible();
+});
+
+// El final del Piso 4 ya no es la pantalla final (se despierta en la escalera), así que un probador exporta desde la
+// pausa, a media partida. El archivo debe traer lo jugado hasta ese instante, con su resumen.
+test('con ?telemetria=1, la pausa exporta el registro a media partida, con resumen', async ({ page }) => {
+  await abrirEleccion(page, '/?telemetria=1');
+  await elegirYEmpezar(page, 'Normal');
+  await esperarJugando(page);
+  await leerLaOrden(page);
+  await page.evaluate(() => window.__piloto!.pulsar('Escape'));
+  await page.waitForFunction(() => window.__juego?.estado === 'pausa');
+  const boton = page.locator('.pausa').getByRole('button', { name: 'Exportar registro de la prueba' });
+  await expect(boton).toBeVisible();
+  const [descarga] = await Promise.all([page.waitForEvent('download'), boton.click()]);
+  await expect(page.locator('.pausa').getByRole('button', { name: 'Registro descargado' })).toBeVisible();
+  const ruta = await descarga.path();
+  const archivo = JSON.parse(readFileSync(ruta, 'utf-8')) as { sesiones: { terminada: string; resumen: unknown; eventos: { tipo: string }[] }[] };
+  const sesion = archivo.sesiones.at(-1)!;
+  expect(sesion.terminada, 'la sesión sigue abierta: exportar no la cierra').toBe('en-curso');
+  expect(sesion.resumen, 'trae el resumen aunque no haya terminado').not.toBeNull();
+  expect(sesion.eventos.some((e) => e.tipo === 'documento'), 'trae lo jugado desde el último autoguardado').toBe(true);
+});
+
+test('sin telemetría, la pausa no muestra "Exportar registro de la prueba"', async ({ page }) => {
+  await abrirEleccion(page, '/?telemetria=0');
+  await elegirYEmpezar(page, 'Normal');
+  await esperarJugando(page);
+  await page.evaluate(() => window.__piloto!.pulsar('Escape'));
+  await page.waitForFunction(() => window.__juego?.estado === 'pausa');
+  await expect(page.locator('.pausa').getByRole('button', { name: 'Continuar', exact: true })).toBeVisible();
+  await expect(page.locator('.pausa').getByRole('button', { name: 'Exportar registro de la prueba' })).toBeHidden();
 });

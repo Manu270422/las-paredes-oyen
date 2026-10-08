@@ -92,11 +92,13 @@ export class Telemetria {
   }
 
   exportarTodo(): boolean {
+    this.guardarAhora();
     return this.almacen.exportar();
   }
 
   /** Exporto solo la sesión más reciente (la que se acaba de jugar). */
   exportarUltima(): boolean {
+    this.guardarAhora();
     const sesiones = this.almacen.cargar();
     const ultima = sesiones[sesiones.length - 1];
     return ultima ? this.almacen.exportar([ultima], 'sesion') : false;
@@ -159,6 +161,19 @@ export class Telemetria {
 
   registrarPausa(pausado: boolean): void {
     this.registrar(pausado ? 'pausa' : 'reanudar');
+  }
+
+  /**
+   * Guardo la sesión en curso tal como va, con su resumen, sin cerrarla. Así exportar desde la pausa a media
+   * partida no se pierde lo jugado desde el último autoguardado (hasta 20 s) y el archivo ya trae el resumen.
+   */
+  private guardarAhora(): void {
+    const sesion = this.sesion;
+    if (!sesion) return;
+    sesion.duracionReal = r2((Date.now() - this.inicioReal) / 1000);
+    this.volcarContadores(sesion);
+    sesion.resumen = resumirSesion(sesion);
+    this.almacen.guardar(sesion);
   }
 
   cerrarSesion(fin: FinSesion): void {
