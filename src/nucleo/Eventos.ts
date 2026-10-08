@@ -6,7 +6,8 @@ import type { IdDificultad } from '../config/Dificultad';
 
 /** 'cine': grande y centrada (por defecto). 'discreta': pequeña, abajo y breve. */
 /** 'capitulo': la que sale sobre el negro de un viaje (el resumen de un piso completado). */
-export type EstiloTarjeta = 'cine' | 'discreta' | 'capitulo';
+/** 'nota': una línea suelta, sin panel, sobre lo que examino (se queda según lo larga que sea). */
+export type EstiloTarjeta = 'cine' | 'discreta' | 'capitulo' | 'nota';
 
 export type OrigenRuido = 'jugador' | 'puerta' | 'grabadora' | 'entorno' | 'radio';
 

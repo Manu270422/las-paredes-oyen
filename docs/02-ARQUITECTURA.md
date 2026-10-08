@@ -33,14 +33,15 @@ LasParedesOyen/
    │  └─ datos/                Tipos de mapa (la forma; los mapas viven en cada piso)
    ├─ jugador/                 Jugador, cámara, respiración, corazón, linterna, grabadora
    ├─ interaccion/             Sistema de interacción e interactuables
-   │  └─ objetos/              Puerta, documento, recogible, medición, tablero, radio, modelos
+   │  └─ objetos/              Puerta, documento, recogible, examinable, medición, tablero, radio, modelos
    ├─ ia/                      Entidad, modelo, navegación A*, percepción, memoria, FSM, imitador
    │  └─ estados/              Paredes, investigando (con encuentro), cazando, acechando, retirada
    ├─ director/                Director de terror, memoria del mundo, visibilidad
    │  └─ eventos/              13 eventos dinámicos + catálogo
    ├─ narrativa/               Progreso, acciones del guion, tipos de documento/objetivo/cinta, explicaciones de muerte
    ├─ pisos/                   Catálogo de pisos y la forma de un paquete (TiposPiso)
-   │  └─ piso4/                El Piso 4: mapa, objetivos, documentos, cintas, guion y secuencia final
+   │  ├─ piso4/                El Piso 4: mapa, objetivos, documentos, cintas, guion y secuencia final
+   │  └─ piso3/                El Piso 3: mapa, documentos, examinables y guion (la libreta de Andrés)
    ├─ telemetria/              Telemetría LOCAL de playtesting: recolector, almacén, resumen, reacción, vigilancia, ?telemetria=1
    ├─ guardado/                Sistema de guardado versionado
    ├─ ui/                      Gestor de UI, íconos, navegación con mando
@@ -109,7 +110,7 @@ Reglas del cargador:
 ## Pisos como paquetes (Sprint 4, A1)
 
 Un piso = una carpeta en `src/pisos/` que exporta un `PaquetePiso` (`pisos/TiposPiso.ts`): `mapa`, `objetivos`, `documentos`,
-`transcripciones`, `objetos` recogibles, `puntoInicial` y `puntosControl` (bandera → punto), `luzPorBandera`, `reglas`
+`transcripciones`, `objetos` recogibles, `examinables`, `puntoInicial` y `puntosControl` (bandera → punto), `luzPorBandera`, `reglas`
 (`directorDesde`, `despiertaCon`, `imitacionCompletaCon`), `menu` y un `guion` opcional (lo que no es dato). El juego lo
 recibe del catálogo y lo deja en `ctx.piso`; la partida guarda su `id`.
 
@@ -196,6 +197,19 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
   archivo; por ejemplo, `ui/hud/AlimentarHUD.ts` pasa el estado del juego al HUD en cada fotograma.
 - `Juego.cambiarNivel` suelta el nivel viejo (`Nivel.destruir`: geometrías y texturas propias, no las de la biblioteca
   compartida) y arma el nuevo. Lo comparten el viaje y cargar una partida guardada en otro piso.
+
+## Lo que se lee y lo que se examina
+
+- **Documentos** (`interaccion/objetos/Documento.ts`): abren el lector y **pausan** el mundo (estado `documento`).
+  La forma del papel (`narrativa/TiposNarrativa.ts`) decide el modelo y la letra: `orden` y `cinta` a máquina;
+  `diario`, `nota` (de pie, pegada) y `hoja` (suelta, acostada) a mano; `carta` en tinta. El indicador dice lo de su
+  tipo ("Leer", "Leer el diario") salvo que el documento declare su `accion` ("Leer el cuaderno"). Leer marca `leyo:<id>`.
+- **Examinables** (`interaccion/objetos/Examinable.ts`, datos en `examinables` del paquete): algo que se mira y no se
+  lleva (modelos `palo`, `carrito`, `dibujo`). Con E flota una línea en la tarjeta `nota`: sin panel, **no pausa** (la
+  criatura sigue oyendo), se queda según lo larga que sea (`duracionTarjeta`) y marca `examinado:<id>`. En PC va entre
+  el indicador y los subtítulos; en un teléfono acostado no cabe ahí y va encima de la mira (`notaExaminar.spec.ts`).
+- `paquetesDePiso.test.ts` exige que todo documento y examinable del mapa exista en su paquete y que no sobre ninguno:
+  antes, un id mal escrito se veía como una nota en blanco.
 
 ## Estados de la aplicación
 

@@ -124,6 +124,33 @@ describe.each(PISOS.map((p) => [p.id, p] as const))('Objetos recogibles de %s', 
   });
 });
 
+describe.each(PISOS.map((p) => [p.id, p] as const))('Documentos y examinables de %s', (_id, piso) => {
+  const del = (tipo: 'documento' | 'examinable') => piso.mapa.interactuables.filter((i) => i.tipo === tipo);
+
+  it('todo documento del mapa abre un documento que el paquete declara', () => {
+    // Sin esta prueba, un id mal escrito se veía como una nota en blanco: Documento cae a 'nota' sin avisar.
+    const rotos = del('documento').filter((i) => !i.documento || !(i.documento in piso.documentos)).map((i) => `${i.id} → ${String(i.documento)}`);
+    expect(rotos).toEqual([]);
+  });
+
+  it('no hay documentos declarados que no estén en ningún lugar del mapa', () => {
+    const puestos = new Set(del('documento').map((i) => i.documento));
+    expect(Object.keys(piso.documentos).filter((id) => !puestos.has(id))).toEqual([]);
+  });
+
+  it('cada documento declara su propio id (el lector lo busca por él)', () => {
+    expect(Object.entries(piso.documentos).filter(([clave, d]) => d.id !== clave).map(([clave]) => clave)).toEqual([]);
+  });
+
+  it('todo examinable del mapa muestra algo que el paquete declara, y no sobra ninguno', () => {
+    const examinables = piso.examinables ?? {};
+    const rotos = del('examinable').filter((i) => !i.examinable || !(i.examinable in examinables)).map((i) => `${i.id} → ${String(i.examinable)}`);
+    expect(rotos).toEqual([]);
+    const puestos = new Set(del('examinable').map((i) => i.examinable));
+    expect(Object.keys(examinables).filter((id) => !puestos.has(id))).toEqual([]);
+  });
+});
+
 describe.each(PISOS.map((p) => [p.id, p] as const))('Reglas de %s', (_id, piso) => {
   it('las banderas que despiertan a la criatura y revelan su imitación son banderas que el piso realmente otorga', () => {
     const otorgadas = new Set(piso.objetivos.map((o) => o.bandera));

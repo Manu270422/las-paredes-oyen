@@ -1,7 +1,8 @@
 // Los rastros del Piso 3, caminando: bajo por la escalera con la llave (la prueba me la da: el final del 402
 // ya lo camina guion.spec.ts), me doy vuelta en el descanso ("HUYE"), avanzo por el pasillo y miro arriba (la
-// humedad, justo debajo del charco del Piso 4), sigo hasta el fondo ("ESCAPA", sobre el servicio tapiado) y
-// vuelvo al 303 (la frase, la mano y el charco en el muro del hueco). Cada uno lo mido con el medidor
+// humedad, justo debajo del charco del Piso 4), sigo hasta el fondo ("ESCAPA", sobre el servicio tapiado),
+// vuelvo al 303 (la frase, la mano y el charco en el muro del hueco) y termino en el 302: el charco del umbral
+// (con el arrastre hacia adentro) y las rayas de estatura del dormitorio. Cada uno lo mido con el medidor
 // (medidorRastros.ts): visto, se ve con la linterna, y se ve menos sin ella.
 //
 // En el Piso 3 la criatura está despierta desde que llego: la dejo en las paredes y al director quieto, porque
@@ -10,7 +11,14 @@ import { expect, test } from '@playwright/test';
 import { abrirEleccion, elegirYEmpezar, esperarJugando } from './acciones';
 import { comprobarMedidas, instalarMedidor, type MedidaRastro } from './medidorRastros';
 
-test('los rastros del Piso 3 están donde dicen los datos, se ven con la linterna y el juego los da por vistos', async ({ page }) => {
+declare global {
+  interface Window {
+    /** Lo que el recorrido junta entre una parte y otra (en medio saco capturas). */
+    __rastros3?: { medidas: MedidaRastro[]; abrir(id: string): Promise<void> };
+  }
+}
+
+test('los rastros del Piso 3 están donde dicen los datos, se ven con la linterna y el juego los da por vistos', async ({ page }, info) => {
   test.setTimeout(300_000);
   const errores: string[] = [];
   page.on('console', (m) => {
@@ -65,6 +73,7 @@ test('los rastros del Piso 3 están donde dicen los datos, se ven con la lintern
     };
     const medidas: MedidaRastro[] = [];
     const medir = async (id: string) => medidas.push(await M.medir(id));
+    window.__rastros3 = { medidas, abrir };
 
     // 1. "HUYE", en el muro oeste del descanso: al llegar queda a la espalda.
     await P.caminar([[2.6, 9.6]]);
@@ -87,27 +96,73 @@ test('los rastros del Piso 3 están donde dicen los datos, se ven con la lintern
     await medir('mano_303');
     await medir('charco_303');
 
+    // 5. El 302: salgo al pasillo, abro su puerta y, desde el umbral, miro el charco que arrastraron hacia adentro.
+    await P.caminar([[20.5, 8.3], [20.5, 9.4], [20.5, 10.45], [14.5, 10.4]]);
+    await abrir('p302');
+    await P.caminar([[14.5, 11.5], [14.5, 12.1]]);
+    await medir('charco_302');
+
     return {
       piso: ctx.piso.id,
       ids: defs.map((d) => d.id),
       enEscena,
       sinVerAlLlegar,
-      sinVerAlFinal: [...ctx.nivel.vigiaRastros.sinVer],
       habitacion,
+    };
+  });
+  await page.screenshot({ path: info.outputPath('charco-302.png') });
+
+  // 6. El dormitorio del 302: las rayas de estatura en el muro de la puerta (el mismo muro que las del 402).
+  const fin = await page.evaluate(async () => {
+    const J = window.__juego!;
+    const P = window.__piloto!;
+    const M = window.__medidor!;
+    const { ctx } = J;
+    const { medidas, abrir } = window.__rastros3!;
+    await P.caminar([[13.5, 15.2], [10.5, 15.5]]);
+    await abrir('pDorm302');
+    // Me acerco como quien quiere leer lo que dice al lado de cada raya: a 1.2 m del muro.
+    await P.caminar([[10.5, 16.5], [10.6, 17.3], [11.45, 17.92]]);
+    medidas.push(await M.medir('estatura_andres_302'));
+    return {
+      habitacion: ctx.memoria.habitacionActual,
+      sinVerAlFinal: [...ctx.nivel.vigiaRastros.sinVer],
       medidas,
       estado: J.estado,
     };
   });
+  await page.screenshot({ path: info.outputPath('estatura-302.png') });
+  // Y de cerca, como quien se agacha a leer lo que dice al lado de cada raya (la captura es para juzgarla a ojo).
+  await page.evaluate(async () => {
+    const P = window.__piloto!;
+    const { ctx } = window.__juego!;
+    await P.caminar([[11.4, 17.5]]);
+    const malla = ctx.escena.getObjectByName('rastro:estatura_andres_302')!;
+    const c = malla.getWorldPosition(malla.position.clone());
+    P.mirarA(c.x - 0.06, 1.08, c.z);
+    await P.esperarJuego(0.5);
+  });
+  await page.screenshot({ path: info.outputPath('estatura-302-de-cerca.png') });
 
-  console.log(JSON.stringify(r.medidas));
+  console.log(JSON.stringify(fin.medidas));
   expect(r.piso, 'bajé al Piso 3').toBe('piso3');
-  expect(r.ids, 'el Piso 3 declara sus seis rastros').toEqual(['humedad_pasillo', 'frase_descanso3', 'frase_tapiado', 'frase_hueco303', 'mano_303', 'charco_303']);
+  expect(r.ids, 'el Piso 3 declara sus ocho rastros').toEqual([
+    'humedad_pasillo',
+    'frase_descanso3',
+    'frase_tapiado',
+    'frase_hueco303',
+    'mano_303',
+    'charco_303',
+    'estatura_andres_302',
+    'charco_302',
+  ]);
   expect(r.enEscena, 'todos están en la escena').toEqual(r.ids);
   expect(r.sinVerAlLlegar, 'al llegar no se ha visto ninguno').toEqual(r.ids);
   expect(r.habitacion, 'el 303 se puede caminar desde el pasillo').toBe('sala303');
-  expect(r.medidas.map((m) => m.id).sort(), 'los medí todos').toEqual([...r.ids].sort());
-  comprobarMedidas(r.medidas);
-  expect(r.sinVerAlFinal, 'al final del recorrido los vi todos').toEqual([]);
-  expect(r.estado).toBe('jugando');
+  expect(fin.habitacion, 'el dormitorio del 302 se puede caminar desde la sala').toBe('dormitorio302');
+  expect(fin.medidas.map((m) => m.id).sort(), 'los medí todos').toEqual([...r.ids].sort());
+  comprobarMedidas(fin.medidas);
+  expect(fin.sinVerAlFinal, 'al final del recorrido los vi todos').toEqual([]);
+  expect(fin.estado).toBe('jugando');
   expect(errores).toEqual([]);
 });

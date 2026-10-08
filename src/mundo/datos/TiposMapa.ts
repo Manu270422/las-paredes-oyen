@@ -88,7 +88,7 @@ export interface DefMueble {
   movible?: boolean;
 }
 
-export type TipoInteractuable = 'documento' | 'recogible' | 'medicion' | 'tablero' | 'radio';
+export type TipoInteractuable = 'documento' | 'recogible' | 'examinable' | 'medicion' | 'tablero' | 'radio';
 
 export interface DefInteractuable {
   tipo: TipoInteractuable;
@@ -111,6 +111,8 @@ export interface DefInteractuable {
   aparece?: string;
   /** Apartamento que se mide (tipo medicion). */
   apartamento?: string;
+  /** Qué se examina (tipo examinable): una clave de `examinables` del paquete del piso. */
+  examinable?: string;
 }
 
 export interface PuntoAparicion {

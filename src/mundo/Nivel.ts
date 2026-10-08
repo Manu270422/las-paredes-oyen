@@ -11,6 +11,7 @@ import { InteractuablePuerta } from '../interaccion/objetos/InteractuablePuerta'
 import type { PaquetePiso } from '../pisos/TiposPiso';
 import { Documento } from '../interaccion/objetos/Documento';
 import { Recogible } from '../interaccion/objetos/Recogible';
+import { Examinable } from '../interaccion/objetos/Examinable';
 import { PuntoMedicion } from '../interaccion/objetos/PuntoMedicion';
 import { Tablero } from '../interaccion/objetos/Tablero';
 import { Radio } from '../interaccion/objetos/Radio';
@@ -126,6 +127,9 @@ export class Nivel {
           break;
         case 'recogible':
           objeto = new Recogible(d, piso.objetos);
+          break;
+        case 'examinable':
+          objeto = new Examinable(d, piso.examinables ?? {});
           break;
         case 'medicion': {
           const punto = new PuntoMedicion(d);

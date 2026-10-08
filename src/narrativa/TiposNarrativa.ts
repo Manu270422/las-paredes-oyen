@@ -2,14 +2,19 @@
 // Los textos de cada piso viven en su paquete (src/pisos/<piso>/); el motor solo conoce estas formas.
 import type { IdSonido } from '../audio/TiposAudio';
 
-/** Forma de papel (cambia el modelo 3D y cómo se lee). */
-export type TipoDocumento = 'orden' | 'diario' | 'nota' | 'cinta' | 'carta';
+/**
+ * Forma de papel (cambia el modelo 3D y cómo se lee). 'nota' es un papel de pie (pegado en una puerta); 'hoja',
+ * una hoja suelta acostada sobre una superficie. Las dos se leen con letra a mano.
+ */
+export type TipoDocumento = 'orden' | 'diario' | 'nota' | 'hoja' | 'cinta' | 'carta';
 
 export interface Documento {
   id: string;
   titulo: string;
   tipo: TipoDocumento;
   paginas: string[];
+  /** Lo que dice el indicador al mirarlo ("Leer el cuaderno"). Sin él, el de su tipo ("Leer", "Leer el diario"). */
+  accion?: string;
 }
 
 /** Un objetivo se completa con una bandera de progreso. */

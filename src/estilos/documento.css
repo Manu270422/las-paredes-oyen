@@ -61,7 +61,8 @@
 }
 
 .lector--diario .lector__texto,
-.lector--nota .lector__texto {
+.lector--nota .lector__texto,
+.lector--hoja .lector__texto {
   font-family: var(--fuente-mano);
   color: #1c2a4a;
 }

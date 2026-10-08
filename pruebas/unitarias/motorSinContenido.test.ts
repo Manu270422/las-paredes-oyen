@@ -1,5 +1,5 @@
 // La segunda matraca: el motor no escribe a mano NINGÚN nombre del contenido de un piso (ids de cuartos,
-// puertas, lámparas, objetos, documentos, interactuables, puntos de control ni banderas de la historia).
+// puertas, lámparas, objetos, examinables, documentos, interactuables, puntos de control ni banderas de la historia).
 // La primera matraca (motorSinPisos) busca 401/402/403; esta busca todo lo que declara cualquier paquete
 // del catálogo, así el próximo piso queda vigilado solo.
 //
@@ -65,7 +65,7 @@ function nombresDelContenido(): Set<string> {
       nombres.add(o.id);
       nombres.add(o.bandera);
     }
-    for (const lista of [m.puntosControl, piso.puntosControl, piso.luzPorBandera, piso.objetos, piso.documentos, piso.transcripciones]) {
+    for (const lista of [m.puntosControl, piso.puntosControl, piso.luzPorBandera, piso.objetos, piso.examinables ?? {}, piso.documentos, piso.transcripciones]) {
       for (const clave of Object.keys(lista)) nombres.add(clave);
     }
     for (const valor of Object.values(piso.puntosControl)) nombres.add(valor);

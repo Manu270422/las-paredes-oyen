@@ -25,6 +25,19 @@ export interface DefObjetoRecogible {
   readonly guardaEnInventario?: boolean;
 }
 
+/**
+ * Algo que se mira y no se lleva (un juguete, un dibujo en la pared): al examinarlo flota una línea, sin panel y
+ * sin pausar nada. La criatura sigue oyendo mientras leo.
+ */
+export interface DefExaminable {
+  /** Su forma 3D (las que existen en interaccion/objetos/Modelos.ts). */
+  readonly modelo: 'palo' | 'carrito' | 'dibujo';
+  /** Lo que dice el indicador al mirarlo ("Mirar el dibujo"). */
+  readonly texto: string;
+  /** Lo que pienso al examinarlo: una sola línea, corta (se queda según lo larga que sea). */
+  readonly linea: string;
+}
+
 /** Las banderas de la historia a las que el motor reacciona, sin saber de qué piso ni de qué apartamento son. */
 export interface ReglasPiso {
   /** La bandera desde la que trabaja el director de terror (antes de ella, el piso está en calma total). */
@@ -187,6 +200,8 @@ export interface PaquetePiso {
   readonly reglas: ReglasPiso;
   /** Los objetos que se recogen, por id: el mapa solo dice dónde está cada uno y de cuál es. */
   readonly objetos: Readonly<Record<string, DefObjetoRecogible>>;
+  /** Lo que se examina sin llevárselo, por id: el mapa dice dónde está cada cosa y cuál es. */
+  readonly examinables?: Readonly<Record<string, DefExaminable>>;
   /** El punto de control (de `mapa.puntosControl`) con el que empieza una partida nueva. */
   readonly puntoInicial: string;
   /** Qué banderas crean un punto de control: bandera → nombre del punto donde se reaparece. */

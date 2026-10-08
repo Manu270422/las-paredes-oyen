@@ -104,13 +104,14 @@ este contenido sin esperar la ronda de testers de la Fase 10 (el Gate 1), que si
 | Pantalla de fin reconectada: tarjeta "Piso 4 superado" al bajar por primera vez, pantalla final con una línea por piso (partida v7) | ✅ |
 | La llave de la reja ya no se regala: aparece bajo la silla del cuarto del 402 con el final; al despertar se oye caer, y si se tarda, una pista escrita | ✅ |
 | Abrir la reja con peso: la llave gira, el candado cae (hace ruido), la cadena se desliza y las hojas se abren; queda abierta | ✅ |
-| Rastros y documentos del 302 (carta del administrador en el 301, libreta de Andrés en el 302) | Siguiente |
-| Guion del Piso 3 (golpe en la pared, apagón al leer la libreta, la criatura en el pasillo al volver) | Pendiente |
+| El 302 y la libreta de Andrés: 5 documentos (carta del administrador y hoja de Andrés en el 301, hoja en el 303, cuaderno y carta de la mamá en el 302), 3 cosas para examinar (una línea flotando, sin pausar), rayas de estatura y un arrastre hacia adentro en el 302, 2 pilas y el punto de control del cuarto del 302. Juntar la libreta marca `imitacion:piso3` | ✅ |
+| Guion del Piso 3 (golpe en la pared, apagón al juntar la libreta, la criatura en el pasillo al volver) | Siguiente |
 | Ascensor: solo el sonido del hueco | Pendiente |
 
-**Pendiente conocido:** la regla `imitacionCompletaCon` del Piso 3 apunta a la bandera `imitacion:piso3`, que
-nadie marca hasta que exista el guion del Piso 3. Mientras tanto la criatura del Piso 3 investiga, acecha y caza,
-pero no llega a la imitación completa (etapa 3: repetir tu ritmo cuando te detienes).
+**Resuelto:** la regla `imitacionCompletaCon` del Piso 3 (`imitacion:piso3`) ya se cumple: la marca el guion del
+Piso 3 al leer las tres partes de la libreta, en cualquier orden. Desde ahí la criatura del Piso 3 llega a la
+imitación completa (etapa 3: repetir tu ritmo cuando te detienes). Lo prueban `guionPiso3.test.ts` y, caminando,
+`libretaPiso3.spec.ts` (incluida la partida guardada un instante antes de que el guion marcara la bandera).
 
 **Regla de las frases:** pocas y con razón. Las escribió gente que ya no podía hablar (él repite las voces, como
 cuenta el diario del 401); nunca son mensajes de la criatura. Viejas y oscuras como el resto de la sangre: sin

@@ -219,6 +219,24 @@
   transition-duration: 0.8s;
 }
 
+/* La nota: lo que pienso de algo que examino. Una línea suelta, sin panel, debajo del indicador de interacción
+   y encima de los subtítulos (que crecen hacia arriba: con tres a la vez llegan al 70 %); puede ocupar dos
+   renglones. El mundo sigue: no tapa el centro. */
+.tarjeta--nota {
+  top: 65%;
+  width: min(80vw, 34em);
+  transition-duration: 0.6s;
+}
+
+.tarjeta--nota h2 {
+  font-size: clamp(15px, 0.55rem + 1.8vmin, 24px);
+  font-style: italic;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: #d9d1bf;
+  text-shadow: 0 0 12px #000, 0 1px 3px #000;
+}
+
 .tarjeta p {
   margin: var(--espacio-s) 0 0;
   font-size: var(--texto-s);
@@ -409,5 +427,10 @@
   }
   .estado-jugador {
     top: calc(var(--seguro-arriba) + 52px);
+  }
+  /* En un teléfono acostado no cabe entre el indicador y los subtítulos: va encima de la mira, debajo de los
+     avisos de arriba (objetivo y pistas). */
+  .tarjeta--nota {
+    top: 36%;
   }
 }

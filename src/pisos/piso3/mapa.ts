@@ -41,7 +41,9 @@ export const MAPA_PISO_3: DefMapa = {
     { id: 'cocina303', nombre: 'Cocina del 303', x0: 16, y0: 1, x1: 20, y1: 3, reverb: 'bano', pared: 'azulejo', piso: 'azulejo', apartamento: '303' },
     { id: 'estudio303', nombre: 'Estudio del 303', x0: 22, y0: 1, x1: 26, y1: 3, reverb: 'habitacion', pared: 'papel', piso: 'parque', apartamento: '303' },
     { id: 'sala302', nombre: 'Sala del 302', x0: 8, y0: 12, x1: 20, y1: 15, reverb: 'sala', pared: 'azulejo', piso: 'azulejo', apartamento: '302' },
-    { id: 'dormitorio302', nombre: 'Dormitorio del 302', x0: 8, y0: 17, x1: 13, y1: 18, reverb: 'habitacion', pared: 'azulejo', piso: 'azulejo', apartamento: '302' },
+    // El dormitorio lleva papel de colgar, como el del 402 de arriba, no azulejo: ahí la mamá medía a Andrés con
+    // lápiz (en azulejo las juntas se comían las rayas, y la pintura del pasillo tiene el zócalo a la altura de las rayas).
+    { id: 'dormitorio302', nombre: 'Dormitorio del 302', x0: 8, y0: 17, x1: 13, y1: 18, reverb: 'habitacion', pared: 'papel', piso: 'azulejo', apartamento: '302' },
     { id: 'cuarto302', nombre: 'Cuarto pequeño del 302', x0: 15, y0: 17, x1: 20, y1: 18, reverb: 'habitacion', pared: 'azulejo', piso: 'azulejo', apartamento: '302' },
     // El cuarto de servicio existe pero su puerta está tapiada con muebles: nadie entra.
     { id: 'servicio', nombre: 'Cuarto de servicio', x0: 29, y0: 8, x1: 30, y1: 12, reverb: 'ducto', pared: 'concreto', piso: 'concreto' },
@@ -121,10 +123,32 @@ export const MAPA_PISO_3: DefMapa = {
     { tipo: 'silla', x: 18.2, y: 18.4, rot: 0 },
   ],
 
-  interactuables: [],
+  // Las alturas son las de cada superficie (mesa y escritorio 0.76 m, mesita 0.54 m) más un milímetro.
+  interactuables: [
+    // 301: la carta de la administración en la mesa de la sala, y la hoja de Andrés en el piso junto a la
+    // puerta, por donde entró (la vecina empezó a contestarle y no terminó).
+    { tipo: 'documento', id: 'docCartaAdmin', documento: 'carta_admin_301', x: 7.6, y: 6.0, altura: 0.761 },
+    { tipo: 'documento', id: 'docHoja301', documento: 'hoja_301', x: 7.9, y: 8.55, altura: 0.003, rot: 25 },
+    // 303: la hoja que se le cayó en el ascensor, en el escritorio del estudio de quien la recogió.
+    { tipo: 'documento', id: 'docHoja303', documento: 'hoja_303', x: 24.2, y: 1.4, altura: 0.761 },
+    // 302: el cuaderno en el piso del cuarto, junto a la silla (donde arriba, en el 402, está la llave de la
+    // reja); la carta de la mamá en la mesita del dormitorio.
+    { tipo: 'documento', id: 'docCuaderno', documento: 'libreta_302', x: 18.9, y: 18.5, altura: 0.002 },
+    { tipo: 'documento', id: 'docCartaMadre', documento: 'carta_madre_302', x: 12.6, y: 17.3, altura: 0.541 },
+    // 302: lo que se examina. El palo recostado en el muro de las rayas de estatura (la base a 23 cm del muro),
+    // el carrito en el piso del dormitorio y el dibujo pegado encima del sofá de la sala.
+    { tipo: 'examinable', id: 'exMedidor', examinable: 'medidor_302', x: 13.6, y: 17.18 },
+    { tipo: 'examinable', id: 'exCarrito', examinable: 'carrito_302', x: 10.1, y: 17.75 },
+    { tipo: 'examinable', id: 'exDibujo', examinable: 'dibujo_302', x: 10.5, y: 12.01, altura: 1.05 },
+    // Dos pilas: en la mesa de la cocina del 303 y en la mesita del dormitorio del 301.
+    { tipo: 'recogible', id: 'pilas1', objeto: 'pilas', x: 19.2, y: 2.4, altura: 0.761 },
+    { tipo: 'recogible', id: 'pilas2', objeto: 'pilas', x: 8.5, y: 1.3, altura: 0.541 },
+  ],
 
   puntosControl: {
     escalera: { x: 2.2, y: 10.5, angulo: -90 },
+    // En el cuarto pequeño del 302, mirando hacia la silla y el cuaderno.
+    cuarto302: { x: 16.3, y: 17.5, angulo: -90 },
   },
 
   guaridaEntidad: { x: 14, y: 4.5 },

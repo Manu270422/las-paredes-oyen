@@ -1,6 +1,7 @@
 // Aquí construyo los modelos 3D pequeños de los objetos interactivos:
-// hojas de papel, un diario, un casete, pilas, una llave, la cinta roja
-// del punto de medición, el tablero eléctrico y la radio.
+// hojas de papel, un diario, un casete, pilas, una llave, lo que se examina
+// (un palo con rayas, un carrito, un dibujo), la cinta roja del punto de
+// medición, el tablero eléctrico y la radio.
 import {
   BoxGeometry,
   CylinderGeometry,
@@ -9,8 +10,10 @@ import {
   MeshStandardMaterial,
   PlaneGeometry,
   TorusGeometry,
+  Vector3,
 } from 'three';
 import type { TipoDocumento } from '../../narrativa/TiposNarrativa';
+import type { DefExaminable } from '../../pisos/TiposPiso';
 
 const cache = new Map<string, MeshStandardMaterial>();
 function mat(nombre: string, color: number, rugosidad = 0.8, metalico = 0, emisivo = 0): MeshStandardMaterial {
@@ -56,6 +59,20 @@ export function modeloDocumento(tipo: TipoDocumento): Group {
       g.add(hoja);
       break;
     }
+    case 'hoja': {
+      // Una hoja de cuaderno suelta, acostada, que estuvo doblada: dos mitades con el pliegue un poco levantado.
+      const cuaderno = mat('cuaderno', 0xd2cbb6, 0.95);
+      for (const lado of [-1, 1]) {
+        const mitad = new Mesh(new PlaneGeometry(0.105, 0.15), cuaderno);
+        // Cada mitad baja hacia su borde de afuera: el pliegue queda arriba, como una hoja que estuvo doblada.
+        mitad.rotation.set(-Math.PI / 2, lado * 0.06, 0);
+        mitad.position.set(lado * 0.052, 0.004, 0);
+        mitad.receiveShadow = true;
+        g.add(mitad);
+      }
+      g.rotation.y = 0.35;
+      break;
+    }
     case 'carta':
       g.add(caja(0.22, 0.004, 0.11, mat('sobre', 0xb8ad94, 0.95), 0, 0.002, 0));
       g.rotation.y = 0.7;
@@ -86,6 +103,81 @@ export function modeloLlave(): Group {
   // Una etiqueta de cartón que dice "402".
   g.add(caja(0.03, 0.002, 0.02, mat('etiqueta', 0xb9ad8e, 0.9), -0.06, 0.003, 0.01));
   return g;
+}
+
+/** Un trazo de crayón sobre un papel que mira hacia +z: no proyecta sombra (sería ruido sobre la hoja). */
+function trazo(largo: number, grosor: number, material: MeshStandardMaterial, x: number, y: number, angulo = 0): Mesh {
+  const m = new Mesh(new BoxGeometry(largo, grosor, 0.001), material);
+  m.position.set(x, y, 0.0055);
+  m.rotation.z = angulo;
+  return m;
+}
+
+/** Una cabeza de crayón: un círculo sin nada adentro. */
+function cabeza(radio: number, material: MeshStandardMaterial, x: number, y: number): Mesh {
+  const m = new Mesh(new TorusGeometry(radio, 0.0016, 4, 18), material);
+  m.position.set(x, y, 0.0055);
+  return m;
+}
+
+/**
+ * Algo para mirar (y no llevarse). El palo se apoya en un muro que queda hacia -z (su base va a 23 cm del muro);
+ * el dibujo es una hoja pegada en un muro que queda detrás (mira hacia +z); el carrito va en el piso. Devuelvo
+ * también el punto (en el marco del objeto) donde cae la mirada: ahí va la zona de toque.
+ */
+export function modeloExaminable(modelo: DefExaminable['modelo']): { grupo: Group; mirada: Vector3 } {
+  const g = new Group();
+  switch (modelo) {
+    case 'palo': {
+      // Un palo de escoba recostado al muro, con rayas de lápiz cerca de la punta.
+      const palo = new Group();
+      palo.add(caja(0.028, 1.25, 0.028, mat('escoba', 0x8a6a45, 0.85), 0, 0.625, 0));
+      const lapiz = mat('lapiz', 0x2e2e33, 0.7);
+      for (const y of [0.98, 1.02, 1.06, 1.1, 1.14]) palo.add(caja(0.03, 0.004, 0.03, lapiz, 0, y, 0));
+      const inclinacion = 0.18;
+      palo.rotation.x = -inclinacion;
+      g.add(palo);
+      return { grupo: g, mirada: new Vector3(0, 0.75 * Math.cos(inclinacion), -0.75 * Math.sin(inclinacion)) };
+    }
+    case 'carrito': {
+      // Un carrito de plástico sin ruedas: le quedan los ejes pelados.
+      const pintura = mat('carrito', 0x7a2a22, 0.55);
+      g.add(caja(0.12, 0.035, 0.055, pintura, 0, 0.022, 0), caja(0.06, 0.03, 0.05, pintura, -0.01, 0.052, 0));
+      const eje = mat('ejeCarrito', 0x777777, 0.4, 0.7);
+      for (const x of [-0.04, 0.04]) g.add(caja(0.006, 0.006, 0.07, eje, x, 0.008, 0));
+      g.rotation.y = 0.8;
+      return { grupo: g, mirada: new Vector3(0, 0.05, 0) };
+    }
+    case 'dibujo': {
+      // Una hoja de cuaderno pegada al muro con dos tiras de cinta, un poco torcida. Con crayón: un niño de
+      // palitos abajo a la izquierda y, detrás, alguien muy alto, sin cara, con un brazo largo sobre él.
+      const hoja = new Group();
+      const papel = new Mesh(new PlaneGeometry(0.21, 0.28), mat('papelDibujo', 0xd8d1bd, 0.95));
+      papel.position.z = 0.004;
+      hoja.add(papel);
+      const azul = mat('crayonAzul', 0x2c3f78, 0.9);
+      hoja.add(
+        cabeza(0.011, azul, -0.05, -0.02),
+        trazo(0.0022, 0.035, azul, -0.05, -0.048),
+        trazo(0.034, 0.0022, azul, -0.05, -0.04),
+        trazo(0.0022, 0.03, azul, -0.0551, -0.0796, -0.35),
+        trazo(0.0022, 0.03, azul, -0.0449, -0.0796, 0.35),
+      );
+      const negro = mat('crayonNegro', 0x141414, 0.9);
+      hoja.add(
+        cabeza(0.016, negro, 0.035, 0.1),
+        trazo(0.0035, 0.15, negro, 0.035, 0.008),
+        trazo(0.0035, 0.07, negro, 0.0287, -0.1014, -0.18),
+        trazo(0.0035, 0.07, negro, 0.0413, -0.1014, 0.18),
+        // El brazo largo baja hasta quedar encima de la cabeza del niño.
+        trazo(0.1, 0.003, negro, -0.007, 0.032, 0.62),
+      );
+      hoja.rotation.z = 0.05;
+      const cinta = mat('cintaPegante', 0xb7a679, 0.6);
+      g.add(hoja, caja(0.06, 0.018, 0.002, cinta, -0.07, 0.135, 0.006), caja(0.06, 0.018, 0.002, cinta, 0.07, 0.14, 0.006));
+      return { grupo: g, mirada: new Vector3(0, 0, 0.01) };
+    }
+  }
 }
 
 /** La "X" de cinta roja en el piso que marca dónde medir. Visible solo con la linterna. */
