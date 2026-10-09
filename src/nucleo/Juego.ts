@@ -511,6 +511,12 @@ export class Juego {
     });
   }
 
+  /** El botón "atrás" de Android: en juego, pausa; en los menús, vuelve. */
+  atras(): void {
+    if (this.estado === 'jugando') this.pausar();
+    else this.ui.volver();
+  }
+
   private pausar(): void {
     if (this.estado !== 'jugando') return;
     this.estadoAntesDePausa = this.estado;
