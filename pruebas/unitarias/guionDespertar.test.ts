@@ -42,6 +42,20 @@ function armar(banderas: string[], inventario: string[] = []) {
   return { ctx, progreso, relevantes, pistas, llave, sonidos: falso.sonidos, jugar };
 }
 
+describe('Partidas guardadas antes de la nota del estudio', () => {
+  it('con la llave del 402 y sin la nota leída, al cargar la marco en silencio y el objetivo sigue', () => {
+    const { progreso } = armar(['leyo:orden_trabajo', 'medido:401', 'medido:403', 'tablero_activado', 'objeto:llave_402'], ['llave_402']);
+    expect(progreso.tiene('leyo:nota_escritorio')).toBe(true);
+    expect(progreso.objetivoActual()?.id, 'puede medir el 402').toBe('medir402');
+  });
+
+  it('sin la llave no marco nada (hay que leer la nota para encontrarla)', () => {
+    const { progreso } = armar(['leyo:orden_trabajo', 'medido:401', 'medido:403', 'tablero_activado']);
+    expect(progreso.tiene('leyo:nota_escritorio')).toBe(false);
+    expect(progreso.objetivoActual()?.id).toBe('llave');
+  });
+});
+
 describe('Después del final del 402, sin la llave de la reja', () => {
   it('a los 3 s la oigo caer en el 402, con su dirección, una sola vez', () => {
     const { relevantes, sonidos, llave, jugar } = armar(['medido:402']);

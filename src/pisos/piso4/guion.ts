@@ -3,8 +3,10 @@
 // de la historia que deben ocurrir siempre:
 // - La primera medición y los tres golpes que la interrumpen.
 // - Lo que aparece en cada grabación.
+// - El primer encuentro: al salir del 401 se desprende del muro y viene a escuchar (la regla, aprendida temprano).
 // - La luz que vuelve... y el apagón que avanza hacia mí.
-// - El final en el 402, y después: despierto sin la llave de la reja y la oigo caer en el 402.
+// - El final en el 402: mientras mido, sale del muro a mi espalda y se queda escuchando hasta que la cinta para.
+//   Después: despierto sin la llave de la reja y la oigo caer en el 402.
 // Todo se basa en condiciones y banderas, así funciona igual al cargar partida.
 // Vive en el paquete del piso: el motor solo conoce el contrato GuionPiso. (La activación del
 // director ya no está aquí: es la regla `directorDesde` del paquete y la aplica el propio director.)
@@ -44,6 +46,11 @@ export class GuionPiso4 implements GuionPiso {
   }
 
   reiniciar(ctx: ContextoJuego): void {
+    // Una partida de antes de la nota (2026-10-09) tomó la llave en el estudio sin leer nada: sin esta bandera
+    // el objetivo se quedaría en "busca la llave" y el 402 no se podría medir nunca. La marco en silencio.
+    if (ctx.progreso.tiene('objeto:llave_402') && !ctx.progreso.tiene('leyo:nota_escritorio')) {
+      ctx.progreso.marcarSilencioso('leyo:nota_escritorio');
+    }
     this.tiempo = 0;
     this.tiempoTablero = ctx.progreso.tiene('tablero_activado') ? 0 : -1;
     this.enFinal = false;
@@ -71,6 +78,19 @@ export class GuionPiso4 implements GuionPiso {
     }
     if (this.tiempo > 6 && !ctx.linterna.encendida) this.pista(ctx, 'linterna', 'Pulsa {linterna} para encender la linterna.');
     if (this.tiempo > 12 && p.tiene('leyo:orden_trabajo')) this.pista(ctx, 'agacharse', 'Agachado ({agacharse}) haces menos ruido y abres las puertas despacio.');
+
+    // El primer encuentro: la cinta del 401 terminó (ya puede salir) y vuelvo al pasillo. Lo intento cada
+    // fotograma hasta que haya por dónde salir sin que la vea; si muero, el punto de control es anterior y se repite.
+    if (
+      p.tiene('medido:401') &&
+      !p.tiene('encuentro_pasillo') &&
+      ctx.entidad.puedeManifestarse &&
+      ctx.entidad.estado === 'paredes' &&
+      ctx.memoria.habitacionActual === 'pasillo' &&
+      !ctx.grabadora.midiendo
+    ) {
+      this.primerEncuentro(ctx);
+    }
 
     // El apagón: la luz volvió, y al entrar al pasillo las lámparas mueren una por una hacia mí.
     if (this.tiempoTablero >= 0) this.tiempoTablero += dt;
@@ -102,7 +122,55 @@ export class GuionPiso4 implements GuionPiso {
     }
   }
 
+  /**
+   * Sale del muro a 5–9 m de mí, en el pasillo y fuera de mi vista, y viene a escuchar donde estoy: SALIR A
+   * BUSCAR, nunca a cazar. Quieto y sin respirar, el encuentro se supera y se va. Es la regla del juego, dicha
+   * por ella en vez de por un texto, cuando todavía estoy cerca de la escalera.
+   */
+  private primerEncuentro(ctx: ContextoJuego): void {
+    const j = ctx.jugador.posicion;
+    const C = CONFIG.celda;
+    // Hacia el 403 primero (es a donde voy); si por ahí la vería, desde el otro lado.
+    const destinos = [j.x + 7, j.x - 7].map((x) => Math.min(Math.max(x, 4.5 * C), 27.5 * C));
+    for (const x of destinos) {
+      const salida = ctx.entidad.buscarPuntoSalida(x, j.z, ctx, 5, 2.5);
+      if (!salida || Math.hypot(salida.x - j.x, salida.z - j.z) > 9) continue;
+      ctx.progreso.marcar('encuentro_pasillo');
+      this.salirAEscuchar(ctx, salida, 1.5);
+      ctx.director.bloquear(25);
+      ctx.bus.emit('sonido-relevante', { descripcion: 'algo se desprende de la pared', x: salida.x, z: salida.z });
+      this.pista(ctx, 'verla', 'Si la ves, no hagas ruido.');
+      return;
+    }
+  }
+
+  /** Aparece en ese punto y camina hacia donde estoy ahora, como si me hubiera oído ahí: llega a escuchar. */
+  private salirAEscuchar(ctx: ContextoJuego, salida: { x: number; z: number }, pausa: number): void {
+    const j = ctx.jugador.posicion;
+    const entidad = ctx.entidad;
+    entidad.manifestar(salida.x, salida.z, ctx);
+    entidad.memoria.registrarRuido(j.x, j.z, 0.2, ctx.programador.ahora, null);
+    entidad.pausaSalida = pausa;
+    entidad.cambiarEstado('investigando', ctx);
+  }
+
+  /** El clímax: mientras mido el 402, sale del muro a mi espalda y llega a escuchar antes de que la cinta pare. */
+  private climax402(ctx: ContextoJuego): void {
+    if (!ctx.grabadora.midiendo || ctx.progreso.tiene('medido:402')) return;
+    const j = ctx.jugador.posicion;
+    const atras = { x: j.x + Math.sin(ctx.jugador.yaw) * 4.5, z: j.z + Math.cos(ctx.jugador.yaw) * 4.5 };
+    const salida = ctx.entidad.buscarPuntoSalida(atras.x, atras.z, ctx, 3.8, 3) ?? ctx.entidad.buscarPuntoSalida(j.x, j.z, ctx, 3.8, 6);
+    if (!salida) return;
+    ctx.entidad.puedeManifestarse = true;
+    this.salirAEscuchar(ctx, salida, 0.3);
+    ctx.bus.emit('sonido-relevante', { descripcion: 'algo sale de la pared, detrás', x: salida.x, z: salida.z });
+  }
+
   private alIniciarMedicion(apartamento: string, ctx: ContextoJuego): void {
+    if (apartamento === '402' && !ctx.progreso.tiene('medido:402')) {
+      ctx.director.bloquear(12);
+      ctx.programador.despues(0.6, () => this.climax402(ctx));
+    }
     if (apartamento === '401' && !ctx.progreso.tiene('medido:401')) {
       this.pista(ctx, 'respirar', 'No te muevas. Si respiras agitado, la grabadora lo capta: mantén {aguantar} para contener la respiración.');
       // La lección: tres golpes, justo a mi lado, mientras no me puedo mover.

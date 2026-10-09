@@ -47,6 +47,11 @@ export class Recogible implements Interactuable {
     ctx.bus.emit('subtitulo', { texto: this.datos.mensaje, duracion: this.datos.duracionMensaje });
   }
 
+  /** Su bandera se marcó jugando (leí la nota que dice dónde está): aparece ahora, sin esperar a cargar. */
+  alBandera(nombre: string, ctx: ContextoJuego): void {
+    if (nombre === this.aparece) this.restablecer(ctx);
+  }
+
   /** Al cargar, el objeto existe solo si ya apareció y no lo había recogido. */
   restablecer(ctx: ContextoJuego): void {
     const aparecio = this.aparece === undefined || ctx.progreso.tiene(this.aparece);

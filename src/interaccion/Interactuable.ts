@@ -22,6 +22,8 @@ export interface Interactuable {
   interactuar(ctx: ContextoJuego): void;
   /** Vuelvo al estado inicial (al cargar un punto de control). */
   restablecer?(ctx: ContextoJuego): void;
+  /** Se acaba de marcar esa bandera en plena partida (un objeto que aparece con ella, aparece ya). */
+  alBandera?(nombre: string, ctx: ContextoJuego): void;
 }
 
 // Material invisible pero "golpeable" por el rayo. No escribe color ni profundidad.

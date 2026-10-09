@@ -346,6 +346,7 @@ export class Juego {
       if (ruido.origen === 'jugador') this.grabadora.alRuidoJugador(ruido, this.ctx);
     });
     this.bus.on('bandera', ({ nombre }) => {
+      this.nivel.alBandera(nombre, this.ctx);
       const punto = puntoDeControlDe(this.piso, this.ctx.dificultad, nombre);
       if (punto) {
         // Avancé en la historia: el alivio por muertes seguidas se reinicia.
@@ -645,6 +646,7 @@ export class Juego {
     this.entidad.actualizar(dt, ctx);
     this.director.actualizar(dt, ctx);
     this.guion?.actualizar(dt, ctx);
+    this.progreso.actualizar(dt);
     this.memoria.actualizar(dt, ctx);
     const distanciaEntidad = this.entidad.fisica ? this.entidad.distanciaAlJugador(ctx) : Infinity;
     this.linterna.actualizar(dt, distanciaEntidad, ctx);

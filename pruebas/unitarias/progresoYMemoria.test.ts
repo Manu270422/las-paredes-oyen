@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { MemoriaMundo } from '../../src/director/MemoriaMundo';
 import { BusEventos } from '../../src/nucleo/BusEventos';
 import type { MapaEventos } from '../../src/nucleo/Eventos';
-import { Progreso } from '../../src/narrativa/Progreso';
+import { Progreso, RECORDAR_OBJETIVO_CADA } from '../../src/narrativa/Progreso';
 import type { Objetivo } from '../../src/narrativa/TiposNarrativa';
 import { PISO_INICIAL } from '../../src/pisos/catalogo';
 
@@ -40,6 +40,28 @@ describe('Progreso con los objetivos de un piso', () => {
     expect(p.objetivoActual()?.id).toBe('b');
     p.marcar('hizo:b');
     expect(p.objetivoActual()).toBeNull();
+  });
+
+  it('recuerda solo el objetivo tras 90 s de juego sin mostrarlo; un objetivo nuevo reinicia la cuenta', () => {
+    const bus = new BusEventos<MapaEventos>();
+    const avisos: Array<{ texto: string; nuevo: boolean }> = [];
+    bus.on('objetivo', (o) => avisos.push(o));
+    const p = new Progreso(bus, OBJETIVOS_FALSOS, REGLAS_FALSAS);
+    p.actualizar(RECORDAR_OBJETIVO_CADA - 1);
+    expect(avisos, 'todavía no').toEqual([]);
+    p.actualizar(1);
+    expect(avisos).toEqual([{ texto: 'Primero', nuevo: false }]);
+    p.actualizar(RECORDAR_OBJETIVO_CADA - 10);
+    p.marcar('hizo:a');
+    expect(avisos.at(-1)).toEqual({ texto: 'Segundo', nuevo: true });
+    p.actualizar(RECORDAR_OBJETIVO_CADA - 1);
+    expect(avisos, 'el nuevo reinició la cuenta').toHaveLength(2);
+    p.actualizar(1);
+    expect(avisos.at(-1)).toEqual({ texto: 'Segundo', nuevo: false });
+    // Sin objetivos (el piso terminó) no recuerda nada.
+    p.marcar('hizo:b');
+    p.actualizar(RECORDAR_OBJETIVO_CADA * 2);
+    expect(avisos).toHaveLength(3);
   });
 
   it('con los objetivos del piso inicial, empieza por leer la orden de trabajo', () => {

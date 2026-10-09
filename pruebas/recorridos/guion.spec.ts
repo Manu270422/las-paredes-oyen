@@ -187,7 +187,8 @@ test.describe.serial('Guion del Piso 4 jugado', () => {
       const relevantes: string[] = [];
       ctx.bus.on('piso-cambiado', ({ desde, hacia }) => (desperto ||= desde === 'piso4' && hacia === 'piso4'));
       ctx.bus.on('sonido-relevante', (s) => relevantes.push(s.descripcion));
-      // Para medir el 402 hay que haber entrado con su llave (aquí no se camina: lo camina llave.spec.ts).
+      // Para medir el 402 hay que haber leído la nota y entrado con su llave (lo camina llave.spec.ts).
+      ctx.progreso.marcar('leyo:nota_escritorio');
       ctx.progreso.agregarObjeto('llave_402');
       ctx.progreso.marcar('medido:402');
       // El despertar es un viaje al mismo piso (a la escalera): espero a que termine.

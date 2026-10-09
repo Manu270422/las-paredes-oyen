@@ -101,6 +101,19 @@ Con la ruta aprendida, el Piso 4 se pasa en 1:45–2:44, con el estrés en 0 cas
 solo tras el apagón (1 encuentro y 1 muerte en total). En Difícil, el jugador no murió: se perdió. El apagón es el
 único pico. **Recomendación:** alargar y tensar el Piso 4 antes del guion del Piso 3 (ver `05-ESTADO-DEL-PROYECTO.md`).
 
+#### Ritmo del Piso 4 (2026-10-09) — [propuesta P4](propuestas/P4-ritmo.md), aprobada por el creador
+| Cambio | Resultado |
+|---|---|
+| Medir atrae de verdad | Dentro del muro va a la velocidad que la hace llegar en ~4 s (tope 7 m/s), fijada al empezar la medición |
+| Primer encuentro guionizado | Al volver al pasillo tras la cinta del 401 sale a 5–9 m, fuera de la vista, y viene a escuchar |
+| La historia lleva a la llave | La orden dice que la tenía el vecino del 403; en su escritorio, la nota de M. la manda a la mesita del 401, donde aparece al leerla |
+| Clímax del 402 | Al medirlo sale del muro a la espalda y escucha hasta que la cinta para; la cinta la capta |
+| Puntos de control | Dormitorio del 401 (al tomar la llave) y dentro del 402 (al apagón) |
+| El objetivo se recuerda solo | Cada 90 s de juego sin cambiar, en todas las dificultades |
+| Motor | Un recogible con `aparece` aparece en el momento en que se marca su bandera (`Interactuable.alBandera`) |
+
+Verificado caminando (`ritmoPiso4.spec.ts`, `llave.spec.ts`). **Falta validarlo con jugadores nuevos (ronda 2).**
+
 ### Contenido adelantado: escaleras, otros pisos y el Piso 3 (desde 2026-10-06)
 El creador pidió más pisos, escaleras y frases de sangre (todavía no hay datos de jugadores), y decidió adelantar
 este contenido sin esperar la ronda de testers de la Fase 10 (el Gate 1), que sigue pendiente.

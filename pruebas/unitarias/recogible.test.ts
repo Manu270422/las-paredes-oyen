@@ -37,6 +37,20 @@ describe('Recogible', () => {
     expect(recogible.activo, 'tomado no vuelve aunque la bandera siga').toBe(false);
   });
 
+  it('su bandera marcada en plena partida lo hace aparecer al momento; otra bandera no', () => {
+    const { recogible, ctx, progreso } = colocar('tarjeta_azul', 'leyo:nota');
+    recogible.restablecer(ctx);
+    progreso.marcar('otra');
+    recogible.alBandera('otra', ctx);
+    expect(recogible.activo, 'otra bandera').toBe(false);
+    progreso.marcar('leyo:nota');
+    recogible.alBandera('leyo:nota', ctx);
+    expect(recogible.activo, 'con su bandera, sin recargar').toBe(true);
+    recogible.interactuar(ctx);
+    recogible.alBandera('leyo:nota', ctx);
+    expect(recogible.activo, 'tomado no vuelve').toBe(false);
+  });
+
   it('muestra el texto de su declaración', () => {
     expect(colocar('baterias').recogible.texto()).toBe('Recoger baterías');
     expect(colocar('tarjeta_azul').recogible.texto()).toBe('Tomar la tarjeta azul');

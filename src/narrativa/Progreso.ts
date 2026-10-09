@@ -25,8 +25,16 @@ export interface DatosPisoVisitado {
 /** Lo que necesito de un piso para seguir su historia: cuál es, sus objetivos y sus reglas. */
 export type PisoDeProgreso = Pick<PaquetePiso, 'id' | 'objetivos' | 'reglas'>;
 
+/**
+ * Segundos de juego con el mismo objetivo antes de recordarlo solo. En la ronda 1, el de Difícil (sin pistas) vio
+ * el objetivo 6.5 s, se le olvidó y se perdió 3 min: el aviso se repite en todas las dificultades, en voz baja.
+ */
+export const RECORDAR_OBJETIVO_CADA = 90;
+
 export class Progreso {
   private banderas = new Set<string>();
+  /** Segundos de juego desde la última vez que se mostró el objetivo. */
+  private sinRecordar = 0;
   private inventario: string[] = [];
   private documentos: string[] = [];
   private objetivoAnterior: string | null = null;
@@ -95,7 +103,14 @@ export class Progreso {
     const id = actual?.id ?? null;
     if (id === this.objetivoAnterior) return;
     this.objetivoAnterior = id;
+    this.sinRecordar = 0;
     if (actual) this.bus.emit('objetivo', { texto: actual.texto, nuevo: true });
+  }
+
+  /** Cada fotograma de juego: si el objetivo lleva mucho sin mostrarse, lo recuerdo. */
+  actualizar(dt: number): void {
+    this.sinRecordar += dt;
+    if (this.sinRecordar >= RECORDAR_OBJETIVO_CADA) this.anunciarObjetivo();
   }
 
   exportar(): DatosProgreso {
@@ -140,6 +155,7 @@ export class Progreso {
 
   /** Vuelvo a anunciar el objetivo actual (al empezar o cargar). */
   anunciarObjetivo(): void {
+    this.sinRecordar = 0;
     const actual = this.objetivoActual();
     if (actual) this.bus.emit('objetivo', { texto: actual.texto, nuevo: false });
   }

@@ -141,10 +141,12 @@ export const MAPA_PISO_4: DefMapa = {
   interactuables: [
     { tipo: 'documento', id: 'docOrden', documento: 'orden_trabajo', x: 1.5, y: 8.6, altura: 0.56 },
     { tipo: 'documento', id: 'docDiario', documento: 'diario_rosalba', x: 8.5, y: 1.3, altura: 0.56 },
-    { tipo: 'documento', id: 'docNevera', documento: 'nota_nevera', x: 16.5, y: 1.72, altura: 1.35 },
     { tipo: 'documento', id: 'docCinta403', documento: 'cinta_403', x: 24.9, y: 1.35, altura: 0.78 },
     { tipo: 'documento', id: 'docCarta402', documento: 'carta_402', x: 12.6, y: 17.3, altura: 0.56 },
-    { tipo: 'recogible', id: 'llave402', objeto: 'llave_402', x: 24.1, y: 1.4, altura: 0.78 },
+    // Donde Hernando creía que estaba la llave del 402, la nota de M.: la llave volvió al 401.
+    { tipo: 'documento', id: 'docNotaEscritorio', documento: 'nota_escritorio', x: 24.1, y: 1.4, altura: 0.78 },
+    // La llave del 402, en la mesita de doña Rosalba, junto a su diario. Aparece al leer la nota (estaba en el cajón).
+    { tipo: 'recogible', id: 'llave402', objeto: 'llave_402', x: 8.42, y: 1.44, altura: 0.56, aparece: 'leyo:nota_escritorio' },
     // La llave del candado de la escalera, en el piso bajo la silla que mira la pared: quien contaba los días
     // la tenía y no alcanzó a usarla. Aparece con el final (antes de medir el 402 no está).
     { tipo: 'recogible', id: 'llaveEscalera', objeto: 'llave_escalera', x: 18.2, y: 18.42, altura: 0.02, aparece: 'medido:402' },
@@ -163,7 +165,12 @@ export const MAPA_PISO_4: DefMapa = {
     sala401: { x: 9.5, y: 7.6, angulo: 180 },
     sala403: { x: 21.5, y: 7.2, angulo: 180 },
     servicio: { x: 29.9, y: 10.5, angulo: 90 },
+    // Ya ninguna bandera lleva aquí (la llave del 402 no está en el estudio), pero una partida guardada antes
+    // del cambio puede tener este punto: sin él no tendría dónde reaparecer.
     estudio403: { x: 24.5, y: 3.3, angulo: 180 },
+    dormitorio401: { x: 7.3, y: 3.3, angulo: 180 },
+    // Dentro del 402, junto a la puerta, mirando la sala: el clímax ya no obliga a cruzar medio piso otra vez.
+    sala402: { x: 14.5, y: 12.4, angulo: 0 },
   },
 
   guaridaEntidad: { x: 14, y: 4.5 },

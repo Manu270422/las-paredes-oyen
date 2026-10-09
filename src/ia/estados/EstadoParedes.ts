@@ -24,12 +24,22 @@ const DISTANCIA_SALIDA = 5;
  * encuentro con 58 % de aire, que no alcanza para uno de cada tres encuentros.
  */
 const PAUSA_SALIDA = 1.5;
+/**
+ * Mientras mide, llego a escuchar en este tiempo (s) desde donde esté: la medición dura 6 s y a la velocidad
+ * normal (1.6 m/s) desde 20 m no llegaba nunca (ronda 1: en 3 de 4 partidas medir no tuvo nada). Así los
+ * rasguños se acercan y paran ANTES de que termine. Dentro del muro nadie me ve correr.
+ */
+const LLEGADA_MEDICION = 4;
+/** Tope de esa prisa (m/s): desde la otra punta del piso se oye venir más rápido, pero no aparece de golpe. */
+const VELOCIDAD_MAXIMA_MEDICION = 7;
 
 export class EstadoParedes implements EstadoIA {
   readonly nombre = 'paredes' as const;
   private temporizadorPista = 8;
   private deriva: { x: number; z: number } | null = null;
   private atraidaAntes = false;
+  /** La velocidad de esta medición: se fija al empezar (recalcularla cada fotograma la frenaba y nunca llegaba). */
+  private velocidadMedicion = 0;
 
   entrar(entidad: Entidad): void {
     entidad.desvanecer();
@@ -47,7 +57,11 @@ export class EstadoParedes implements EstadoIA {
     // Después del 401 ya está despierta: la medición la atrae (lo escucha escuchar).
     const atraidaPorMedicion = ctx.grabadora.midiendo !== null && entidad.puedeManifestarse;
     // La medición dura 6 s: el primer rasguño no puede esperar al temporizador normal (6-12 s).
-    if (atraidaPorMedicion && !this.atraidaAntes) this.temporizadorPista = Math.min(this.temporizadorPista, aleatorio(0.8, 1.8));
+    if (atraidaPorMedicion && !this.atraidaAntes) {
+      this.temporizadorPista = Math.min(this.temporizadorPista, aleatorio(0.8, 1.8));
+      const falta = entidad.distanciaAlJugador(ctx) - DISTANCIA_LLEGADA_MEDICION;
+      this.velocidadMedicion = Math.min(VELOCIDAD_MAXIMA_MEDICION, Math.max(CONFIG.entidad.velocidadParedes, falta / LLEGADA_MEDICION));
+    }
     this.atraidaAntes = atraidaPorMedicion;
 
     // ¿Hacia dónde me deslizo?
@@ -62,7 +76,7 @@ export class EstadoParedes implements EstadoIA {
       }
       objetivo = this.deriva;
     }
-    const velocidad = CONFIG.entidad.velocidadParedes * (ruidoReciente || atraidaPorMedicion ? 1 : 0.5);
+    const velocidad = atraidaPorMedicion ? this.velocidadMedicion : CONFIG.entidad.velocidadParedes * (ruidoReciente ? 1 : 0.5);
     entidad.deslizarHacia(objetivo.x, objetivo.z, velocidad, dt);
 
     // Pistas sonoras de dónde estoy (solo si estoy cerca del jugador).

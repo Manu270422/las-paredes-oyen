@@ -248,6 +248,11 @@ export class Nivel {
     if (ctx) for (const reja of this.rejas) reja.actualizar(dt, ctx);
   }
 
+  /** Se marcó una bandera en plena partida: aviso a los objetos que dependen de ella. */
+  alBandera(nombre: string, ctx: ContextoJuego): void {
+    for (const i of this.interactuables) i.alBandera?.(nombre, ctx);
+  }
+
   /** Dejo el mundo como corresponde a las banderas de progreso actuales. */
   restablecer(ctx: ContextoJuego): void {
     const p = ctx.progreso;

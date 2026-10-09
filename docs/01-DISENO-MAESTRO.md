@@ -172,11 +172,12 @@ Ver `02-ARQUITECTURA.md`.
 1. Tarjeta: *Edificio Almendros · Piso 4 · 11:48 p. m.* Escalera con luz roja.
 2. Orden de trabajo → objetivo: medir 401, 403, 402.
 3. **401**: lámpara encendida sin luz, radio, diario de Rosalba (enseña las reglas). Medición: **tres golpes junto a ti mientras no puedes moverte**. La grabación reproduce una voz: *«…no le contestes…»*. La criatura se habilita.
+3b. **Primer encuentro** (desde 2026-10-09): al volver al pasillo, ella se desprende del muro a 5–9 m y viene a escucharte. Quieto y sin respirar, se va. La regla se aprende de ella, no de un texto.
 4. El director empieza a trabajar: golpes, pasos arriba, puertas que cambian, radio que se enciende sola, eco de tus pasos, silueta fugaz.
-5. **403**: casete del vecino (la voz que repite; la linterna que zumba). Medición: la grabación tiene **tus pasos** cuando estabas quieto.
+5. **403**: casete del vecino (la voz que repite; la linterna que zumba). En el escritorio, donde la orden decía que estaba la llave, la **nota de M.**: la llave volvió al cajón de la mesita de Rosalba, en el 401. Medición: los rasguños llegan por el muro antes de que termine; la grabación tiene **tus pasos** cuando estabas quieto.
 6. **Tablero** al fondo del callejón sin salida: vuelve la luz. Alivio.
 7. **Apagón**: las lámparas del pasillo revientan una por una **hacia ti**. Al final, en el extremo, algo de pie.
-8. Llave en el estudio del 403 → **402**: todo cubierto, una sábana con forma de persona (que a veces ya no está).
+8. Llave en la mesita del 401, junto al diario → **402**: todo cubierto, una sábana con forma de persona (que a veces ya no está). **Mientras mides, sale del muro a tu espalda y se queda escuchando hasta que la cinta para.**
 9. **Final**: la grabación del 402 trae pasos acercándose al micrófono… luego ya no vienen de la grabadora sino de atrás. La linterna muere. Algo respira en tu nuca. La luz vuelve. Está frente a ti.
 
 ## 18. Hoja de ruta

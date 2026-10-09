@@ -26,11 +26,12 @@ export const PISO_4: PaquetePiso = {
       duracionMensaje: 2.5,
       recargaLinterna: 0.5,
     },
-    // La llave que abre el 402. Está en el estudio del 403: el mismo id lo pide la puerta del 402 en el mapa.
+    // La llave que abre el 402. Está en el cajón de la mesita del 401 (la nota del estudio del 403 lo dice):
+    // el mismo id lo pide la puerta del 402 en el mapa.
     llave_402: {
       modelo: 'llave',
       texto: 'Tomar la llave del 402',
-      mensaje: 'Una llave con una etiqueta de cartón: «402».',
+      mensaje: 'En el cajón, debajo de unas cartas: una llave con una etiqueta de cartón. «402».',
       duracionMensaje: 3,
       guardaEnInventario: true,
     },
@@ -49,7 +50,9 @@ export const PISO_4: PaquetePiso = {
     'medido:401': 'sala401',
     'medido:403': 'sala403',
     tablero_activado: 'servicio',
-    'objeto:llave_402': 'estudio403',
+    'objeto:llave_402': 'dormitorio401',
+    // El apagón deja el clímax a la vuelta: si muero midiendo el 402, vuelvo adentro del 402.
+    apagon_pasillo: 'sala402',
     // Con la llave de la escalera en la mano, si muero reaparezco junto a la reja (a donde iba).
     'objeto:llave_escalera': 'escalera',
   },

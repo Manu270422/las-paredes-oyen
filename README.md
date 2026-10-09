@@ -64,7 +64,7 @@ Un niño llorando bajito para que no le pegaran más.
 Lo que nadie dijo no se fue a ningún lado. Se quedó en las paredes, oyendo. Aprendiendo voces, pasos, golpes.
 Y ahora que ya no queda nadie a quien escuchar… **tiene hambre**.
 
-La historia no se explica: se arma con lo que encuentras. Un diario. Un casete. Una nota en la nevera.
+La historia no se explica: se arma con lo que encuentras. Un diario. Un casete. Una nota sobre un escritorio.
 Y lo que capta tu grabadora cuando crees que no pasó nada.
 
 <p align="center"><img src="docs/media/onda.svg" alt="" width="100%"></p>

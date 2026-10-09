@@ -15,7 +15,7 @@ export const DOCUMENTOS: Record<string, Documento> = {
     tipo: 'orden',
     paginas: [
       'CONSTRUCTORA HORIZONTE S.A.S.\nORDEN DE TRABAJO N.º 0413\n\nEdificio Almendros — Cra. 27 con Calle 41, Bucaramanga.\nServicio: medición acústica previa a demolición.\nPiso 4: apartamentos 401, 402 y 403.\n\nProcedimiento: registrar seis (6) segundos de tono de sala en el punto marcado con cinta roja en cada sala. El técnico debe permanecer inmóvil y en silencio durante toda la grabación.\n\nEl edificio se encuentra desocupado desde marzo.',
-      'Ingeniero:\n\nLa luz del piso está cortada. El tablero queda en el cuarto de servicio, al fondo del pasillo.\n\nLa llave del 402 la dejé en el estudio del 403, encima del escritorio.\n\nSi oye golpes, son las tuberías.\n\nSon las tuberías.\n\n— Hernando, administración',
+      'Ingeniero:\n\nLa luz del piso está cortada. El tablero queda en el cuarto de servicio, al fondo del pasillo.\n\nLa llave del 402 se la dejé a don Gustavo, el del 403: él guardaba las de todo el piso. Búsquela en su estudio.\n\nSi oye golpes, son las tuberías.\n\nSon las tuberías.\n\n— Hernando, administración',
     ],
   },
   diario_rosalba: {
@@ -30,11 +30,15 @@ export const DOCUMENTOS: Record<string, Documento> = {
       '(La última página está escrita con otra letra. Temblorosa.)\n\nno le conteste\nno le conteste\nno le conteste\nno le conteste',
     ],
   },
-  nota_nevera: {
-    id: 'nota_nevera',
-    titulo: 'Nota pegada en la nevera',
+  // Sobre el escritorio del estudio, donde el administrador creía que estaba la llave: la hija de don Gustavo
+  // se la llevó al 401. Hay que leerla para encontrarla (la llave aparece con la bandera leyo:nota_escritorio).
+  nota_escritorio: {
+    id: 'nota_escritorio',
+    titulo: 'Nota sobre el escritorio',
     tipo: 'nota',
-    paginas: ['Papá:\n\nNo deje la radio prendida cuando salga.\n\nÉl aprende las voces.\nYa se sabe la suya.\n\n— M.'],
+    paginas: [
+      'Papá:\n\nNo deje la radio prendida cuando salga.\n\nÉl aprende las voces.\nYa se sabe la suya.\n\nLa llave del 402 se la devolví a doña Rosalba. Está en el cajón de su mesita. No la vuelva a traer a esta casa.\n\n— M.',
+    ],
   },
   cinta_403: {
     id: 'cinta_403',
