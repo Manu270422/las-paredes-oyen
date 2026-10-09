@@ -95,6 +95,12 @@ La telemetría ahora guarda el `motivo` de cada caza.
   trae "Exportar registro de la prueba" con la telemetría encendida, porque desde el despertar en la escalera el
   Piso 4 ya no termina en la pantalla final; exportar a media partida guarda antes lo jugado, con su resumen.
 
+#### Ronda 1 con telemetría (2026-10-08) — [informe](pruebas/ronda-1-2026-10-08.md)
+4 compañeros que **ya conocían el juego**, jugando juntos en el salón (1 PC, 3 celulares; no cuenta como Gate 1).
+Con la ruta aprendida, el Piso 4 se pasa en 1:45–2:44, con el estrés en 0 casi todo el tiempo y la criatura presente
+solo tras el apagón (1 encuentro y 1 muerte en total). En Difícil, el jugador no murió: se perdió. El apagón es el
+único pico. **Recomendación:** alargar y tensar el Piso 4 antes del guion del Piso 3 (ver `05-ESTADO-DEL-PROYECTO.md`).
+
 ### Contenido adelantado: escaleras, otros pisos y el Piso 3 (desde 2026-10-06)
 El creador pidió más pisos, escaleras y frases de sangre (todavía no hay datos de jugadores), y decidió adelantar
 este contenido sin esperar la ronda de testers de la Fase 10 (el Gate 1), que sigue pendiente.

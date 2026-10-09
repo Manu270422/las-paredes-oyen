@@ -1,0 +1,1243 @@
+{
+ "juego": "Las Paredes Oyen",
+ "exportado": "2026-10-08T20:49:10.280Z",
+ "sesiones": [
+  {
+   "version": 2,
+   "id": "mv00aope-2f4op",
+   "inicio": "2026-10-08T20:46:01.106Z",
+   "duracion": 163.68,
+   "duracionReal": 176.95,
+   "terminada": "fin",
+   "puntoInicio": "escalera",
+   "entorno": {
+    "entrada": "teclado",
+    "tactil": false,
+    "calidad": "alta",
+    "aspecto": 2.1,
+    "hrtf": true,
+    "dificultad": "normal",
+    "compilacion": "0.1.0+a71278b"
+   },
+   "eventos": [
+    {
+     "t": 0,
+     "tipo": "inicio",
+     "datos": {
+      "punto": "escalera",
+      "habitacion": "escalera",
+      "bateria": 1
+     }
+    },
+    {
+     "t": 0,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": null,
+      "hacia": "escalera",
+      "regreso": false
+     }
+    },
+    {
+     "t": 1.68,
+     "tipo": "primer-movimiento"
+    },
+    {
+     "t": 2.13,
+     "tipo": "primer-ruido",
+     "datos": {
+      "causa": "paso",
+      "intensidad": 0.38
+     }
+    },
+    {
+     "t": 4.78,
+     "tipo": "bandera",
+     "datos": {
+      "nombre": "leyo:orden_trabajo",
+      "bateria": 0.99
+     }
+    },
+    {
+     "t": 4.78,
+     "tipo": "documento",
+     "datos": {
+      "id": "orden_trabajo"
+     }
+    },
+    {
+     "t": 11.99,
+     "tipo": "pista",
+     "datos": {
+      "id": "agacharse"
+     }
+    },
+    {
+     "t": 14.04,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "escalera",
+      "hacia": "pasillo",
+      "regreso": false
+     }
+    },
+    {
+     "t": 18.22,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "pasillo",
+      "hacia": "sala401",
+      "regreso": false
+     }
+    },
+    {
+     "t": 24.01,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "sala401",
+      "hacia": "dormitorio401",
+      "regreso": false
+     }
+    },
+    {
+     "t": 27.19,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "dormitorio401",
+      "hacia": "sala401",
+      "regreso": true
+     }
+    },
+    {
+     "t": 27.32,
+     "tipo": "evento-director",
+     "datos": {
+      "id": "luz_falla",
+      "intensidad": 1,
+      "fase": "calma",
+      "tension": 0.12,
+      "carga": 1
+     }
+    },
+    {
+     "t": 27.57,
+     "tipo": "evento-visto",
+     "datos": {
+      "id": "luz_falla",
+      "tras": 0.27
+     }
+    },
+    {
+     "t": 30.34,
+     "tipo": "reaccion",
+     "datos": {
+      "estimulo": "luz_falla",
+      "giro": 71,
+      "seDetuvo": false,
+      "escucho": false,
+      "aguanto": false,
+      "fuerte": false
+     }
+    },
+    {
+     "t": 32.25,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "sala401",
+      "hacia": "bano401",
+      "regreso": false
+     }
+    },
+    {
+     "t": 38.12,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "bano401",
+      "hacia": "sala401",
+      "regreso": true
+     }
+    },
+    {
+     "t": 40.68,
+     "tipo": "medicion",
+     "datos": {
+      "estado": "inicio",
+      "apartamento": "401",
+      "motivo": null,
+      "progreso": 0,
+      "habitacion": "sala401",
+      "bateria": 0.96,
+      "entidadEstado": "paredes",
+      "distancia": null
+     }
+    },
+    {
+     "t": 40.68,
+     "tipo": "pista",
+     "datos": {
+      "id": "respirar"
+     }
+    },
+    {
+     "t": 46.67,
+     "tipo": "cinta",
+     "datos": {
+      "apartamento": "401",
+      "huellas": 5,
+      "presencia": true
+     }
+    },
+    {
+     "t": 46.67,
+     "tipo": "medicion",
+     "datos": {
+      "estado": "completa",
+      "apartamento": "401",
+      "motivo": null,
+      "progreso": 1,
+      "habitacion": "sala401",
+      "bateria": 0.94,
+      "entidadEstado": "paredes",
+      "distancia": null
+     }
+    },
+    {
+     "t": 46.67,
+     "tipo": "bandera",
+     "datos": {
+      "nombre": "medido:401",
+      "bateria": 0.94
+     }
+    },
+    {
+     "t": 51.1,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "sala401",
+      "hacia": "pasillo",
+      "regreso": true
+     }
+    },
+    {
+     "t": 58.28,
+     "tipo": "pista",
+     "datos": {
+      "id": "paredes"
+     }
+    },
+    {
+     "t": 60.2,
+     "tipo": "fase",
+     "datos": {
+      "fase": "acumulacion"
+     }
+    },
+    {
+     "t": 62.29,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "pasillo",
+      "hacia": "sala403",
+      "regreso": false
+     }
+    },
+    {
+     "t": 67.12,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "sala403",
+      "hacia": "cocina403",
+      "regreso": false
+     }
+    },
+    {
+     "t": 69.25,
+     "tipo": "evento-director",
+     "datos": {
+      "id": "golpes_pared",
+      "intensidad": 1,
+      "fase": "acumulacion",
+      "tension": 0.25,
+      "carga": 2.84
+     }
+    },
+    {
+     "t": 72.27,
+     "tipo": "reaccion",
+     "datos": {
+      "estimulo": "golpes_pared",
+      "giro": 100,
+      "seDetuvo": false,
+      "escucho": false,
+      "aguanto": false,
+      "fuerte": true
+     }
+    },
+    {
+     "t": 74.02,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "cocina403",
+      "hacia": "sala403",
+      "regreso": true
+     }
+    },
+    {
+     "t": 78.3,
+     "tipo": "pista",
+     "datos": {
+      "id": "senuelo"
+     }
+    },
+    {
+     "t": 79.21,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "sala403",
+      "hacia": "estudio403",
+      "regreso": false
+     }
+    },
+    {
+     "t": 82.08,
+     "tipo": "bandera",
+     "datos": {
+      "nombre": "objeto:llave_402",
+      "bateria": 0.97
+     }
+    },
+    {
+     "t": 83.92,
+     "tipo": "bandera",
+     "datos": {
+      "nombre": "leyo:cinta_403",
+      "bateria": 0.97
+     }
+    },
+    {
+     "t": 83.92,
+     "tipo": "documento",
+     "datos": {
+      "id": "cinta_403"
+     }
+    },
+    {
+     "t": 90.43,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "estudio403",
+      "hacia": "sala403",
+      "regreso": true
+     }
+    },
+    {
+     "t": 91.25,
+     "tipo": "evento-director",
+     "datos": {
+      "id": "susurro_lejano",
+      "intensidad": 1,
+      "fase": "acumulacion",
+      "tension": 0.39,
+      "carga": 2.94
+     }
+    },
+    {
+     "t": 93.33,
+     "tipo": "medicion",
+     "datos": {
+      "estado": "inicio",
+      "apartamento": "403",
+      "motivo": null,
+      "progreso": 0,
+      "habitacion": "sala403",
+      "bateria": 0.95,
+      "entidadEstado": "paredes",
+      "distancia": null
+     }
+    },
+    {
+     "t": 93.45,
+     "tipo": "medicion",
+     "datos": {
+      "estado": "cancelada",
+      "apartamento": "403",
+      "motivo": "paso",
+      "progreso": 0.02,
+      "habitacion": "sala403",
+      "bateria": 0.95,
+      "entidadEstado": "paredes",
+      "distancia": null
+     }
+    },
+    {
+     "t": 94.11,
+     "tipo": "medicion",
+     "datos": {
+      "estado": "inicio",
+      "apartamento": "403",
+      "motivo": null,
+      "progreso": 0,
+      "habitacion": "sala403",
+      "bateria": 0.95,
+      "entidadEstado": "paredes",
+      "distancia": null
+     }
+    },
+    {
+     "t": 94.26,
+     "tipo": "reaccion",
+     "datos": {
+      "estimulo": "susurro_lejano",
+      "giro": 10,
+      "seDetuvo": false,
+      "escucho": false,
+      "aguanto": false,
+      "fuerte": false
+     }
+    },
+    {
+     "t": 95.21,
+     "tipo": "entidad",
+     "datos": {
+      "estado": "investigando",
+      "fisica": true,
+      "motivo": null,
+      "habitacion": "sala403",
+      "bateria": 0.95,
+      "entidadEstado": "investigando",
+      "distancia": 5.06
+     }
+    },
+    {
+     "t": 97.48,
+     "tipo": "pista",
+     "datos": {
+      "id": "linterna"
+     }
+    },
+    {
+     "t": 99.78,
+     "tipo": "encuentro",
+     "datos": {
+      "estado": "inicio",
+      "distancia": 2.59,
+      "aire": 0.88,
+      "aguantando": true
+     }
+    },
+    {
+     "t": 100.11,
+     "tipo": "cinta",
+     "datos": {
+      "apartamento": "403",
+      "huellas": 8,
+      "presencia": true
+     }
+    },
+    {
+     "t": 100.11,
+     "tipo": "medicion",
+     "datos": {
+      "estado": "completa",
+      "apartamento": "403",
+      "motivo": null,
+      "progreso": 1,
+      "habitacion": "sala403",
+      "bateria": 0.94,
+      "entidadEstado": "investigando",
+      "distancia": 2.59
+     }
+    },
+    {
+     "t": 100.11,
+     "tipo": "bandera",
+     "datos": {
+      "nombre": "medido:403",
+      "bateria": 0.94
+     }
+    },
+    {
+     "t": 102.79,
+     "tipo": "reaccion",
+     "datos": {
+      "estimulo": "encuentro",
+      "giro": 0,
+      "seDetuvo": false,
+      "escucho": false,
+      "aguanto": true,
+      "fuerte": true
+     }
+    },
+    {
+     "t": 102.94,
+     "tipo": "encuentro",
+     "datos": {
+      "estado": "fallido",
+      "distancia": 2.85,
+      "aire": 0.59,
+      "aguantando": false
+     }
+    },
+    {
+     "t": 102.94,
+     "tipo": "entidad",
+     "datos": {
+      "estado": "cazando",
+      "fisica": true,
+      "motivo": "paso",
+      "habitacion": "sala403",
+      "bateria": 0.94,
+      "entidadEstado": "cazando",
+      "distancia": 2.85
+     }
+    },
+    {
+     "t": 104.92,
+     "tipo": "muerte",
+     "datos": {
+      "motivo": "paso",
+      "enPared": false,
+      "habitacion": "sala403",
+      "bateria": 0.94,
+      "entidadEstado": "cazando",
+      "distancia": 0.85
+     }
+    },
+    {
+     "t": 104.92,
+     "tipo": "susto",
+     "datos": {
+      "origen": "muerte"
+     }
+    },
+    {
+     "t": 104.92,
+     "tipo": "entidad",
+     "datos": {
+      "estado": "paredes",
+      "fisica": false,
+      "motivo": null,
+      "habitacion": "sala403",
+      "bateria": 0.94,
+      "entidadEstado": "paredes",
+      "distancia": null
+     }
+    },
+    {
+     "t": 104.92,
+     "tipo": "reintento",
+     "datos": {
+      "punto": "sala403",
+      "habitacion": "sala403"
+     }
+    },
+    {
+     "t": 104.92,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": null,
+      "hacia": "sala403",
+      "regreso": true
+     }
+    },
+    {
+     "t": 110.05,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "sala403",
+      "hacia": "pasillo",
+      "regreso": true
+     }
+    },
+    {
+     "t": 110.1,
+     "tipo": "evento-visto",
+     "datos": {
+      "id": "susurro_lejano",
+      "tras": 19.1
+     }
+    },
+    {
+     "t": 114.05,
+     "tipo": "evento-no-visto",
+     "datos": {
+      "id": "golpes_pared",
+      "tras": 45.04
+     }
+    },
+    {
+     "t": 116.19,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "pasillo",
+      "hacia": "servicio",
+      "regreso": false
+     }
+    },
+    {
+     "t": 116.83,
+     "tipo": "bandera",
+     "datos": {
+      "nombre": "tablero_activado",
+      "bateria": 0.92
+     }
+    },
+    {
+     "t": 120.59,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "servicio",
+      "hacia": "pasillo",
+      "regreso": true
+     }
+    },
+    {
+     "t": 129.45,
+     "tipo": "bandera",
+     "datos": {
+      "nombre": "abierta:p402",
+      "bateria": 0.98
+     }
+    },
+    {
+     "t": 131.33,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "pasillo",
+      "hacia": "sala402",
+      "regreso": false
+     }
+    },
+    {
+     "t": 132.38,
+     "tipo": "bandera",
+     "datos": {
+      "nombre": "apagon_pasillo",
+      "bateria": 0.97
+     }
+    },
+    {
+     "t": 132.38,
+     "tipo": "momento",
+     "datos": {
+      "id": "apagon"
+     }
+    },
+    {
+     "t": 132.38,
+     "tipo": "imitacion",
+     "datos": {
+      "etapa": 3,
+      "conCuerpo": true
+     }
+    },
+    {
+     "t": 132.38,
+     "tipo": "entidad",
+     "datos": {
+      "estado": "acechando",
+      "fisica": true,
+      "motivo": null,
+      "habitacion": "sala402",
+      "bateria": 0.97,
+      "entidadEstado": "acechando",
+      "distancia": 15.01
+     }
+    },
+    {
+     "t": 132.38,
+     "tipo": "fase",
+     "datos": {
+      "fase": "pico"
+     }
+    },
+    {
+     "t": 132.38,
+     "tipo": "pista",
+     "datos": {
+      "id": "verla"
+     }
+    },
+    {
+     "t": 135.39,
+     "tipo": "reaccion",
+     "datos": {
+      "estimulo": "apagon",
+      "giro": 123,
+      "seDetuvo": false,
+      "escucho": false,
+      "aguanto": false,
+      "fuerte": true
+     }
+    },
+    {
+     "t": 135.39,
+     "tipo": "reaccion",
+     "datos": {
+      "estimulo": "imitacion-3",
+      "giro": 123,
+      "seDetuvo": false,
+      "escucho": false,
+      "aguanto": false,
+      "fuerte": true
+     }
+    },
+    {
+     "t": 137.64,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "sala402",
+      "hacia": "dormitorio402",
+      "regreso": false
+     }
+    },
+    {
+     "t": 138.56,
+     "tipo": "bandera",
+     "datos": {
+      "nombre": "leyo:carta_402",
+      "bateria": 0.96
+     }
+    },
+    {
+     "t": 138.56,
+     "tipo": "documento",
+     "datos": {
+      "id": "carta_402"
+     }
+    },
+    {
+     "t": 141.59,
+     "tipo": "habitacion",
+     "datos": {
+      "desde": "dormitorio402",
+      "hacia": "sala402",
+      "regreso": true
+     }
+    },
+    {
+     "t": 144.12,
+     "tipo": "medicion",
+     "datos": {
+      "estado": "inicio",
+      "apartamento": "402",
+      "motivo": null,
+      "progreso": 0,
+      "habitacion": "sala402",
+      "bateria": 0.95,
+      "entidadEstado": "acechando",
+      "distancia": 5.19
+     }
+    },
+    {
+     "t": 150.11,
+     "tipo": "cinta",
+     "datos": {
+      "apartamento": "402",
+      "huellas": 7,
+      "presencia": true
+     }
+    },
+    {
+     "t": 150.11,
+     "tipo": "medicion",
+     "datos": {
+      "estado": "completa",
+      "apartamento": "402",
+      "motivo": null,
+      "progreso": 1,
+      "habitacion": "sala402",
+      "bateria": 0.93,
+      "entidadEstado": "acechando",
+      "distancia": 5.19
+     }
+    },
+    {
+     "t": 150.11,
+     "tipo": "bandera",
+     "datos": {
+      "nombre": "medido:402",
+      "bateria": 0.93
+     }
+    },
+    {
+     "t": 150.11,
+     "tipo": "entidad",
+     "datos": {
+      "estado": "paredes",
+      "fisica": false,
+      "motivo": null,
+      "habitacion": "sala402",
+      "bateria": 0.93,
+      "entidadEstado": "paredes",
+      "distancia": null
+     }
+    },
+    {
+     "t": 162.02,
+     "tipo": "susto",
+     "datos": {
+      "origen": "final"
+     }
+    },
+    {
+     "t": 163.68,
+     "tipo": "fin",
+     "datos": {
+      "motivo": "fin"
+     }
+    }
+   ],
+   "curva": [
+    {
+     "t": 5.01,
+     "estres": 0,
+     "tension": 0.08,
+     "carga": 0,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "escalera",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 10.02,
+     "estres": 0,
+     "tension": 0.12,
+     "carga": 0,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "escalera",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 15.04,
+     "estres": 0,
+     "tension": 0.12,
+     "carga": 0,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "pasillo",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 20.05,
+     "estres": 0,
+     "tension": 0.12,
+     "carga": 0,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "sala401",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 25.06,
+     "estres": 0,
+     "tension": 0.12,
+     "carga": 0,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "dormitorio401",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 30.07,
+     "estres": 0,
+     "tension": 0.12,
+     "carga": 0.95,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "sala401",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 35.08,
+     "estres": 0,
+     "tension": 0.12,
+     "carga": 0.87,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "bano401",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 40.1,
+     "estres": 0,
+     "tension": 0.12,
+     "carga": 0.8,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "sala401",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 45.11,
+     "estres": 0.19,
+     "tension": 0.12,
+     "carga": 0.74,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "sala401",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 50.12,
+     "estres": 0.01,
+     "tension": 0.2,
+     "carga": 2.56,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "sala401",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 55.13,
+     "estres": 0,
+     "tension": 0.2,
+     "carga": 2.35,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "pasillo",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 60.15,
+     "estres": 0,
+     "tension": 0.19,
+     "carga": 2.15,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "pasillo",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 65.16,
+     "estres": 0,
+     "tension": 0.22,
+     "carga": 1.97,
+     "rasgo": null,
+     "fase": "acumulacion",
+     "habitacion": "sala403",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 70.17,
+     "estres": 0,
+     "tension": 0.25,
+     "carga": 2.79,
+     "rasgo": null,
+     "fase": "acumulacion",
+     "habitacion": "cocina403",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 75.18,
+     "estres": 0,
+     "tension": 0.29,
+     "carga": 2.56,
+     "rasgo": null,
+     "fase": "acumulacion",
+     "habitacion": "sala403",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 80.19,
+     "estres": 0,
+     "tension": 0.32,
+     "carga": 2.35,
+     "rasgo": null,
+     "fase": "acumulacion",
+     "habitacion": "estudio403",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 85.21,
+     "estres": 0,
+     "tension": 0.35,
+     "carga": 2.15,
+     "rasgo": null,
+     "fase": "acumulacion",
+     "habitacion": "estudio403",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 90.22,
+     "estres": 0,
+     "tension": 0.39,
+     "carga": 1.97,
+     "rasgo": null,
+     "fase": "acumulacion",
+     "habitacion": null,
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 95.23,
+     "estres": 0,
+     "tension": 0.42,
+     "carga": 2.74,
+     "rasgo": null,
+     "fase": "acumulacion",
+     "habitacion": "sala403",
+     "entidad": "investigando",
+     "distancia": 5.06,
+     "fps": 60
+    },
+    {
+     "t": 100.24,
+     "estres": 0.49,
+     "tension": 0.75,
+     "carga": 8.48,
+     "rasgo": null,
+     "fase": "acumulacion",
+     "habitacion": "sala403",
+     "entidad": "investigando",
+     "distancia": 2.59,
+     "fps": 60
+    },
+    {
+     "t": 105.25,
+     "estres": 0,
+     "tension": 0.02,
+     "carga": 0,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "sala403",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 110.27,
+     "estres": 0,
+     "tension": 0.11,
+     "carga": 0,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "pasillo",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 115.28,
+     "estres": 0,
+     "tension": 0.12,
+     "carga": 0,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "pasillo",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 120.29,
+     "estres": 0,
+     "tension": 0.12,
+     "carga": 0,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": null,
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 125.3,
+     "estres": 0,
+     "tension": 0.12,
+     "carga": 0,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "pasillo",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 130.31,
+     "estres": 0,
+     "tension": 0.12,
+     "carga": 0,
+     "rasgo": null,
+     "fase": "calma",
+     "habitacion": "pasillo",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 135.33,
+     "estres": 0,
+     "tension": 0.64,
+     "carga": 1.9,
+     "rasgo": null,
+     "fase": "pico",
+     "habitacion": "sala402",
+     "entidad": "acechando",
+     "distancia": 14.47,
+     "fps": 60
+    },
+    {
+     "t": 140.34,
+     "estres": 0,
+     "tension": 0.79,
+     "carga": 1.74,
+     "rasgo": null,
+     "fase": "pico",
+     "habitacion": "dormitorio402",
+     "entidad": "acechando",
+     "distancia": 11.62,
+     "fps": 60
+    },
+    {
+     "t": 145.35,
+     "estres": 0.08,
+     "tension": 0.8,
+     "carga": 1.6,
+     "rasgo": null,
+     "fase": "pico",
+     "habitacion": "sala402",
+     "entidad": "acechando",
+     "distancia": 5.19,
+     "fps": 60
+    },
+    {
+     "t": 150.36,
+     "estres": 0.22,
+     "tension": 0.74,
+     "carga": 3.46,
+     "rasgo": null,
+     "fase": "inactivo",
+     "habitacion": "sala402",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 155.37,
+     "estres": 0.05,
+     "tension": 0.31,
+     "carga": 3.17,
+     "rasgo": null,
+     "fase": "inactivo",
+     "habitacion": "sala402",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    },
+    {
+     "t": 160.39,
+     "estres": 0.54,
+     "tension": 0.25,
+     "carga": 2.9,
+     "rasgo": null,
+     "fase": "inactivo",
+     "habitacion": "sala402",
+     "entidad": "paredes",
+     "distancia": null,
+     "fps": 60
+    }
+   ],
+   "contadores": {
+    "segundos-quieto": 49.02,
+    "ruido:paso": 142,
+    "ruido:linterna-clic": 4,
+    "segundos-linterna": 144.97,
+    "ruido:paso-pared": 47,
+    "ruido:puerta": 10,
+    "segundos-agachado": 40.63,
+    "segundos-aguantando": 12.82,
+    "ruido:respiracion": 7
+   },
+   "resumen": {
+    "tiempoPrimerMovimiento": 1.68,
+    "tiempoPrimerRuido": 2.13,
+    "tiempoPrimeraMedicion": 40.68,
+    "tiempoPrimeraAparicion": 95.21,
+    "tiempoPrimerSusto": 99.78,
+    "tiempoPrimeraReaccionFuerte": 72.27,
+    "muertes": 1,
+    "causasMuerte": {
+     "paso": 1
+    },
+    "medicionesCompletas": 3,
+    "medicionesCanceladas": 1,
+    "motivosCancelacion": {
+     "paso": 1
+    },
+    "senuelosUsados": 0,
+    "regresos": 9,
+    "tiempoPorHabitacion": {
+     "escalera": 14.04,
+     "pasillo": 32.25,
+     "sala401": 23.83,
+     "dormitorio401": 3.18,
+     "bano401": 5.87,
+     "sala403": 29.64,
+     "cocina403": 6.9,
+     "estudio403": 11.22,
+     "servicio": 4.4,
+     "sala402": 28.4,
+     "dormitorio402": 3.95
+    },
+    "eventosDirector": {
+     "luz_falla": 1,
+     "golpes_pared": 1,
+     "susurro_lejano": 1
+    },
+    "eventosVistos": 2,
+    "eventosNoVistos": 1,
+    "reaccionesFuertes": 4,
+    "reaccionesTotales": 6,
+    "encuentros": {
+     "iniciados": 1,
+     "superados": 0,
+     "fallidos": 1
+    },
+    "imitaciones": {
+     "3": 1
+    },
+    "marcasObservador": 0,
+    "estresMedio": 0.05,
+    "estresMaximo": 0.54,
+    "fpsMedio": 60
+   }
+  }
+ ]
+}
