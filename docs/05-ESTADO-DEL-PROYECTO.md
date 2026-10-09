@@ -14,6 +14,18 @@ alguien que no lo conoce, no solo para quien lo hizo.
 
 El creador pide **la verdad sin suavizar**, en español. Nada de porcentajes inflados.
 
+## Meta de fecha: Play Store el 31 de octubre de 2026
+
+El creador quiere el juego descargable en la Play Store el 31 de octubre. Lo que se sabe (2026-10-09, fuentes de
+desarrolladores, sin página oficial confirmada; verificar en la Play Console):
+- Una cuenta personal **nueva** necesita una **prueba cerrada con ≥ 12 testers durante 14 días seguidos** antes de
+  pedir acceso a producción; después viene la revisión de Google (puede tardar días).
+- Además: la cuenta de desarrollador (pago único de 25 USD y verificación de identidad, que puede tardar días),
+  empaquetar con Capacitor (Fase 14), firmar el AAB, política de privacidad, clasificación de contenido y el
+  formulario de seguridad de datos.
+- **Realista:** el 31 de octubre como lanzamiento web de Halloween + prueba cerrada ya corriendo en Play Store;
+  publicación abierta en noviembre. Para llegar, la prueba cerrada tiene que empezar a más tardar ~el 15 de octubre.
+
 ## Ramas y publicación
 
 | Qué | Dónde |
@@ -103,5 +115,6 @@ Commit `9646829`, "El 302: la libreta de Andrés…". Se tomaron estas decisione
 | Fecha | Qué se hizo |
 |---|---|
 | 2026-10-08 | El 302: libreta de Andrés, examinables y rastros (`9646829`, en otro computador). Revisión honesta del proyecto. Exportar el registro desde la pausa y protocolo para testers a distancia (`278fde9`). |
+| 2026-10-09 | El creador jugó el Piso 4 nuevo ("no me había cagado tanto en esta vida"). Con la reja cerrada y sin llave, el tramo dice "Revisar la reja" (antes prometía "Bajar al Piso 3"). Decidió publicar `sprint-4` en `main` él mismo y apunta a la Play Store el 31 de octubre (ver la meta arriba). |
 | 2026-10-09 | Ritmo del Piso 4 ([P4-ritmo](propuestas/P4-ritmo.md)): medir atrae de verdad, primer encuentro en el pasillo, la nota del estudio lleva a la llave en el 401, clímax del 402, puntos de control nuevos, el objetivo se recuerda cada 90 s, y las partidas guardadas con la llave vieja se reparan al cargar. Corrección: la calidad "alta" del P2 fue elegida a mano; el problema real es que "baja" apaga el HRTF. |
 | 2026-10-09 | Análisis de la ronda 1 (4 compañeros que ya conocían el juego, jugando juntos): [informe](pruebas/ronda-1-2026-10-08.md), datos en `docs/pruebas/ronda-1/`. Este documento y `CLAUDE.md` para retomar desde cualquier computador. |

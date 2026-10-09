@@ -25,6 +25,8 @@ const RADIO_ZONA = 0.5;
 const TEXTO_CERRADA = 'Por aquí no se puede pasar.';
 const TEXTO_EN_CAZA = '[La cadena se traba]';
 const TEXTO_ABRIR = 'Abrir el candado';
+/** Con la reja cerrada y sin la llave, "Bajar al Piso 3" prometía algo que no pasa (lo dijo el creador al jugarlo). */
+const TEXTO_REVISAR = 'Revisar la reja';
 const PREFIJO_OBJETO = 'objeto:';
 
 /**
@@ -63,9 +65,12 @@ export class TramoEscalera implements Interactuable {
     return `abierta:${this.id}`;
   }
 
-  /** Con la llave y la reja todavía cerrada, lo que hago es abrirla; si no, lo que dice el paquete. */
+  /** Con la llave y la reja todavía cerrada, lo que hago es abrirla; sin la llave, revisarla; si no, lo que dice el paquete. */
   texto(ctx: ContextoJuego): string {
-    return this.porAbrir(ctx) ? TEXTO_ABRIR : this.def.texto;
+    if (this.porAbrir(ctx)) return TEXTO_ABRIR;
+    const { requiere } = this.def;
+    if (this.reja && !this.reja.abierta && requiere && !cumple(ctx, requiere)) return TEXTO_REVISAR;
+    return this.def.texto;
   }
 
   private porAbrir(ctx: ContextoJuego): boolean {

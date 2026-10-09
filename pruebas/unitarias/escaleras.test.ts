@@ -94,6 +94,7 @@ describe('TramoEscalera', () => {
       posicion: () => ({ x: 0, y: 0, z: 0 }),
     };
     t.enlazarReja(reja as unknown as RejaEscalera);
+    expect(t.texto(ctx), 'sin la llave no promete bajar').toBe('Revisar la reja');
     t.interactuar(ctx);
     expect(subtitulos, 'sin la llave sigue cerrada').toEqual(['Candado.']);
     progreso.agregarObjeto('llave');
