@@ -2,12 +2,13 @@
 // pero el circuito eléctrico falló antes: solo la emergencia enciende. La criatura ya está despierta al
 // llegar: 'llego:piso3' se marca en silencio antes de ponerEnPunto(), y el director arranca de inmediato.
 // Aquí se junta la libreta de Andrés (el cuaderno del 302 y las hojas que le arrancaron, en el 301 y el 303).
-// Falta (en este orden): el resto del guion (el golpe, el apagón, la criatura en el pasillo) y el ascensor
-// (solo su sonido).
+// El guion completo (propuesta P3-guion): el golpe al llegar, el apagón al juntar la libreta, grabar la pared del
+// cuarto de Andrés, ella en el pasillo al volver y el final en la escalera. Falta el ascensor (solo su sonido).
 import type { PaquetePiso } from '../TiposPiso';
 import { DOCUMENTOS } from './documentos';
 import { EXAMINABLES } from './examinables';
-import { GuionPiso3, LIBRETA_COMPLETA } from './guion';
+import { CINTA_302, FINAL_PISO_3, GuionPiso3, LIBRETA_COMPLETA } from './guion';
+import { TRANSCRIPCIONES } from './transcripciones';
 import { MAPA_PISO_3 } from './mapa';
 
 export const PISO_3: PaquetePiso = {
@@ -21,9 +22,12 @@ export const PISO_3: PaquetePiso = {
     { id: 'llegar', texto: 'Bajar al Piso 3', bandera: 'llego:piso3' },
     { id: 'averiguar', texto: 'Averigua por qué cerraron este piso', bandera: 'leyo:carta_admin_301' },
     { id: 'juntar', texto: 'Junta las hojas del cuaderno de Andrés, el niño del 302', bandera: LIBRETA_COMPLETA },
+    { id: 'grabar', texto: 'Graba la pared del cuarto de Andrés: la X está en el dormitorio del 302', bandera: 'medido:302' },
+    // 'huir' se cumple al empezar el final, en la escalera: su texto es lo último que se lee en el piso.
+    { id: 'huir', texto: 'Vuelve a la escalera', bandera: FINAL_PISO_3 },
   ],
   documentos: DOCUMENTOS,
-  transcripciones: {},
+  transcripciones: TRANSCRIPCIONES,
   examinables: EXAMINABLES,
   // llego:piso3 se marca en silencio al llegar (banderasAlLlegar). Con ella el director ya está activo
   // y la criatura ya despierta: el Piso 3 es más agresivo que el 4 desde el primer segundo.
@@ -43,9 +47,11 @@ export const PISO_3: PaquetePiso = {
   puntoInicial: 'escalera',
   // Leer el cuaderno guarda en el cuarto del 302: lo que pase al juntar la libreta no me devuelve a la escalera.
   // En Difícil también cuenta (es el hito del 302, como medir un apartamento en el Piso 4).
-  puntosControl: { 'llego:piso3': 'escalera', 'leyo:libreta_302': 'cuarto302' },
-  puntosControlMayores: ['leyo:libreta_302'],
-  luzPorBandera: {},
+  // Grabar la pared guarda en el dormitorio: ella espera en el pasillo, y morir ahí no devuelve a la libreta.
+  puntosControl: { 'llego:piso3': 'escalera', 'leyo:libreta_302': 'cuarto302', 'medido:302': 'dormitorio302', [CINTA_302]: 'dormitorio302' },
+  puntosControlMayores: ['leyo:libreta_302', 'medido:302'],
+  // Al juntar la libreta revienta la única luz del piso: la emergencia de la escalera.
+  luzPorBandera: { [LIBRETA_COMPLETA]: { lamparas: { emergencia: 'rota' } } },
   placas: [
     { puerta: 'p301', texto: '301', lugar: 'Apartamento 301' },
     { puerta: 'p303', texto: '303', lugar: 'Apartamento 303' },
@@ -93,7 +99,7 @@ export const PISO_3: PaquetePiso = {
   // El tramo que sube está a la derecha de la boca (celda x 3); el de la izquierda (x 1) baja, con su reja al Piso 2.
   escaleras: [{ id: 'subida', hacia: 'piso4', llegada: 'escalera', x: 3.5, y: 10.5, texto: 'Subir al Piso 4' }],
   siguiente: { id: 'piso2', nombre: 'Piso 2' },
-  guion: () => new GuionPiso3(),
+  guion: (acciones) => new GuionPiso3(acciones),
   menu: {
     camara: { x: 4.4, y: 10.5, angulo: -90 },
     figura: { x: 15.5, y: 10.5, angulo: -90 },

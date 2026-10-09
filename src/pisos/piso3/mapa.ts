@@ -140,6 +140,9 @@ export const MAPA_PISO_3: DefMapa = {
     { tipo: 'examinable', id: 'exMedidor', examinable: 'medidor_302', x: 13.6, y: 17.18 },
     { tipo: 'examinable', id: 'exCarrito', examinable: 'carrito_302', x: 10.1, y: 17.75 },
     { tipo: 'examinable', id: 'exDibujo', examinable: 'dibujo_302', x: 10.5, y: 12.01, altura: 1.05 },
+    // La X de cinta roja en el dormitorio del 302, frente a las rayas de estatura (entre la cama y la mesita): aquí
+    // se graba la pared del cuarto de Andrés (P3-guion).
+    { tipo: 'medicion', id: 'medir302', apartamento: '302', x: 11.5, y: 17.75 },
     // Dos pilas: en la mesa de la cocina del 303 y en la mesita del dormitorio del 301.
     { tipo: 'recogible', id: 'pilas1', objeto: 'pilas', x: 19.2, y: 2.4, altura: 0.761 },
     { tipo: 'recogible', id: 'pilas2', objeto: 'pilas', x: 8.5, y: 1.3, altura: 0.541 },
@@ -149,6 +152,8 @@ export const MAPA_PISO_3: DefMapa = {
     escalera: { x: 2.2, y: 10.5, angulo: -90 },
     // En el cuarto pequeño del 302, mirando hacia la silla y el cuaderno.
     cuarto302: { x: 16.3, y: 17.5, angulo: -90 },
+    // Junto a la X del dormitorio, mirando las rayas: si muero en el pasillo, vuelvo a pocos pasos de él.
+    dormitorio302: { x: 11.5, y: 17.4, angulo: 180 },
   },
 
   guaridaEntidad: { x: 14, y: 4.5 },

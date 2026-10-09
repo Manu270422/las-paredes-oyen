@@ -180,6 +180,17 @@ Ver `02-ARQUITECTURA.md`.
 8. Llave en la mesita del 401, junto al diario → **402**: todo cubierto, una sábana con forma de persona (que a veces ya no está). **Mientras mides, sale del muro a tu espalda y se queda escuchando hasta que la cinta para.**
 9. **Final**: la grabación del 402 trae pasos acercándose al micrófono… luego ya no vienen de la grabadora sino de atrás. La linterna muere. Algo respira en tu nuca. La luz vuelve. Está frente a ti.
 
+## 17b. Piso 3 — lo que nadie quiso oír (implementado 2026-10-09)
+
+1. Llegas por la escalera (luz roja). A los 8 s, tres golpes despacio desde la pared del cuarto de Andrés, en el 302.
+2. La carta del 301: el piso lo cerraron "por las tuberías". La libreta de Andrés en tres partes (301, 303, 302).
+3. Al juntarla, revienta la luz de la escalera, la única del piso. No la ves: lo descubres al volver.
+4. **Grabas la pared del cuarto de Andrés**, frente a sus rayas de estatura. En la cinta, una voz de niño: «Hoy mi
+   mamá me midió». Y con tu ritmo: «Ya casi estoy completo».
+5. Al salir, ella espera en el pasillo, entre la escalera y tú. El pasillo mide una celda: la alejas con la grabadora
+   o la iluminas quieto hasta que se hunda en la pared.
+6. En la escalera, a oscuras: desde abajo, detrás de la reja del Piso 2, tres golpes despacio. Fin de la partida.
+
 ## 18. Hoja de ruta
 
 Ver `03-HOJA-DE-RUTA.md`.

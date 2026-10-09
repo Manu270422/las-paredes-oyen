@@ -14,6 +14,7 @@ import type { ContextoJuego } from '../../nucleo/ContextoJuego';
 import type { AccionesGuion } from '../../narrativa/AccionesGuion';
 import type { GuionPiso } from '../TiposPiso';
 import { ejecutarSecuenciaFinal } from './secuenciaFinal';
+import { reproducirCinta } from '../../narrativa/Cinta';
 import { muroCercano } from '../../director/eventos/Ayudas';
 import { CONFIG } from '../../config/ConfiguracionJuego';
 
@@ -191,14 +192,14 @@ export class GuionPiso4 implements GuionPiso {
   private alBandera(nombre: string, ctx: ContextoJuego): void {
     switch (nombre) {
       case 'medido:401':
-        this.reproducirTranscripcion('401', ctx, () => {
+        reproducirCinta('401', ctx, () => {
           ctx.entidad.puedeManifestarse = true;
           this.pista(ctx, 'paredes', 'Las paredes llevan el sonido. Camina por el centro de los cuartos.');
           ctx.programador.despues(20, () => this.pista(ctx, 'senuelo', 'Pulsa {senuelo} para dejar la grabadora reproduciendo tus pasos. Te buscará a ella.'));
         });
         break;
       case 'medido:403':
-        this.reproducirTranscripcion('403', ctx, () => {
+        reproducirCinta('403', ctx, () => {
           this.pista(ctx, 'escuchar', 'Mantén {escuchar} para escuchar con atención: oirás a través de los muros.');
         });
         break;
@@ -212,34 +213,6 @@ export class GuionPiso4 implements GuionPiso {
         ejecutarSecuenciaFinal(ctx, this.acciones);
         break;
     }
-  }
-
-  /**
-   * Reproduzco la cinta: las líneas de la historia MÁS lo que el micrófono
-   * captó de verdad durante la medición (la segunda realidad).
-   */
-  private reproducirTranscripcion(id: string, ctx: ContextoJuego, alTerminar: () => void): void {
-    const guion = ctx.piso.transcripciones[id] ?? [];
-    const lineas = [...guion, ...ctx.grabadora.captura.lineas(guion)].sort((a, b) => a.t - b.t);
-    let final = 0;
-    for (const linea of lineas) final = Math.max(final, linea.t);
-    ctx.director.bloquear(final + 5);
-    const siseo = ctx.audio.reproducir('siseo_cinta', { bus: 'voz', bucle: true, volumen: 0.15, variacion: 0 });
-    for (const linea of lineas) {
-      ctx.programador.despues(linea.t, () => {
-        if (linea.texto) ctx.bus.emit('subtitulo', { texto: linea.texto, duracion: 3.2, tipo: 'efecto' });
-        const sonido = linea.sonido;
-        if (!sonido) return;
-        // Suena "desde la cinta": un poco más grave, y apagado si se captó a través del muro.
-        for (let i = 0; i < (linea.repeticiones ?? 1); i++) {
-          ctx.audio.reproducir(sonido, { bus: 'voz', volumen: linea.volumen ?? 0.5, retraso: i * 0.36, tono: 0.97, dentroPared: linea.dentroPared });
-        }
-      });
-    }
-    ctx.programador.despues(final + 3, () => {
-      siseo?.detener(0.3);
-      alTerminar();
-    });
   }
 
   /** Las lámparas del pasillo revientan una a una, desde la más lejana hacia mí. */

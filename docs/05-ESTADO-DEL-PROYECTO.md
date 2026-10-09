@@ -46,7 +46,8 @@ El `main` local puede estar desactualizado: comparar siempre con `origin/main`.
 |---|---|---|
 | Sistemas (IA, audio, director, guardado, UI, pruebas) | ~90 % | Sólidos: 360 unitarias + 52 recorridos caminando, todo verde |
 | **Piso 4 como experiencia** | **~55 % (sin validar)** | La ronda 1 lo mostró en ~2 min y sin tensión ([informe](pruebas/ronda-1-2026-10-08.md)). Con [P4-ritmo](propuestas/P4-ritmo.md) ya hay encuentro temprano, medir atrae, la historia lleva a la llave y el 402 tiene clímax. Hasta que lo jueguen personas nuevas, es una hipótesis |
-| Piso 3 | ~55 % | Mapa, escalera, llave, reja, 5 documentos, libreta del 302 y rastros. Falta el guion y una regla propia |
+| Piso 3 | ~80 % (sin validar) | Completo de principio a fin ([P3-guion](propuestas/P3-guion.md)): libreta, apagón, grabar la pared del cuarto de Andrés, ella en el pasillo, final. Falta: el ascensor (solo sonido) y que lo jueguen personas |
+| Android | ~30 % | Capacitor 8, APK de prueba compilado ([06-ANDROID](06-ANDROID.md)). Falta: verlo en un celular, ícono, firma, cuenta de Play Console, prueba cerrada |
 | Validación con jugadores nuevos (Gate 1) | ~5 % | La ronda 1 fue con jugadores que ya conocían el juego |
 | Hacia la Play Store | ~20 % | Faltan: Piso 4 con ritmo, final del juego, audio real, rendimiento móvil medido, fuente propia, Capacitor |
 
@@ -64,8 +65,11 @@ El creador aprobó el orden el 2026-10-09: primero el Piso 4, y "cuando todo est
    compañeros de la ronda 1 prueban lo nuevo como expertos. **Decisión pendiente del creador:** para que la
    jueguen hay que publicar `sprint-4` (merge a `main`), y eso trae el Piso 3 sin terminar después del 402. Se
    puede pedir a los testers que paren en la tarjeta "Piso 4 superado" (la pausa ya tiene "Exportar registro").
-4. Después: el guion del Piso 3 (el golpe a los 8 s, el apagón al juntar la libreta y la criatura en el pasillo al
-   volver), el ascensor (solo el sonido) y partir `PintorRastros.ts` en un commit aparte.
+4. ~~El guion del Piso 3~~ **hecho el 2026-10-09** con su final. Queda: el ascensor (solo el sonido) y partir
+   `PintorRastros.ts` en un commit aparte.
+5. **Android:** instalar el APK en un celular real y revisar la lista de [06-ANDROID](06-ANDROID.md); después el
+   ícono, la firma y la cuenta de Play Console (lo que más tarda es la verificación de la cuenta).
+6. **`Juego.ts` está en 699 de 700 líneas.** Lo próximo que lo toque tiene que sacar algo primero.
 
 Lo que el creador tiene que hacer y Claude no puede: escuchar con audífonos y decir qué suena falso (`FIRMAS`),
 medir FPS en su celular y conseguir testers.
@@ -78,6 +82,17 @@ medir FPS en su celular y conseguir testers.
   la llave. Agrega: "La llave del 402 se la devolví a doña Rosalba. Está en el cajón de su mesita. No la vuelva a
   traer a esta casa."
 - **La llave del 402:** "En el cajón, debajo de unas cartas: una llave con una etiqueta de cartón. «402»."
+
+## Textos nuevos del Piso 3 que el creador debe revisar (2026-10-09)
+
+- **La cinta del cuarto de Andrés:** "Una voz de niño, pegada al micrófono: «Hoy mi mamá me midió.»" y "La misma voz,
+  más grave, con el ritmo de tu respiración: «Ya casi estoy completo.»"
+- **El final:** "Abajo, detrás de la reja, alguien golpea tres veces. Despacio. Para que sepas que oyó."
+- **La pista del pasillo** (solo con pistas): "Está entre tú y la escalera. Deja la grabadora lejos de ella, o
+  ilumínala quieto hasta que se vaya."
+- **Riesgo a mirar con testers:** al iluminarla se retira, pero en retirada todavía tiene cuerpo y se aleja hacia la
+  escalera. Si el jugador la sigue enseguida, la alcanza y lo caza. La prueba automática tuvo que esperar a que se
+  hundiera en la pared. Puede sentirse injusto.
 
 ## Decisiones del 302 que el creador debe revisar (de la sesión del 2026-10-08)
 
@@ -115,6 +130,7 @@ Commit `9646829`, "El 302: la libreta de Andrés…". Se tomaron estas decisione
 | Fecha | Qué se hizo |
 |---|---|
 | 2026-10-08 | El 302: libreta de Andrés, examinables y rastros (`9646829`, en otro computador). Revisión honesta del proyecto. Exportar el registro desde la pausa y protocolo para testers a distancia (`278fde9`). |
+| 2026-10-09 | El creador reescribió los commits sin atribución y publicó `sprint-4` en `main` (`1fb67d6`); su `CLAUDE.md` nuevo pide commits sin atribución y no publicar sin autorización. **Android:** Capacitor 8, APK de prueba compilado, botón atrás, Compartir para el registro ([06-ANDROID](06-ANDROID.md)). **Piso 3 completo** ([P3-guion](propuestas/P3-guion.md)): golpes al llegar, apagón, grabar la pared, el pasillo y el final con "Piso 3 completado". La cinta pasó a `narrativa/Cinta.ts`. Commits locales, sin push (esperan autorización). |
 | 2026-10-09 | El creador jugó el Piso 4 nuevo ("no me había cagado tanto en esta vida"). Con la reja cerrada y sin llave, el tramo dice "Revisar la reja" (antes prometía "Bajar al Piso 3"). Decidió publicar `sprint-4` en `main` él mismo y apunta a la Play Store el 31 de octubre (ver la meta arriba). |
 | 2026-10-09 | Ritmo del Piso 4 ([P4-ritmo](propuestas/P4-ritmo.md)): medir atrae de verdad, primer encuentro en el pasillo, la nota del estudio lleva a la llave en el 401, clímax del 402, puntos de control nuevos, el objetivo se recuerda cada 90 s, y las partidas guardadas con la llave vieja se reparan al cargar. Corrección: la calidad "alta" del P2 fue elegida a mano; el problema real es que "baja" apaga el HRTF. |
 | 2026-10-09 | Análisis de la ronda 1 (4 compañeros que ya conocían el juego, jugando juntos): [informe](pruebas/ronda-1-2026-10-08.md), datos en `docs/pruebas/ronda-1/`. Este documento y `CLAUDE.md` para retomar desde cualquier computador. |
