@@ -4,7 +4,7 @@
 > memoria de Claude se queda en cada máquina: lo que hay que recordar vive aquí y en el repo.
 > **Actualízalo al final de cada sesión** (sección "Bitácora" y lo que haya cambiado arriba).
 >
-> Última actualización: 2026-10-09.
+> Última actualización: 2026-10-10.
 
 ## La meta
 
@@ -30,7 +30,7 @@ desarrolladores, sin página oficial confirmada; verificar en la Play Console):
 
 | Qué | Dónde |
 |---|---|
-| Sitio público | `almendros.elmundodemanu.com`, publica **`origin/main`** (hoy `a71278b`, Piso 4 completo con dificultad) |
+| Sitio público | `almendros.elmundodemanu.com`, publica **`origin/main`** (hoy `1fb67d6`: Piso 4 con el ritmo nuevo y el Piso 3 hasta la libreta) |
 | Trabajo en curso | **`sprint-4`** (Piso 3 a medias, escalera, llave, reja, libreta del 302, exportar desde la pausa) |
 | Ver qué commit está publicado | En el bundle en vivo aparece `0.1.0+<sha>` (buscar en `assets/index-*.js`) |
 | Enlace de los testers | `https://almendros.elmundodemanu.com/?telemetria=1` (protocolo §2) |
@@ -115,8 +115,11 @@ Commit `9646829`, "El 302: la libreta de Andrés…". Se tomaron estas decisione
 
 ## Cómo se trabaja en este repo
 
-- **Git en discos sin dueños** (D: en Windows): `git -c safe.directory=D:/JuegoDeTerror …`, o agregar la excepción
-  global si el creador lo permite.
+- **Git en discos sin dueños:** el repo está en D: en el portátil prestado y en F: en el PC del creador:
+  `git -c safe.directory=F:/JuegoDeTerror …` (o la letra que toque).
+- **Autoría:** el creador hace todo el git a mano; Claude solo entrega los comandos y mensajes sin atribución. En cada
+  computador nuevo, revisar que `%USERPROFILE%\.claude\settings.json` tenga `"attribution": {"commit": "", "pr": ""}`
+  y que no haya permisos automáticos para `git add` o `git commit`.
 - `npm run test:rapido`: tipos y unitarias (~10 s). `npm test`: todo, con recorridos caminando en Chrome (~27 min).
 - Toda prueba nueva de juego incluye **un recorrido caminando**, sin teletransporte (lección del hotfix del
   2026-09-28).
@@ -129,6 +132,7 @@ Commit `9646829`, "El 302: la libreta de Andrés…". Se tomaron estas decisione
 
 | Fecha | Qué se hizo |
 |---|---|
+| 2026-10-10 | En el PC del creador (repo en F:): revisión de lo hecho en el portátil. **Autoría:** los 64 commits de `origin/main` son del creador y ninguno tiene coautor; el historial local, tampoco. Pero los 4 commits viejos con `Co-Authored-By: Claude` (`278fde9`, `8fb667e`, `37a5ade`, `addd799`) siguen guardados en GitHub sin rama, y estuvieron en `main` del 9 de octubre de 19:54 a 20:50 UTC: por eso "claude" sigue en Contributors. Falta pedirle a GitHub Support que los borre y refresque la lista. En este PC, la configuración de Claude Code agregaba la atribución y permitía `git add`/`git commit` sin preguntar: se apagó la atribución y se quitaron esos permisos. `android/.idea/` queda ignorada. `test:rapido`: 367/367. `sprint-4` local va 2 commits por delante de GitHub (Android y Piso 3 completo), sin atribución y sin push. |
 | 2026-10-08 | El 302: libreta de Andrés, examinables y rastros (`9646829`, en otro computador). Revisión honesta del proyecto. Exportar el registro desde la pausa y protocolo para testers a distancia (`278fde9`). |
 | 2026-10-09 | El creador reescribió los commits sin atribución y publicó `sprint-4` en `main` (`1fb67d6`); su `CLAUDE.md` nuevo pide commits sin atribución y no publicar sin autorización. **Android:** Capacitor 8, APK de prueba compilado, botón atrás, Compartir para el registro ([06-ANDROID](06-ANDROID.md)). **Piso 3 completo** ([P3-guion](propuestas/P3-guion.md)): golpes al llegar, apagón, grabar la pared, el pasillo y el final con "Piso 3 completado". La cinta pasó a `narrativa/Cinta.ts`. Commits locales, sin push (esperan autorización). |
 | 2026-10-09 | El creador jugó el Piso 4 nuevo ("no me había cagado tanto en esta vida"). Con la reja cerrada y sin llave, el tramo dice "Revisar la reja" (antes prometía "Bajar al Piso 3"). Decidió publicar `sprint-4` en `main` él mismo y apunta a la Play Store el 31 de octubre (ver la meta arriba). |

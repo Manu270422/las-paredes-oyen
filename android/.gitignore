@@ -51,6 +51,9 @@ captures/
 .idea/modules.xml
 # Comment next line if keeping position of elements in Navigation Editor is relevant for you
 .idea/navEditor.xml
+# Toda la carpeta .idea es la configuración personal de Android Studio de cada computador (uno de ellos prestado):
+# no es parte del juego y no va al repositorio.
+.idea/
 
 # Keystore files
 # Uncomment the following lines if you do not want to check your keystore files in.
