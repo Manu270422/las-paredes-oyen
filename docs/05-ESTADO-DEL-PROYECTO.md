@@ -53,7 +53,15 @@ El `main` local puede estar desactualizado: comparar siempre con `origin/main`.
 
 ## Qué sigue (en orden)
 
-El creador aprobó el orden el 2026-10-09: primero el Piso 4, y "cuando todo esté bien" el Piso 3.
+**Orden aprobado el 2026-10-10** (ver C1): arreglar la trampa del Piso 3 (hecho) → **escaleras que se caminan**
+(hecho: C2 §1, el fundido queda como opción) → **monstruo más tenebroso**, mejorando en código "El Inquilino"
+(Blender queda para la Fase 11) → **ascensor** (C2 §3) → Piso 2 → Piso 1 → **salir del edificio** con
+"Sobreviviste" (la idea final del creador: muy difícil, como Granny, pero posible).
+
+Para el 31 de octubre alcanza, siendo realistas: la trampa, el Piso 3 publicado, las escaleras y el monstruo. El
+ascensor y los pisos 2 y 1 llegan después.
+
+Lo que sigue es la lista anterior (2026-10-09), que se mantiene para lo técnico y lo de Android:
 
 1. ~~Que el Piso 4 dure 10–15 min y dé miedo también a quien ya lo conoce.~~ **Hecho en `sprint-4` el 2026-10-09**
    ([P4-ritmo](propuestas/P4-ritmo.md)). Falta comprobarlo con jugadores (punto 3).
@@ -132,6 +140,8 @@ Commit `9646829`, "El 302: la libreta de Andrés…". Se tomaron estas decisione
 
 | Fecha | Qué se hizo |
 |---|---|
+| 2026-10-10 | **Escaleras que se caminan** (C2 §1, ver 02-ARQUITECTURA). Se baja y se sube escalón por escalón; al cruzar el descanso de lado a lado se cambia de piso en un parpadeo y se sigue caminando. Ella puede seguirte por tu tramo hasta el descanso y nunca cambia de piso (el pozo no es refugio). "Escaleras con fundido" en Accesibilidad devuelve el viaje con E. Armar un piso pasó de ~1.3 s a ~0.1–0.3 s (los dibujos de rastros y letreros se pintan una vez y los de los otros pisos durante la carga). `llaveEscalera.spec` ya no falla de vez en cuando (ella podía cazar justo después del ruido del candado). |
+| 2026-10-10 | **Trampa del Piso 3 arreglada.** El creador se atascó: juntó la libreta sin ver la carta del 301, el objetivo seguía en "Averigua por qué cerraron este piso" y la X decía "Primero lo que dice la orden de trabajo" (texto del Piso 4). Ahora "averiguar" se cumple con la carta o con la libreta (`averiguo:piso3`, con reparación de partidas viejas), la X dice el objetivo que falta en cualquier piso, la del 302 dice "Grabar la pared del cuarto" y la carta se ve abierta (hoja clara sobre el sobre, en los dos pisos). `finalPiso3.spec` ahora juega el final sin leer la carta. El creador aprobó el orden nuevo (ver "Qué sigue"). |
 | 2026-10-10 | En el PC del creador (repo en F:): revisión de lo hecho en el portátil. **Autoría:** los 64 commits de `origin/main` son del creador y ninguno tiene coautor; el historial local, tampoco. Pero los 4 commits viejos con `Co-Authored-By: Claude` (`278fde9`, `8fb667e`, `37a5ade`, `addd799`) siguen guardados en GitHub sin rama, y estuvieron en `main` del 9 de octubre de 19:54 a 20:50 UTC: por eso "claude" sigue en Contributors. Falta pedirle a GitHub Support que los borre y refresque la lista. En este PC, la configuración de Claude Code agregaba la atribución y permitía `git add`/`git commit` sin preguntar: se apagó la atribución y se quitaron esos permisos. `android/.idea/` queda ignorada. `test:rapido`: 367/367. `sprint-4` local va 2 commits por delante de GitHub (Android y Piso 3 completo), sin atribución y sin push. |
 | 2026-10-08 | El 302: libreta de Andrés, examinables y rastros (`9646829`, en otro computador). Revisión honesta del proyecto. Exportar el registro desde la pausa y protocolo para testers a distancia (`278fde9`). |
 | 2026-10-09 | El creador reescribió los commits sin atribución y publicó `sprint-4` en `main` (`1fb67d6`); su `CLAUDE.md` nuevo pide commits sin atribución y no publicar sin autorización. **Android:** Capacitor 8, APK de prueba compilado, botón atrás, Compartir para el registro ([06-ANDROID](06-ANDROID.md)). **Piso 3 completo** ([P3-guion](propuestas/P3-guion.md)): golpes al llegar, apagón, grabar la pared, el pasillo y el final con "Piso 3 completado". La cinta pasó a `narrativa/Cinta.ts`. Commits locales, sin push (esperan autorización). |

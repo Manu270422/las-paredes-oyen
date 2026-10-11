@@ -182,6 +182,12 @@ export class PantallaAjustes extends Pantalla {
             alCambiar: (b) => a.cambiar('reducirDestellos', b),
           }),
           crearInterruptor({
+            etiqueta: 'Escaleras con fundido',
+            ayuda: 'En vez de bajar y subir caminando los escalones, cambias de piso con un fundido a negro (pulsando E en la boca del tramo). Para quien se marea.',
+            valor: v.escalerasConFundido,
+            alCambiar: (b) => a.cambiar('escalerasConFundido', b),
+          }),
+          crearInterruptor({
             etiqueta: 'Sin sustos fuertes',
             ayuda: 'Al morir y en el final no aparece su cara ni suena el grito fuerte: la pantalla se funde a negro.',
             valor: v.sinSustosFuertes,

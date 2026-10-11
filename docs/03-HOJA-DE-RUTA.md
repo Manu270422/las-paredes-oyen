@@ -130,7 +130,11 @@ este contenido sin esperar la ronda de testers de la Fase 10 (el Gate 1), que si
 | El 302 y la libreta de Andrés: 5 documentos (carta del administrador y hoja de Andrés en el 301, hoja en el 303, cuaderno y carta de la mamá en el 302), 3 cosas para examinar (una línea flotando, sin pausar), rayas de estatura y un arrastre hacia adentro en el 302, 2 pilas y el punto de control del cuarto del 302. Juntar la libreta marca `imitacion:piso3` | ✅ |
 | Guion y final del Piso 3 ([P3-guion](propuestas/P3-guion.md)): golpes al llegar, apagón de la escalera al juntar la libreta, grabar la pared del cuarto de Andrés (medición y cinta), ella en el pasillo al volver, final en la escalera con la pantalla "Piso 3 completado" | ✅ 2026-10-09 (sin probar con jugadores) |
 | Android con Capacitor 8 ([06-ANDROID](06-ANDROID.md)): APK de prueba, botón atrás, Compartir para el registro | ✅ 2026-10-09 (sin probar en un celular) |
-| Ascensor: solo el sonido del hueco | Pendiente |
+| La trampa del Piso 3: "averiguar" se cumple con la carta o con la libreta; la X dice qué falta | ✅ 2026-10-10 |
+| **Escaleras que se caminan** (C2 §1): bajar y subir escalón por escalón, cambio de piso al cruzar el descanso, ella puede seguirte hasta el descanso; el fundido queda como opción de accesibilidad | ✅ 2026-10-10 (sin probar con jugadores ni en un celular) |
+| Monstruo más tenebroso, mejorando en código "El Inquilino" (Blender, en la Fase 11) | Siguiente |
+| Ascensor (C2 §3) | Pendiente |
+| Piso 2 → Piso 1 → salir del edificio ("Sobreviviste") | Pendiente |
 
 **Resuelto:** la regla `imitacionCompletaCon` del Piso 3 (`imitacion:piso3`) ya se cumple: la marca el guion del
 Piso 3 al leer las tres partes de la libreta, en cualquier orden. Desde ahí la criatura del Piso 3 llega a la

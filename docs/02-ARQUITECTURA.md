@@ -198,6 +198,30 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
 - `Juego.cambiarNivel` suelta el nivel viejo (`Nivel.destruir`: geometrías y texturas propias, no las de la biblioteca
   compartida) y arma el nuevo. Lo comparten el viaje y cargar una partida guardada en otro piso.
 
+## Escaleras que se caminan (C2 §1)
+
+- El motor sigue siendo un plano: el pozo de una escalera (celdas `E`) es el único lugar donde el suelo sube y baja.
+  `mundo/EscaleraCaminable.ts` (lógica pura, en el marco local del hueco) dice a qué altura están los pies en cada
+  huella, qué frena dentro del pozo y cuándo se cruza el descanso. Usa las MISMAS medidas con que
+  `ConstructorEscalera` dibuja los escalones (`medidasEscalera`): lo que se ve y lo que se pisa no se separan.
+- Quien camina sabe por dónde va (`TramoPie`: `piso`, `bajando` o `subiendo`): en el mismo punto del plano hay dos
+  descansos, uno encima del otro, y lo que se pisa depende de por dónde se llegó.
+- `mundo/PozosCaminables.ts` junta los huecos de un piso: qué tramo lleva a qué piso (las `escaleras` del paquete,
+  por el lado de la boca donde arrancan), qué los cierra (la reja hasta que termina de abrirse; tablas y escombros,
+  siempre) y por qué celdas del pozo puede ir la criatura.
+- **Cambiar de piso caminando:** al cruzar el descanso de lado a lado (con 25 cm de margen a cada lado de la mitad),
+  `ViajeEscalera.revisarCruce` arma el piso vecino en un parpadeo y me pone en el mismo punto del descanso del otro
+  piso, con la mirada y el impulso que traía (el pozo es idéntico en los dos). Si sale la tarjeta de un piso
+  completado, el negro dura lo que ella.
+- **Ella** puede seguirme por mi tramo hasta el descanso (`Navegacion` acepta celdas extra; sus pies también siguen
+  los escalones), pero nunca cruza a otro piso. La distancia para atraparme cuenta la altura. Así el pozo no es
+  refugio, y huir por la escalera cuesta unos segundos expuesto (la regla de la caza ya no hace falta caminando).
+- **Accesibilidad:** "Escaleras con fundido" (Ajustes → Accesibilidad) devuelve el viaje con E y fundido, para quien
+  se marea; en ese modo, durante una caza la cadena se traba.
+- **Rapidez:** armar un piso era ~1.3 s (casi todo pintar rastros y letreros píxel por píxel). Los lienzos pintados
+  quedan guardados (`render/texturas/LienzosGuardados.ts`) y los de los otros pisos se pintan durante la carga
+  (`mundo/PrecalentarPiso.ts`): ahora se arma en ~0.1–0.3 s en el navegador de pruebas.
+
 ## Lo que se lee y lo que se examina
 
 - **Documentos** (`interaccion/objetos/Documento.ts`): abren el lector y **pausan** el mundo (estado `documento`).

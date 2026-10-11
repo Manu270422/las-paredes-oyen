@@ -5,6 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { instalarPiloto } from './piloto';
+import { usarEscalerasConFundido } from './acciones';
 
 const PREFIJO = 'las-paredes-oyen:';
 /** Una partida v6 de verdad: la escribió el juego v6 al llegar al Piso 3 (con la llave, tras el final del 402). */
@@ -127,6 +128,7 @@ test('una partida v6 real (en el Piso 3) carga con "Continuar", sin pisos comple
   await page.getByRole('button', { name: 'Continuar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');
   await instalarPiloto(page);
+  await usarEscalerasConFundido(page);
 
   const r = await page.evaluate(async (prefijo) => {
     const J = window.__juego!;

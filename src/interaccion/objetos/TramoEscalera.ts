@@ -8,9 +8,11 @@
 // enlazada, con la llave la primera vez la ABRO (candado, cadena, chirrido: ver RejaEscalera) y queda abierta
 // para siempre (bandera "abierta:<id>"); desde ahí, E baja.
 //
-// Mientras ella caza, la escalera tampoco me deja pasar: la cadena se traba. El viaje de hoy es un fundido
-// instantáneo, y pulsar E a la carrera sería una huida gratis que nadie diseñó. Cuando la escalera se camine,
-// la huida tendrá su costo (unos segundos expuesto) y esto se podrá quitar.
+// Lo normal es que la escalera se camine (EscaleraCaminable): entonces no viajo con E. Solo respondo mientras mi
+// reja esté cerrada (revisarla, o abrirla con la llave); abierta, se baja caminando. Con el ajuste "Escaleras con
+// fundido" (accesibilidad), E me lleva con un fundido, como antes, y mientras ella caza la cadena se traba: ese
+// viaje es instantáneo, y pulsar E a la carrera sería una huida gratis. Caminando, huir tiene su costo: unos
+// segundos expuesto en el tramo, y ella puede seguirme hasta el descanso.
 import { Group } from 'three';
 import { CONFIG } from '../../config/ConfiguracionJuego';
 import type { ContextoJuego } from '../../nucleo/ContextoJuego';
@@ -56,6 +58,11 @@ export class TramoEscalera implements Interactuable {
     return !this.reja?.abriendo;
   }
 
+  /** Caminando, solo respondo con la reja cerrada (no hay viaje con E); con fundido, siempre. */
+  enfocable(ctx: ContextoJuego): boolean {
+    return ctx.ajustes.valores.escalerasConFundido || (!!this.reja && !this.reja.abierta);
+  }
+
   enlazarReja(reja: RejaEscalera): void {
     this.reja = reja;
   }
@@ -92,7 +99,7 @@ export class TramoEscalera implements Interactuable {
       this.reja!.abrir(() => ctx.progreso.marcar(this.banderaAbierta));
       return;
     }
-    ctx.viaje.cambiarDePiso(hacia, llegada);
+    if (ctx.ajustes.valores.escalerasConFundido) ctx.viaje.cambiarDePiso(hacia, llegada);
   }
 
   /** Al cargar o al armar el piso: mi reja, abierta si ya la abrí. */

@@ -24,6 +24,8 @@ import { colgarPlaca, pintarRotulo } from './Letreros';
 import { ponerRastro, VigiaRastros } from './Rastros';
 import { TramoEscalera } from '../interaccion/objetos/TramoEscalera';
 import { RejaEscalera } from './RejaEscalera';
+import { PozosCaminables } from './PozosCaminables';
+import type { TramoPie } from './EscaleraCaminable';
 import { PoolLuces } from './PoolLuces';
 import { crearMueble, type Mueble } from './Muebles';
 import type { CajaColision } from './Colisiones';
@@ -39,6 +41,8 @@ export class Nivel {
   readonly puntosMedicion: PuntoMedicion[] = [];
   /** Las rejas de los tramos que bajan (con cadena y candado): se abren con la llave de su tramo. */
   readonly rejas: RejaEscalera[] = [];
+  /** Las escaleras que se caminan: lo que se pisa en un tramo, lo que frena y cuándo se cruza a otro piso. */
+  readonly escaleras: PozosCaminables;
   radio: Radio | null = null;
   /** Avisa la primera vez que el jugador ve cada rastro del piso (para la telemetría). */
   readonly vigiaRastros: VigiaRastros;
@@ -86,6 +90,7 @@ export class Nivel {
     escaleras.traverse((o) => {
       if (o.name === 'reja') this.rejas.push(new RejaEscalera(o as Group));
     });
+    this.escaleras = new PozosCaminables(this.rejilla, piso, this.rejas);
 
     for (const d of def.puertas) {
       const pasoEnZ = this.rejilla.esMuro(d.x - 1, d.y) && this.rejilla.esMuro(d.x + 1, d.y);
@@ -199,7 +204,11 @@ export class Nivel {
   }
 
   /** Reúno las cajas de colisión cercanas a un punto (muros, huecos de escalera, jambas, puertas cerradas, muebles). */
-  cajasCercanas(x: number, z: number, radio = 1.2): readonly CajaColision[] {
+  /**
+   * Lo que frena a un círculo en (x, z). Con `pie` (el jugador cuando las escaleras se caminan), el hueco de una
+   * escalera deja de ser un muro: lo que frena ahí lo dicen sus tramos (el ojo, la reja, el tramo del piso vecino).
+   */
+  cajasCercanas(x: number, z: number, radio = 1.2, pie?: TramoPie): readonly CajaColision[] {
     const C = CONFIG.celda;
     const salida = this.cajasTemporales;
     salida.length = 0;
@@ -209,8 +218,9 @@ export class Nivel {
       for (let ox = -1; ox <= 1; ox++) {
         const cx = gx + ox;
         const cy = gy + oy;
-        // Un hueco de escalera bloquea igual que un muro: por ahí no se camina (se cae).
-        if (!this.rejilla.esTransitable(cx, cy)) salida.push({ minX: cx * C, maxX: (cx + 1) * C, minZ: cy * C, maxZ: (cy + 1) * C });
+        // Un hueco de escalera bloquea igual que un muro (por ahí se cae), salvo para quien camina sus tramos.
+        const hueco = pie !== undefined && this.rejilla.esHueco(cx, cy);
+        if (!hueco && !this.rejilla.esTransitable(cx, cy)) salida.push({ minX: cx * C, maxX: (cx + 1) * C, minZ: cy * C, maxZ: (cy + 1) * C });
         const puerta = this.puertaEn(cx, cy);
         const caja = puerta?.cajaColision();
         if (caja) salida.push(caja);
@@ -219,6 +229,7 @@ export class Nivel {
     const cerca = (c: CajaColision) => x > c.minX - radio && x < c.maxX + radio && z > c.minZ - radio && z < c.maxZ + radio;
     for (const c of this.cajasEstaticas) if (cerca(c)) salida.push(c);
     for (const m of this.muebles) if (m.caja && cerca(m.caja)) salida.push(m.caja);
+    if (pie !== undefined) salida.push(...this.escaleras.cajas(pie, x, z));
     return salida;
   }
 

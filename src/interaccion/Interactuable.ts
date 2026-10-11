@@ -10,6 +10,8 @@ export interface Interactuable {
   readonly objeto: Object3D;
   /** Si es false, no se puede enfocar (por ejemplo, ya lo recogí). */
   readonly activo: boolean;
+  /** Si además depende de un ajuste o del momento: ¿se puede enfocar ahora? Sin esto, basta `activo`. */
+  enfocable?(ctx: ContextoJuego): boolean;
   /**
    * La celda del mapa donde está el objeto, si ocupa una (una puerta). El chequeo "¿hay un muro en
    * medio?" no la cuenta como obstáculo: el objeto está dentro de ella y no puede taparse a sí mismo.

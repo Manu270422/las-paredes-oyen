@@ -12,12 +12,14 @@ import type { DefEscaleraPiso, PaquetePiso } from '../../src/pisos/TiposPiso';
 import { esArranqueDeTramo } from '../../src/mundo/HuecoEscalera';
 import { Rejilla } from '../../src/mundo/Rejilla';
 import { PISO_DE_PRUEBA } from '../recorridos/pisoDePrueba';
+import { AJUSTES_POR_DEFECTO } from '../../src/config/Ajustes';
 import { crearContextoFalso } from './contextoFalso';
 
 const BAJADA: DefEscaleraPiso = { id: 'bajada', hacia: 'abajo', llegada: 'descanso', x: 1.5, y: 10.8, texto: 'Bajar' };
 
-function tramo(def: DefEscaleraPiso) {
-  const falso = crearContextoFalso();
+/** `fundido`: el ajuste de accesibilidad (E viaja con un fundido). Sin él, las escaleras se caminan. */
+function tramo(def: DefEscaleraPiso, fundido = true) {
+  const falso = crearContextoFalso({ ajustes: { valores: { ...AJUSTES_POR_DEFECTO, escalerasConFundido: fundido } } });
   const viajes: Array<[string, string]> = [];
   const subtitulos: string[] = [];
   falso.bus.on('subtitulo', (s) => subtitulos.push(s.texto));
@@ -29,7 +31,7 @@ function tramo(def: DefEscaleraPiso) {
   return { t: new TramoEscalera(def), ctx, progreso, viajes, subtitulos, entidad, sonidos: falso.sonidos, ruidos: falso.ruidos };
 }
 
-describe('TramoEscalera', () => {
+describe('TramoEscalera (con fundido: E viaja)', () => {
   it('dice su texto y queda a la altura de la cintura sobre su punto (en metros)', () => {
     const { t, ctx } = tramo(BAJADA);
     expect(t.texto(ctx)).toBe('Bajar');
@@ -119,6 +121,44 @@ describe('TramoEscalera', () => {
     entidad.estado = 'cazando';
     t.interactuar(ctx);
     expect(subtitulos).toEqual(['[La cadena se traba]']);
+  });
+});
+
+describe('TramoEscalera (caminando, lo normal)', () => {
+  /** Una reja de mentira que abre al instante. */
+  const rejaFalsa = () => {
+    const reja = { abierta: false, abriendo: false, abrir: (fin: () => void) => ((reja.abierta = true), fin()), fijar: (a: boolean) => (reja.abierta = a), posicion: () => ({ x: 0, y: 0, z: 0 }) };
+    return reja;
+  };
+
+  it('un tramo abierto no se ofrece ni viaja con E: se baja caminando', () => {
+    const { t, ctx, viajes } = tramo(BAJADA, false);
+    expect(t.enfocable(ctx)).toBe(false);
+    t.interactuar(ctx);
+    expect(viajes).toEqual([]);
+  });
+
+  it('con la reja cerrada sí responde: la revisa sin la llave, la abre con ella; abierta, ya no se ofrece', () => {
+    const { t, ctx, progreso, viajes, subtitulos } = tramo({ ...BAJADA, requiere: 'objeto:llave', cerrada: 'Candado.' }, false);
+    const reja = rejaFalsa();
+    t.enlazarReja(reja as unknown as RejaEscalera);
+    expect(t.enfocable(ctx)).toBe(true);
+    expect(t.texto(ctx)).toBe('Revisar la reja');
+    t.interactuar(ctx);
+    expect(subtitulos).toEqual(['Candado.']);
+    progreso.agregarObjeto('llave');
+    t.interactuar(ctx);
+    expect(reja.abierta).toBe(true);
+    expect(progreso.tiene('abierta:bajada')).toBe(true);
+    expect(t.enfocable(ctx), 'abierta, se baja caminando').toBe(false);
+    expect(viajes, 'abrir no es bajar, y caminando E nunca viaja').toEqual([]);
+  });
+
+  it('con el ajuste de fundido, el mismo tramo vuelve a ofrecerse y a viajar', () => {
+    const { t, ctx, viajes } = tramo(BAJADA, true);
+    expect(t.enfocable(ctx)).toBe(true);
+    t.interactuar(ctx);
+    expect(viajes).toEqual([['abajo', 'descanso']]);
   });
 });
 

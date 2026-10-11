@@ -42,6 +42,11 @@ export function crearEstadoVacio(): EstadoEntrada {
   };
 }
 
+/** Solo mirar (un momento escrito del guion): anulo moverme y actuar; la mirada sigue libre. */
+export function soloMirada(estado: EstadoEntrada): void {
+  Object.assign(estado, { moverX: 0, moverY: 0, correr: false, interactuar: false, senuelo: false, agacharse: false });
+}
+
 /** Reinicio el estado al comenzar cada fotograma. */
 export function limpiarEstado(estado: EstadoEntrada): void {
   Object.assign(estado, crearEstadoVacio());

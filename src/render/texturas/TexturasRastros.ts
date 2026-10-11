@@ -5,6 +5,7 @@
 import { CanvasTexture, SRGBColorSpace } from 'three';
 import type { DefRastro } from '../../pisos/TiposPiso';
 import { GRAFITO, pintarRastro, ponerDebajo, type PinturaRastro, type RenglonFrase } from './PintorRastros';
+import { lienzosGuardados } from './LienzosGuardados';
 
 /** Letra a mano: la que haya en el sistema (Windows, Mac/iPhone, y la cursiva genérica en Android). */
 const LETRA_A_MANO = '"Segoe Print", "Bradley Hand", "Comic Sans MS", cursive';
@@ -15,6 +16,15 @@ const ALTO_MAYUSCULA = 0.72;
 
 /** Pinto un rastro y lo convierto en textura. `escala` sigue la calidad de las texturas del juego. */
 export function texturaRastro(def: DefRastro, escala: number, anisotropia: number): CanvasTexture {
+  // El dibujo depende solo de la declaración y la escala: lo pinto una vez por partida (ver LienzosGuardados).
+  const [lienzo] = lienzosGuardados(`rastro:${escala}:${JSON.stringify(def)}`, () => [lienzoRastro(def, escala)]);
+  const textura = new CanvasTexture(lienzo);
+  textura.colorSpace = SRGBColorSpace;
+  textura.anisotropy = anisotropia;
+  return textura;
+}
+
+function lienzoRastro(def: DefRastro, escala: number): HTMLCanvasElement {
   const pintura = pintarRastro(def, escala, trazarLetras);
   const lienzo = document.createElement('canvas');
   lienzo.width = pintura.ancho;
@@ -27,10 +37,7 @@ export function texturaRastro(def: DefRastro, escala: number, anisotropia: numbe
     datos = ponerDebajo(datos, c.getImageData(0, 0, pintura.ancho, pintura.alto).data);
   }
   c.putImageData(new ImageData(new Uint8ClampedArray(datos), pintura.ancho, pintura.alto), 0, 0);
-  const textura = new CanvasTexture(lienzo);
-  textura.colorSpace = SRGBColorSpace;
-  textura.anisotropy = anisotropia;
-  return textura;
+  return lienzo;
 }
 
 /** Un número de 0 a 1 que sale siempre igual para la misma semilla y la misma letra. */

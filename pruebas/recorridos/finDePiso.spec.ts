@@ -3,7 +3,7 @@
 // Subo y vuelvo a bajar: ya no sale (quedó vista, también en la partida guardada). Al terminar la partida en el
 // Piso 3, la pantalla final trae una línea por piso.
 import { expect, test } from '@playwright/test';
-import { abrirEleccion, elegirYEmpezar, esperarJugando, PREFIJO } from './acciones';
+import { abrirEleccion, elegirYEmpezar, esperarJugando, PREFIJO, usarEscalerasConFundido } from './acciones';
 
 test('la tarjeta del piso completado sale una vez al bajar, sobre el negro, y la pantalla final trae una línea por piso', async ({ page }) => {
   test.setTimeout(240_000);
@@ -15,6 +15,7 @@ test('la tarjeta del piso completado sale una vez al bajar, sobre el negro, y la
   await abrirEleccion(page);
   await elegirYEmpezar(page, 'Normal');
   await esperarJugando(page);
+  await usarEscalerasConFundido(page);
 
   const r = await page.evaluate(async (prefijo) => {
     const J = window.__juego!;

@@ -10,13 +10,15 @@ import { DIFICULTAD_POR_DEFECTO, puntoDeControlDe, TABLA_DIFICULTAD, type IdDifi
 import { detectarDispositivo, sugerirCalidad } from '../plataforma/DetectorDispositivo';
 import { GestorPantalla } from '../plataforma/GestorPantalla';
 import { GestorEntrada } from '../entrada/GestorEntrada';
+import { soloMirada } from '../entrada/AccionesEntrada';
 import { Renderizador } from '../render/Renderizador';
 import { BibliotecaMateriales } from '../render/Materiales';
 import { crearCookieLinterna } from '../render/texturas/CookieLinterna';
 import { MotorAudio } from '../audio/MotorAudio';
 import { AmbienteSonoro } from '../audio/AmbienteSonoro';
 import { Nivel } from '../mundo/Nivel';
-import { PISO_INICIAL, pisoPorId } from '../pisos/catalogo';
+import { PISO_INICIAL, PISOS, pisoPorId } from '../pisos/catalogo';
+import { precalentarPiso } from '../mundo/PrecalentarPiso';
 import type { GuionPiso, PaquetePiso } from '../pisos/TiposPiso';
 import { Jugador } from '../jugador/Jugador';
 import { Linterna } from '../jugador/Linterna';
@@ -99,6 +101,7 @@ export class Juego {
       this.ponerEnPunto();
     },
     guardar: () => this.guardarPartida(),
+    colocar: (x, y, z, yaw, pitch, pie) => this.jugador.colocarEnEscalera(x, y, z, yaw, pitch, pie),
     llegar: () => {
       this.estado = 'jugando';
       // Si mientras viajaba se ocultó la pestaña o se soltó el ratón, no pude pausar (no estaba jugando): ahora sí.
@@ -223,6 +226,8 @@ export class Juego {
     this.ui.carga.fijarProgreso(0.95);
     this.conectarEventos();
     this.precompilar();
+    // Los dibujos de los otros pisos, ya pintados: cruzar a ellos caminando por la escalera es un parpadeo.
+    for (const p of PISOS) if (p.id !== this.piso.id) precalentarPiso(p, this.materiales.detalle);
     this.ui.carga.fijarProgreso(1);
 
     this.bucle = new BucleJuego((dt) => this.fotograma(dt));
@@ -628,14 +633,7 @@ export class Juego {
       this.pausar();
       return;
     }
-    if (this.soloMirar) {
-      e.moverX = 0;
-      e.moverY = 0;
-      e.correr = false;
-      e.interactuar = false;
-      e.senuelo = false;
-      e.agacharse = false;
-    }
+    if (this.soloMirar) soloMirada(e);
     if (e.linterna) this.linterna.alternar(ctx);
     if (e.senuelo) {
       if (this.grabadora.puedeUsarSenuelo(ctx)) this.grabadora.colocarSenuelo(ctx);
@@ -646,7 +644,8 @@ export class Juego {
     this.programador.actualizar(dt);
     this.jugador.actualizar(dt, e, ctx, true);
     this.interaccion.actualizar(ctx, e.interactuar);
-    // Si abrí un documento, este fotograma termina aquí.
+    this.viajeEscalera.revisarCruce(ctx);
+    // Si abrí un documento (o crucé un descanso hacia otro piso), este fotograma termina aquí.
     if (this.estado !== 'jugando') return;
     this.grabadora.actualizar(dt, ctx);
     this.entidad.actualizar(dt, ctx);

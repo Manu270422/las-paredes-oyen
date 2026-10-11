@@ -3,6 +3,7 @@
 // para un material normal, así que solo se leen cuando les llega luz, sobre todo la de la linterna.
 import { CanvasTexture, NoColorSpace, SRGBColorSpace } from 'three';
 import { Ruido2D } from '../../utilidades/Ruido';
+import { lienzosGuardados } from './LienzosGuardados';
 
 /** Letra de las cifras: una de palo seco del sistema (cambia un poco entre Android, iPhone y Windows). */
 const FAMILIA = 'Arial, Helvetica, "Liberation Sans", sans-serif';
@@ -97,6 +98,12 @@ export interface TexturasPlaca {
  * cerca cae sobre el latón y no sobre los números. Antes compartían material y de cerca se veían grises.
  */
 export function texturaPlaca(texto: string, proporcion: number, fraccionCifras: number): TexturasPlaca {
+  // El dibujo se pinta una vez por partida (ver LienzosGuardados): al volver a un piso, solo se sube otra vez.
+  const [color, material] = lienzosGuardados(`placa:${texto}:${proporcion}:${fraccionCifras}`, () => lienzosPlaca(texto, proporcion, fraccionCifras));
+  return { color: textura(color), material: textura(material, false) };
+}
+
+function lienzosPlaca(texto: string, proporcion: number, fraccionCifras: number): HTMLCanvasElement[] {
   const W = 512;
   const H = Math.round(W * proporcion);
   const { lienzo, c } = crearLienzo(W, H);
@@ -172,7 +179,7 @@ export function texturaPlaca(texto: string, proporcion: number, fraccionCifras: 
   material.c.fillStyle = MATERIAL_LATON;
   material.c.fillRect(0, 0, W, H);
   trazarCifras(material.c, texto, W / 2, H / 2, H * fraccionCifras, W * 0.68, [{ dx: 0, dy: 0, color: MATERIAL_SURCO }]);
-  return { color: textura(lienzo), material: textura(material.lienzo, false) };
+  return [lienzo, material.lienzo];
 }
 
 /**
@@ -181,6 +188,11 @@ export function texturaPlaca(texto: string, proporcion: number, fraccionCifras: 
  * La cifra ocupa `fraccionCifras` del alto del lienzo.
  */
 export function texturaRotulo(texto: string, fraccionCifras: number): CanvasTexture {
+  const [lienzo] = lienzosGuardados(`rotulo:${texto}:${fraccionCifras}`, () => [lienzoRotulo(texto, fraccionCifras)]);
+  return textura(lienzo);
+}
+
+function lienzoRotulo(texto: string, fraccionCifras: number): HTMLCanvasElement {
   const T = 256;
   const { lienzo, c } = crearLienzo(T, T);
   const ruido = new Ruido2D(semillaDe(texto) + 17);
@@ -227,5 +239,5 @@ export function texturaRotulo(texto: string, fraccionCifras: number): CanvasText
     }
   }
   c.putImageData(img, 0, 0);
-  return textura(lienzo);
+  return lienzo;
 }

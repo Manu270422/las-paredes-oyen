@@ -9,6 +9,7 @@ import type { ContextoJuego } from '../nucleo/ContextoJuego';
 import type { AcabadoPiso } from '../mundo/datos/TiposMapa';
 import type { IdSonido } from '../audio/TiposAudio';
 import { resolverCirculo } from '../mundo/Colisiones';
+import type { TramoPie } from '../mundo/EscaleraCaminable';
 import { amortiguar, GRADOS, limitar, normalizarAngulo } from '../utilidades/Matematicas';
 import { EfectosCamara } from './EfectosCamara';
 import { Respiracion } from './Respiracion';
@@ -18,8 +19,10 @@ const FACTOR_SUPERFICIE: Record<AcabadoPiso, number> = { granito: 1, parque: 1.1
 
 export class Jugador {
   readonly camara: PerspectiveCamera;
-  /** Posición de mis pies. */
+  /** Posición de mis pies. La altura solo cambia en una escalera (en el piso es 0). */
   readonly posicion = new Vector3();
+  /** Por dónde voy en una escalera: en el piso, bajando un tramo o subiéndolo (decide qué piso y a qué altura). */
+  pie: TramoPie = 'piso';
   readonly efectos = new EfectosCamara();
   readonly respiracion = new Respiracion();
   readonly corazon = new Corazon();
@@ -44,6 +47,8 @@ export class Jugador {
   private pasosDados = 0;
   private inclinacion = 0;
   private sustoFov = 0;
+  /** La altura del suelo que sigue la cámara: suavizada, para sentir cada escalón sin saltos. */
+  private sueloVista = 0;
 
   constructor(aspecto: number) {
     this.camara = new PerspectiveCamera(72, aspecto, 0.05, 60);
@@ -63,6 +68,8 @@ export class Jugador {
   /** Coloco al jugador en un punto (en celdas) mirando hacia un ángulo (grados). */
   teletransportar(x: number, y: number, anguloGrados: number): void {
     this.posicion.set(x * CONFIG.celda, 0, y * CONFIG.celda);
+    this.pie = 'piso';
+    this.sueloVista = 0;
     this.yaw = anguloGrados * GRADOS;
     this.pitch = 0;
     this.vx = 0;
@@ -73,6 +80,18 @@ export class Jugador {
     this.tiempoQuieto = 0;
     this.efectos.reiniciar();
     this.respiracion.reiniciar();
+  }
+
+  /**
+   * Me pongo en un punto de una escalera (en metros) sin perder el impulso ni la mirada: al cruzar un descanso a
+   * pie, el piso cambia por debajo y yo sigo caminando como si nada.
+   */
+  colocarEnEscalera(x: number, y: number, z: number, yaw: number, pitch: number, pie: TramoPie): void {
+    this.posicion.set(x, y, z);
+    this.sueloVista = y;
+    this.pie = pie;
+    this.yaw = yaw;
+    this.pitch = pitch;
   }
 
   get rapidez(): number {
@@ -139,7 +158,12 @@ export class Jugador {
     const antesZ = this.posicion.z;
     this.posicion.x += this.vx * dt;
     this.posicion.z += this.vz * dt;
-    resolverCirculo(this.posicion, CONFIG.radioJugador, ctx.nivel.cajasCercanas(this.posicion.x, this.posicion.z));
+    // Con las escaleras que se caminan, el hueco no es un muro: lo que me frena ahí depende del tramo que piso.
+    const camino = !ajustes.escalerasConFundido;
+    resolverCirculo(this.posicion, CONFIG.radioJugador, ctx.nivel.cajasCercanas(this.posicion.x, this.posicion.z, undefined, camino ? this.pie : undefined));
+    this.pie = camino ? ctx.nivel.escaleras.siguiente(this.pie, this.posicion.x, this.posicion.z) : 'piso';
+    this.posicion.y = ctx.nivel.escaleras.altura(this.pie, this.posicion.x, this.posicion.z);
+    this.sueloVista = amortiguar(this.sueloVista, this.posicion.y, 12, dt);
     this.rapidezReal = Math.hypot(this.posicion.x - antesX, this.posicion.z - antesZ) / Math.max(dt, 1e-4);
 
     // --- Pasos sincronizados con el balanceo de la cabeza ---
@@ -173,7 +197,7 @@ export class Jugador {
 
     this.camara.position.set(
       this.posicion.x + coseno * bobX + this.efectos.desplazamiento.x,
-      this.alturaOjos + bobY + this.efectos.desplazamiento.y,
+      this.sueloVista + this.alturaOjos + bobY + this.efectos.desplazamiento.y,
       this.posicion.z - seno * bobX,
     );
     this.camara.rotation.set(this.pitch + this.efectos.giroX, this.yaw + this.efectos.giroY, this.inclinacion + this.efectos.giroZ);

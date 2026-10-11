@@ -2,7 +2,7 @@
 // asomo al tramo, ella sale a cazarme desde el fondo del pasillo, pulso E y la cadena se traba: sigo en el Piso 4.
 // Cuando deja de cazar, la misma E me baja al Piso 3: el bloqueo no se queda pegado.
 import { expect, test } from '@playwright/test';
-import { abrirEleccion, elegirYEmpezar, esperarJugando } from './acciones';
+import { abrirEleccion, elegirYEmpezar, esperarJugando, usarEscalerasConFundido } from './acciones';
 
 test('durante la caza la escalera no responde (suena la cadena); al terminar la caza, sí', async ({ page }) => {
   const errores: string[] = [];
@@ -13,6 +13,7 @@ test('durante la caza la escalera no responde (suena la cadena); al terminar la 
   await abrirEleccion(page);
   await elegirYEmpezar(page, 'Historia');
   await esperarJugando(page);
+  await usarEscalerasConFundido(page);
 
   const r = await page.evaluate(async () => {
     const J = window.__juego!;

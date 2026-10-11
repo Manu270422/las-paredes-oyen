@@ -4,7 +4,7 @@
 // primera E abre la reja (el candado cae y hace ruido), la segunda baja. Al volver a subir, sigue abierta.
 // La puerta del 402 la desbloqueo directamente: la ruta de su llave ya la camina llave.spec.ts.
 import { expect, test } from '@playwright/test';
-import { abrirEleccion, elegirYEmpezar, esperarJugando, PREFIJO } from './acciones';
+import { abrirEleccion, elegirYEmpezar, esperarJugando, PREFIJO, usarEscalerasConFundido } from './acciones';
 
 test('la llave de la escalera se encuentra bajo la silla del 402 después del final, y con ella se baja', async ({ page }) => {
   test.setTimeout(240_000);
@@ -16,6 +16,7 @@ test('la llave de la escalera se encuentra bajo la silla del 402 después del fi
   await abrirEleccion(page);
   await elegirYEmpezar(page, 'Normal');
   await esperarJugando(page);
+  await usarEscalerasConFundido(page);
 
   const r = await page.evaluate(async (prefijo) => {
     const J = window.__juego!;
@@ -102,6 +103,12 @@ test('la llave de la escalera se encuentra bajo la silla del 402 después del fi
         return J.interaccion.enfocado?.texto(ctx) ?? null;
       })()),
     };
+    // Abrir el candado hace ruido a propósito (ruidoDelCandado, arriba): si ella llegara a cazar justo ahora, la cadena
+    // se trabaría y no bajaría (esa regla la prueba escaleraEnCaza.spec.ts). Aquí se prueba bajar con la llave: la dejo
+    // en las paredes. Sin esto, la prueba fallaba de vez en cuando (53 de 54 el 2026-10-10).
+    ctx.director.bloquear(999);
+    ctx.entidad.puedeManifestarse = false;
+    ctx.entidad.cambiarEstado('paredes', ctx);
     // Ya abierta: E baja.
     await P.pulsar('KeyE');
     const l3 = performance.now() + 20_000;

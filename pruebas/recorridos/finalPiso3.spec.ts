@@ -3,9 +3,11 @@
 //    grabo la pared del cuarto de Andrés con la X y suena su cinta;
 // 2) al volver al pasillo ella espera entre la escalera y yo; iluminada, quieto y callado, se retira; llego a la
 //    escalera a oscuras: tres golpes desde abajo y la pantalla "Piso 3 completado" con el Piso 2 por venir.
-// La libreta se camina en libretaPiso3.spec.ts: aquí se marca leída para llegar rápido a lo nuevo.
+// La libreta se camina en libretaPiso3.spec.ts: aquí se marca leída para llegar rápido a lo nuevo, y SIN la carta
+// del 301, que es opcional (el camino que antes trababa el piso).
 import { expect, test, type Page } from '@playwright/test';
 import { instalarPiloto } from './piloto';
+import { usarEscalerasConFundido } from './acciones';
 
 test.describe.serial('Final del Piso 3', () => {
   test.setTimeout(300_000);
@@ -26,6 +28,7 @@ test.describe.serial('Final del Piso 3', () => {
     await page.getByRole('button', { name: 'Empezar', exact: true }).click();
     await page.waitForFunction(() => window.__juego?.estado === 'jugando');
     await instalarPiloto(page);
+    await usarEscalerasConFundido(page);
     await page.evaluate(async () => {
       const J = window.__juego!;
       const P = window.__piloto!;
@@ -83,7 +86,9 @@ test.describe.serial('Final del Piso 3', () => {
       await P.esperarJuego(9);
       const golpesAlLlegar = subs.includes('oigo: tres golpes, despacio, lejos');
       const luzAntes = luz();
-      for (const id of ['carta_admin_301', 'hoja_301', 'hoja_303', 'libreta_302']) ctx.progreso.registrarDocumento(id);
+      // Sin la carta del 301: así se atascó el creador (el objetivo no pasaba de "Averigua…" y la X no dejaba grabar).
+      // La libreta completa también responde por qué cerraron el piso, y desde ahí todo sigue.
+      for (const id of ['hoja_301', 'hoja_303', 'libreta_302']) ctx.progreso.registrarDocumento(id);
       await P.esperarJuego(4.5);
       const luzDespues = luz();
       const objetivoTrasLibreta = ctx.progreso.objetivoActual()?.id ?? null;

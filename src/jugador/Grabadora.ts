@@ -137,9 +137,9 @@ export class Grabadora {
     const j = ctx.jugador;
     const x = j.posicion.x - Math.sin(j.yaw) * 0.5;
     const z = j.posicion.z - Math.cos(j.yaw) * 0.5;
-    // Si adelante hay muro, la dejo a mis pies.
+    // Si adelante hay muro (o el pozo de una escalera), la dejo a mis pies: en un escalón, a su altura.
     const libre = ctx.nivel.rejilla.esTransitable(ctx.nivel.rejilla.aCelda(x), ctx.nivel.rejilla.aCelda(z));
-    this.modelo.position.set(libre ? x : j.posicion.x, 0, libre ? z : j.posicion.z);
+    this.modelo.position.set(libre ? x : j.posicion.x, libre ? 0 : j.posicion.y, libre ? z : j.posicion.z);
     this.modelo.rotation.y = j.yaw;
     this.modelo.visible = true;
     this.colocada = true;

@@ -5,13 +5,16 @@ import type { Rejilla } from '../mundo/Rejilla';
 import type { Celda } from './TiposIA';
 
 export type CostoExtra = (gx: number, gy: number) => number;
+/** Celdas que la rejilla no deja pisar pero esta búsqueda sí (el tramo de una escalera por el que sigo a alguien). */
+export type PisableExtra = (gx: number, gy: number) => boolean;
 
 export class Navegacion {
   constructor(private readonly rejilla: Rejilla) {}
 
-  buscar(desde: Celda, hasta: Celda, costoExtra?: CostoExtra): Celda[] | null {
+  buscar(desde: Celda, hasta: Celda, costoExtra?: CostoExtra, pisableExtra?: PisableExtra): Celda[] | null {
     const r = this.rejilla;
-    if (!r.esTransitable(hasta.gx, hasta.gy) || !r.esTransitable(desde.gx, desde.gy)) return null;
+    const pisable = (gx: number, gy: number) => r.esTransitable(gx, gy) || (pisableExtra?.(gx, gy) ?? false);
+    if (!pisable(hasta.gx, hasta.gy) || !pisable(desde.gx, desde.gy)) return null;
     const ancho = r.ancho;
     const indice = (gx: number, gy: number) => gy * ancho + gx;
     const inicio = indice(desde.gx, desde.gy);
@@ -39,7 +42,7 @@ export class Navegacion {
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nx = cx + dx;
         const ny = cy + dy;
-        if (!r.esTransitable(nx, ny)) continue;
+        if (!pisable(nx, ny)) continue;
         const vecino = indice(nx, ny);
         if (cerrados.has(vecino)) continue;
         const costo = (g.get(actual) ?? 0) + 1 + (costoExtra ? costoExtra(nx, ny) : 0);

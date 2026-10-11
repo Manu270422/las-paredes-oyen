@@ -9,6 +9,7 @@
 // - la escalera de vuelta permite subir al Piso 4, y volver no repite el final del 402
 import { expect, test, type Page } from '@playwright/test';
 import { instalarPiloto } from './piloto';
+import { usarEscalerasConFundido } from './acciones';
 
 /** La línea de la secuencia final del 402: si aparece, el final se repitió. */
 const LINEA_DEL_FINAL = 'Los pasos ya no vienen de la grabadora';
@@ -32,6 +33,7 @@ test.describe.serial('Piso 3: bajar, explorar y volver a subir', () => {
     await page.getByRole('button', { name: 'Empezar', exact: true }).click();
     await page.waitForFunction(() => window.__juego?.estado === 'jugando');
     await instalarPiloto(page);
+    await usarEscalerasConFundido(page);
     await page.evaluate(() => {
       const { ctx } = window.__juego!;
       // Todos los subtítulos de la sesión: el último test revisa que el final del 402 nunca se repitió.

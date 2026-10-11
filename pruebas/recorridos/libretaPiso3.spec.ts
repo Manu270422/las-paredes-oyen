@@ -8,7 +8,7 @@
 //
 // La criatura queda en las paredes y el director quieto: aquí se prueba que todo se alcanza y se lee caminando.
 import { expect, test, type Page } from '@playwright/test';
-import { abrirEleccion, elegirYEmpezar, esperarJugando, PREFIJO } from './acciones';
+import { abrirEleccion, elegirYEmpezar, esperarJugando, PREFIJO, usarEscalerasConFundido } from './acciones';
 import { instalarPiloto } from './piloto';
 
 /** Lo que el guion dice al juntar las tres partes (src/pisos/piso3/guion.ts). */
@@ -98,6 +98,7 @@ test('la libreta de Andrés se junta caminando por el 301, el 303 y el 302, y al
   await abrirEleccion(page);
   await elegirYEmpezar(page, 'Historia');
   await esperarJugando(page);
+  await usarEscalerasConFundido(page);
 
   // Bajo al Piso 3 por la escalera con la llave (el final del 402 lo camina guion.spec.ts).
   await page.evaluate(async () => {
