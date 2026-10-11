@@ -17,6 +17,14 @@ import type { GuionPiso } from '../TiposPiso';
 export const PARTES_LIBRETA = ['libreta_302', 'hoja_301', 'hoja_303'] as const;
 /** La bandera que cierra la libreta. Con ella la criatura llega a la imitación completa (y la escalera se apaga). */
 export const LIBRETA_COMPLETA = 'imitacion:piso3';
+/** La carta del administrador: dice que cerraron el piso y por qué ("no eran las tuberías"). */
+export const CARTA_ADMINISTRACION = 'carta_admin_301';
+/**
+ * Ya sé por qué cerraron el piso. Lo dice la carta del 301, y también la libreta completa (el de la pared medía a
+ * Andrés). Con cualquiera de las dos basta: el sobre es fácil de pasar por alto, y si el objetivo dependiera solo de
+ * él, quien juntó la libreta sin leerlo se quedaba atascado (el objetivo no avanzaba y la X no dejaba grabar).
+ */
+export const PISO_AVERIGUADO = 'averiguo:piso3';
 /** Lo que pienso al juntar las tres: la letra de la última página no es la de las otras. */
 export const REFLEXION_LIBRETA = 'Las hojas son del mismo cuaderno. La última página no la escribió Andrés.';
 /** Terminó de sonar la cinta del cuarto de Andrés: desde aquí ella espera en el pasillo. */
@@ -45,7 +53,8 @@ export class GuionPiso3 implements GuionPiso {
     this.cancelaciones.push(
       ctx.bus.on('bandera', ({ nombre }) => {
         if (nombre.startsWith('leyo:')) this.revisarLibreta(ctx, true);
-        else if (nombre === LIBRETA_COMPLETA) ctx.programador.despues(3, () => this.apagon(ctx));
+        if (nombre === `leyo:${CARTA_ADMINISTRACION}` || nombre === LIBRETA_COMPLETA) this.revisarAveriguado(ctx, true);
+        if (nombre === LIBRETA_COMPLETA) ctx.programador.despues(3, () => this.apagon(ctx));
         else if (nombre === 'medido:302') reproducirCinta('302', ctx, () => ctx.progreso.marcar(CINTA_302));
       }),
     );
@@ -63,6 +72,8 @@ export class GuionPiso3 implements GuionPiso {
     // esa partida llega con las tres leídas y sin 'imitacion:piso3'. La marco aquí, en silencio (al cargar no
     // hay nada nuevo que anunciar: el juego anuncia el objetivo después de reiniciarme).
     this.revisarLibreta(ctx, false);
+    // Y las partidas de antes de PISO_AVERIGUADO: traen la carta leída (o la libreta) sin esa bandera.
+    this.revisarAveriguado(ctx, false);
     // Lo mismo con la cinta: medir guarda antes de que suene. Si cargo ahí, la cinta ya "sonó".
     if (ctx.progreso.tiene('medido:302') && !ctx.progreso.tiene(CINTA_302)) ctx.progreso.marcarSilencioso(CINTA_302);
   }
@@ -91,6 +102,14 @@ export class GuionPiso3 implements GuionPiso {
     }
     p.marcar(LIBRETA_COMPLETA);
     this.reflexion = PAUSA_REFLEXION;
+  }
+
+  /** Si ya leí la carta o junté la libreta, ya sé por qué cerraron el piso. */
+  private revisarAveriguado(ctx: ContextoJuego, enVivo: boolean): void {
+    const p = ctx.progreso;
+    if (p.tiene(PISO_AVERIGUADO) || !(p.tiene(`leyo:${CARTA_ADMINISTRACION}`) || p.tiene(LIBRETA_COMPLETA))) return;
+    if (enVivo) p.marcar(PISO_AVERIGUADO);
+    else p.marcarSilencioso(PISO_AVERIGUADO);
   }
 
   /** Tres golpes, despacio, desde la pared del cuarto de Andrés: lejos y apagados por los muros, con su dirección. */

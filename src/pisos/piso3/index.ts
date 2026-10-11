@@ -7,7 +7,7 @@
 import type { PaquetePiso } from '../TiposPiso';
 import { DOCUMENTOS } from './documentos';
 import { EXAMINABLES } from './examinables';
-import { CINTA_302, FINAL_PISO_3, GuionPiso3, LIBRETA_COMPLETA } from './guion';
+import { CINTA_302, FINAL_PISO_3, GuionPiso3, LIBRETA_COMPLETA, PISO_AVERIGUADO } from './guion';
 import { TRANSCRIPCIONES } from './transcripciones';
 import { MAPA_PISO_3 } from './mapa';
 
@@ -16,11 +16,12 @@ export const PISO_3: PaquetePiso = {
   nombre: 'Piso 3',
   mapa: MAPA_PISO_3,
   // 'llegar' se cumple en silencio al llegar (banderasAlLlegar), así que su texto no se ve nunca: el primero que
-  // se lee es 'averiguar'. La carta que lo cumple está en el 301, el primer apartamento desde la escalera.
+  // se lee es 'averiguar'. Lo cumple el guion con la carta del 301 (el primer apartamento desde la escalera) o con
+  // la libreta completa: así no hay orden que trabe a nadie.
   // 'juntar' lo cumple el guion: marca 'imitacion:piso3' cuando las tres partes de la libreta están leídas.
   objetivos: [
     { id: 'llegar', texto: 'Bajar al Piso 3', bandera: 'llego:piso3' },
-    { id: 'averiguar', texto: 'Averigua por qué cerraron este piso', bandera: 'leyo:carta_admin_301' },
+    { id: 'averiguar', texto: 'Averigua por qué cerraron este piso', bandera: PISO_AVERIGUADO },
     { id: 'juntar', texto: 'Junta las hojas del cuaderno de Andrés, el niño del 302', bandera: LIBRETA_COMPLETA },
     { id: 'grabar', texto: 'Graba la pared del cuarto de Andrés: la X está en el dormitorio del 302', bandera: 'medido:302' },
     // 'huir' se cumple al empezar el final, en la escalera: su texto es lo último que se lee en el piso.

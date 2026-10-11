@@ -5,7 +5,17 @@ import { describe, expect, it } from 'vitest';
 import { Progreso } from '../../src/narrativa/Progreso';
 import type { ContextoJuego } from '../../src/nucleo/ContextoJuego';
 import { PISO_3 } from '../../src/pisos/piso3';
-import { CINTA_302, FINAL_PISO_3, GOLPES_FINALES, GuionPiso3, LIBRETA_COMPLETA, PARTES_LIBRETA, REFLEXION_LIBRETA } from '../../src/pisos/piso3/guion';
+import {
+  CARTA_ADMINISTRACION,
+  CINTA_302,
+  FINAL_PISO_3,
+  GOLPES_FINALES,
+  GuionPiso3,
+  LIBRETA_COMPLETA,
+  PARTES_LIBRETA,
+  PISO_AVERIGUADO,
+  REFLEXION_LIBRETA,
+} from '../../src/pisos/piso3/guion';
 import { crearContextoFalso } from './contextoFalso';
 
 function armar(leidos: readonly string[] = [], otras: readonly string[] = []) {
@@ -228,5 +238,40 @@ describe('El guion del Piso 3 (P3-guion)', () => {
     jugar(3);
     expect(progreso.tiene(FINAL_PISO_3)).toBe(false);
     expect(acciones).toEqual([]);
+  });
+});
+
+describe('Ningún orden de lectura traba el Piso 3', () => {
+  // Así se atascó el creador: juntó la libreta sin ver el sobre del 301. El objetivo seguía en "Averigua por qué
+  // cerraron este piso" y la X del dormitorio no dejaba grabar.
+  it('juntar la libreta sin haber leído la carta del 301 también cumple "averiguar": el objetivo pasa a grabar', () => {
+    const { progreso, banderas } = armar();
+    for (const id of PARTES_LIBRETA) progreso.registrarDocumento(id);
+    expect(progreso.tiene(`leyo:${CARTA_ADMINISTRACION}`), 'la carta sigue sin leer').toBe(false);
+    expect(progreso.tiene(PISO_AVERIGUADO)).toBe(true);
+    expect(banderas, 'en vivo: pasa por el bus como cualquier avance').toContain(PISO_AVERIGUADO);
+    expect(progreso.objetivoActual()?.id).toBe('grabar');
+  });
+
+  it('la carta sola cumple "averiguar", y el objetivo pasa a juntar la libreta', () => {
+    const { progreso } = armar();
+    expect(progreso.objetivoActual()?.id).toBe('averiguar');
+    progreso.registrarDocumento(CARTA_ADMINISTRACION);
+    expect(progreso.tiene(PISO_AVERIGUADO)).toBe(true);
+    expect(progreso.objetivoActual()?.id).toBe('juntar');
+  });
+
+  it('una hoja o el cuaderno sueltos no lo cumplen: todavía no se sabe nada', () => {
+    const { progreso } = armar();
+    progreso.registrarDocumento('hoja_301');
+    progreso.registrarDocumento('carta_madre_302');
+    expect(progreso.tiene(PISO_AVERIGUADO)).toBe(false);
+  });
+
+  it('una partida de antes (carta leída, sin la bandera nueva) se repara al cargar, en silencio', () => {
+    const { progreso, banderas } = armar([CARTA_ADMINISTRACION]);
+    expect(progreso.tiene(PISO_AVERIGUADO)).toBe(true);
+    expect(banderas, 'cargar no es un hecho nuevo').toEqual([]);
+    expect(progreso.objetivoActual()?.id).toBe('juntar');
   });
 });

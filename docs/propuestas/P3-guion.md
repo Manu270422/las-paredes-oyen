@@ -16,6 +16,10 @@
 | 6 | Final | En la escalera, a oscuras: desde abajo, detrás de la reja del Piso 2, tres golpes despacio. Fundido y pantalla "Piso 3 completado · Próximamente: Piso 2" | Cierra la partida para el lanzamiento del 31 de octubre y deja abierto el Piso 2 |
 
 Objetivos: llegar (en silencio) → averiguar → juntar → **grabar la pared** (`medido:302`) → **volver a la escalera**
+
+**Arreglo del 2026-10-10:** "averiguar" se cumple con la carta del 301 **o** con la libreta completa (`averiguo:piso3`,
+lo marca el guion). Antes dependía solo del sobre del 301, fácil de pasar por alto: quien juntaba la libreta sin
+leerlo se quedaba con "Averigua por qué cerraron este piso" y la X no dejaba grabar. Le pasó al creador.
 (`final:piso3`). Punto de control nuevo: `medido:302` → dormitorio del 302.
 
 ## Motor

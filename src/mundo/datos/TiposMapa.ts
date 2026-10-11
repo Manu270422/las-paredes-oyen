@@ -111,6 +111,8 @@ export interface DefInteractuable {
   aparece?: string;
   /** Apartamento que se mide (tipo medicion). */
   apartamento?: string;
+  /** Lo que dice el indicador al mirarlo (tipo medicion; sin él, "Medir la sala del <apartamento>"). */
+  accion?: string;
   /** Qué se examina (tipo examinable): una clave de `examinables` del paquete del piso. */
   examinable?: string;
 }
