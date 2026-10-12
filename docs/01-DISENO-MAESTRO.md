@@ -56,7 +56,7 @@ No es un clon de: Amnesia (no hay cordura ni escondites mágicos), Outlast (no h
 
 ## 6. La amenaza: "El Inquilino"
 
-- **Cuerpo:** 2.25 m en techos de 2.7 m (vive encorvado), demacrado, hombros desiguales, brazos hasta las rodillas, sin ojos, solo una ranura por boca. Se anima a **12 poses por segundo** mientras el mundo va a 60 FPS: se mueve "mal".
+- **Cuerpo:** 2.25 m en techos de 2.7 m (vive encorvado), demacrado (se le marcan costillas, columna y omóplatos), hombros desiguales, brazos hasta las rodillas con dedos largos de dos falanges y uñas, sin ojos (dos cuencas hundidas). Cerrada, la boca es una ranura; abierta, la mandíbula baja de más y enseña dientes, y en el susto se desencaja. Piel casi negra y mate, con manchas y venas que solo saca la linterna. Se anima a **12 poses por segundo** mientras el mundo va a 60 FPS: se mueve "mal"; a veces gira la cabeza más de lo que un cuello aguanta.
 - **Reglas que el jugador descubre:**
   1. Es ciego. Solo oye.
   2. Dentro de los muros oye **mejor** (los muros casi no lo atenúan).
