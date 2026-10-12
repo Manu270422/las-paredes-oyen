@@ -51,11 +51,25 @@ export class TecladoRaton {
     this.lienzo.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
+  /**
+   * En las pruebas automáticas (un navegador manejado por Playwright: `navigator.webdriver`) NO capturo el ratón
+   * del sistema. Capturarlo desde un Chrome invisible encerraba el cursor de quien estaba usando el computador en
+   * el rectángulo de esa ventana y lo recentraba solo, durante toda la corrida. Ahí hago como si estuviera
+   * capturado: el piloto mueve la mirada directo y el juego se comporta igual que con el ratón bloqueado.
+   */
+  private readonly sinCapturar = navigator.webdriver === true;
+  private bloqueoSimulado = false;
+
   get bloqueado(): boolean {
+    if (this.sinCapturar) return this.bloqueoSimulado;
     return document.pointerLockElement === this.lienzo;
   }
 
   pedirBloqueo(): void {
+    if (this.sinCapturar) {
+      this.bloqueoSimulado = true;
+      return;
+    }
     if (this.bloqueado) return;
     try {
       const resultado = this.lienzo.requestPointerLock() as unknown;
@@ -67,6 +81,10 @@ export class TecladoRaton {
   }
 
   liberarBloqueo(): void {
+    if (this.sinCapturar) {
+      this.bloqueoSimulado = false;
+      return;
+    }
     if (this.bloqueado) document.exitPointerLock();
   }
 
