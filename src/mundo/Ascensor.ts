@@ -15,6 +15,14 @@
 // - La regla de justicia: al llegar conmigo adentro, las puertas no se abren si ella está a menos de 4 m. La luz
 //   parpadea (la señal de siempre: está cerca). Si no se va en unos segundos, la mando a las paredes.
 // - Con las puertas abiertas, la cabina es un cuarto más: ella puede entrar. No es un refugio.
+//
+// Por qué este archivo pasa de 250 líneas (anotado el 2026-10-12, a pedido del creador): es UNA máquina de estados de
+// 9 fases y sus reglas de justicia se leen juntas. El sensor de la puerta, que ella no viaje, la retención al llegar y
+// que abierta no sea refugio dependen de lo mismo (la apertura, el piso elegido, el motor), y repartirlas en varios
+// archivos obligaría a saltar entre ellos para entender una muerte. Lo que no es la máquina ya vive aparte:
+// MarcoCabina (geometría), ModeloAscensor (lo que se ve), BotonAscensor (los botones) y EnlacesAscensor (validar los
+// paquetes). Casi un cuarto son comentarios y líneas en blanco. Si crece, lo primero que sale a su archivo es el
+// sonido (motor, puertas, campanilla y sacudón), que no decide nada.
 import { CONFIG } from '../config/ConfiguracionJuego';
 import type { FuenteSonido } from '../audio/FuenteSonido';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
@@ -155,19 +163,25 @@ export class Ascensor implements MandoAscensor {
   }
 
   private llamar(ctx: ContextoJuego): void {
+    // La telemetría de las pruebas quiere saber cuándo y cómo se llama el ascensor (y si ella estaba cerca).
+    const avisar = (respuesta: 'muerto' | 'viene' | 'abre' | 'nada') => ctx.bus.emit('ascensor-llamado', { piso: ctx.piso.id, respuesta });
     switch (this.fase) {
       case 'muerto':
+        avisar('muerto');
         ctx.bus.emit('subtitulo', { texto: this.def.muerto ?? 'No responde.', duracion: 3 });
         return;
       case 'lejos':
+        avisar('viene');
         this.venir(ctx);
         return;
       case 'aqui':
       case 'cerrando':
         // Como en todo ascensor: si está aquí (o cerrando), el botón abre.
+        avisar('abre');
         this.abrir(ctx);
         return;
       default:
+        avisar('nada');
     }
   }
 

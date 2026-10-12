@@ -63,7 +63,7 @@ describe('SistemaGuardado', () => {
     puntoControl: 'sala401',
     progreso: { banderas: ['medido:401'], inventario: [], documentos: [] },
     otrosPisos: { piso3: { banderas: ['lugar:301'], documentos: ['nota_301'] } },
-    pisosCompletados: [{ piso: 'piso4', nombre: 'Piso 4', tiempo: 95, muertes: 1, cambiosMundo: 3, tarjetaVista: true }],
+    pisosCompletados: [{ piso: 'piso4', nombre: 'Piso 4', tiempo: 95, muertes: 1, persecuciones: 2, cambiosMundo: 3, mejorTiempo: true, tarjetaVista: true }],
     bateria: 0.8,
     tiempoJugado: 120,
     estadisticas: { persecuciones: 1, muertes: 2, sustos: 3, cambiosMundo: 4 },
@@ -122,11 +122,28 @@ describe('SistemaGuardado', () => {
 
   it('una partida con los pisos completados mal formados es dañada (no se inventa lo que pasó en ellos)', () => {
     const bueno = partida.pisosCompletados[0];
-    const malos: unknown[] = [{}, null, [null], [{ ...bueno, tiempo: '95' }], [{ ...bueno, muertes: -1 }], [{ ...bueno, tarjetaVista: 'si' }], [{ ...bueno, piso: 4 }]];
+    const malos: unknown[] = [
+      {},
+      null,
+      [null],
+      [{ ...bueno, tiempo: '95' }],
+      [{ ...bueno, muertes: -1 }],
+      [{ ...bueno, persecuciones: undefined }],
+      [{ ...bueno, mejorTiempo: 1 }],
+      [{ ...bueno, tarjetaVista: 'si' }],
+      [{ ...bueno, piso: 4 }],
+    ];
     for (const pisosCompletados of malos) {
       sembrar('partida', { ...partida, pisosCompletados, version: VERSION_PARTIDA, fecha: 1 });
       expect(new SistemaGuardado().cargar(), JSON.stringify(pisosCompletados)).toBeNull();
     }
+  });
+
+  it('una partida v7 sube a v8: sus pisos completados no anotaban las cazas ni el mejor tiempo (0 y no)', () => {
+    const viejo = { piso: 'piso4', nombre: 'Piso 4', tiempo: 95, muertes: 1, cambiosMundo: 3, tarjetaVista: true };
+    sembrar('partida', { ...partida, pisosCompletados: [viejo], version: 7, fecha: 1 });
+    expect(new SistemaGuardado().cargar()?.pisosCompletados).toEqual([{ ...viejo, persecuciones: 0, mejorTiempo: false }]);
+    expect(guardado('partida'), 'queda guardada ya migrada').toMatchObject({ version: VERSION_PARTIDA });
   });
 
   it('una partida con los otros pisos mal formados es dañada (no se adivina qué pasó en ellos)', () => {
@@ -221,33 +238,54 @@ describe('Perfil', () => {
     bus.emit('jugador-atrapado', { x: 0, z: 0, motivo: 'jadeo', enPared: false });
     bus.emit('encuentro', { estado: 'inicio', distancia: 2 });
     bus.emit('encuentro', { estado: 'superado', distancia: 2 });
-    expect(guardado('perfil')).toMatchObject({ version: 2, partidasIniciadas: 1, muertesTotales: 1, encuentrosSuperados: 1, pisosCompletados: {} });
+    expect(guardado('perfil')).toMatchObject({ version: 3, partidasIniciadas: 1, muertesTotales: 1, encuentrosSuperados: 1, pisosCompletados: {}, mejoresTiempos: {} });
   });
 
   it('las marcas solo mejoran: premia jugar bien, no jugar más', () => {
     const p = new Perfil();
-    expect(p.registrarFinal('piso4', 'normal', 600, 3)).toEqual({ mejorTiempo: 600, nuevoMejorTiempo: true, finales: 1 });
-    expect(p.registrarFinal('piso4', 'normal', 700, 1)).toEqual({ mejorTiempo: 600, nuevoMejorTiempo: false, finales: 2 });
-    expect(new Perfil().registrarFinal('piso4', 'normal', 500, 5)).toEqual({ mejorTiempo: 500, nuevoMejorTiempo: true, finales: 3 });
+    p.registrarFinal('piso4', 'normal', 600, 3, 600);
+    p.registrarFinal('piso4', 'normal', 700, 1, 700);
+    new Perfil().registrarFinal('piso4', 'normal', 500, 5, 500);
     expect(guardado('perfil')).toMatchObject({ mejorTiempo: 500, menosMuertes: 1, finales: 3 });
+  });
+
+  it('el mejor tiempo es de cada piso, y solo cuenta como batido si había uno antes (la primera vez no hay nada que batir)', () => {
+    const p = new Perfil();
+    expect(p.registrarFinal('piso4', 'normal', 180, 0, 180), 'primera vez en el Piso 4').toEqual({ mejorAnterior: null, batido: false });
+    // El Piso 3 se mide aparte: su tiempo es solo lo que tardé en él, no el total de la partida.
+    expect(p.registrarFinal('piso3', 'normal', 468, 1, 288), 'primera vez en el Piso 3').toEqual({ mejorAnterior: null, batido: false });
+    expect(p.registrarFinal('piso4', 'normal', 200, 0, 200), 'más lento: no').toEqual({ mejorAnterior: 180, batido: false });
+    expect(new Perfil().registrarFinal('piso4', 'normal', 150, 0, 150), 'más rápido: sí').toEqual({ mejorAnterior: 180, batido: true });
+    expect(new Perfil().mejorTiempoDe('piso4')).toBe(150);
+    expect(new Perfil().mejorTiempoDe('piso3')).toBe(288);
+    expect(new Perfil().mejorTiempoDe('piso2')).toBeNull();
+  });
+
+  it('un perfil v2 sube a v3: su mejor tiempo no se sabe de qué piso era, así que cada piso empieza sin marca', () => {
+    const v2 = { version: 2, creado: 1, partidasIniciadas: 3, finales: 2, mejorTiempo: 180, menosMuertes: 0, muertesTotales: 4, encuentrosSuperados: 1, pisosCompletados: { piso4: 'normal' } };
+    sembrar('perfil', v2);
+    const p = new Perfil();
+    expect(p.mejorTiempoDe('piso4')).toBeNull();
+    expect(p.completado('piso4')).toBe('normal');
+    expect(guardado('perfil')).toMatchObject({ ...v2, version: 3, mejoresTiempos: {} });
   });
 
   it('recuerda cada piso terminado con la dificultad MÁS ALTA: terminarlo en una más fácil no la baja', () => {
     const p = new Perfil();
     expect(p.completado('piso4')).toBeNull();
-    p.registrarFinal('piso4', 'normal', 600, 0);
-    p.registrarFinal('piso4', 'historia', 500, 0);
+    p.registrarFinal('piso4', 'normal', 600, 0, 600);
+    p.registrarFinal('piso4', 'historia', 500, 0, 500);
     expect(p.completado('piso4')).toBe('normal');
-    p.registrarFinal('piso4', 'dificil', 900, 2);
+    p.registrarFinal('piso4', 'dificil', 900, 2, 900);
     expect(new Perfil().completado('piso4'), 'sobrevive a recargar').toBe('dificil');
     expect(guardado('perfil')).toMatchObject({ pisosCompletados: { piso4: 'dificil' } });
   });
 
-  it('un perfil v1 sube a v2: si llegó al final, completó el Piso 4 en Normal (lo único que existía); si no, nada', () => {
+  it('un perfil v1 sube (pasando por v2) a v3: si llegó al final, completó el Piso 4 en Normal (lo único que existía); si no, nada', () => {
     const v1 = { version: 1, creado: 1, partidasIniciadas: 4, finales: 2, mejorTiempo: 700, menosMuertes: 1, muertesTotales: 9, encuentrosSuperados: 3 };
     sembrar('perfil', v1);
     expect(new Perfil().completado('piso4')).toBe('normal');
-    expect(guardado('perfil')).toMatchObject({ ...v1, version: 2, pisosCompletados: { piso4: 'normal' } });
+    expect(guardado('perfil')).toMatchObject({ ...v1, version: 3, pisosCompletados: { piso4: 'normal' }, mejoresTiempos: {} });
     sembrar('perfil', { ...v1, finales: 0, mejorTiempo: null, menosMuertes: null });
     expect(new Perfil().completado('piso4')).toBeNull();
   });

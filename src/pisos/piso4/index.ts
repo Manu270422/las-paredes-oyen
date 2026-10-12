@@ -65,8 +65,8 @@ export const PISO_4: PaquetePiso = {
     apagon_pasillo: { lamparas: { pasillo1: 'rota', pasillo2: 'rota', pasillo3: 'rota', pasillo4: 'rota', pasillo5: 'rota' } },
     // Al medir el 402 el edificio queda oscuro: el circuito general apagado, solo la emergencia de la escalera.
     'medido:402': { circuitos: { general: 'apagada', fantasma: 'apagada' }, lamparas: { lampara402: 'rota', emergencia: 'encendida' } },
-    // Con la llave de la escalera en la mano, el ascensor muerto se pone en marcha solo: su tubo se enciende.
-    'objeto:llave_escalera': { lamparas: { luzAscensor: 'parpadeante' } },
+    // Al abrirse la reja de la escalera, el ascensor muerto se pone en marcha solo: su tubo se enciende.
+    'abierta:bajada': { lamparas: { luzAscensor: 'parpadeante' } },
   },
   // Los números en la cara de pasillo de cada puerta. Sin ellos, la llave del 402 (que está en el 403)
   // confundía: no había cómo saber en qué apartamento estabas.
@@ -125,15 +125,16 @@ export const PISO_4: PaquetePiso = {
     { tipo: 'frase', id: 'frase_bano401', x: 11.5, y: 1, rot: 0, altura: 1.5, ancho: 0.95, alto: 0.42, lineas: ['NO LE', 'CONTESTE'] },
   ],
   escaleras: [{ id: 'bajada', hacia: 'piso3', llegada: 'escalera', x: 1.5, y: 10.5, texto: 'Bajar al Piso 3', requiere: 'objeto:llave_escalera', cerrada: 'La cadena está dada vuelta con candado.' }],
-  // El ascensor está muerto hasta tener la llave de la escalera: antes sería un atajo que salta todo el piso. Con
-  // ella en la mano se pone en marcha solo (alguien lo llamó desde abajo) y queda como la otra forma de bajar: llega
-  // en segundos, pero llamarlo zumba por los muros y su campanilla se oye en todo el piso.
+  // El ascensor está muerto hasta abrir la reja de la escalera (decisión del creador, 2026-10-12: la primera bajada
+  // es por la escalera; el ascensor es el atajo después). Antes sería un atajo que salta todo el piso, o la búsqueda
+  // de la llave. Al abrirse la reja se pone en marcha solo (alguien lo llamó desde abajo) y queda como la otra forma
+  // de ir y venir: llega en segundos, pero llamarlo zumba por los muros y su campanilla se oye en todo el piso.
   ascensor: {
     x: 5,
     y: 11,
     numero: '4',
     paradas: [{ hacia: 'piso3', texto: 'Bajar al Piso 3' }],
-    requiere: 'objeto:llave_escalera',
+    requiere: 'abierta:bajada',
     muerto: 'El botón no se enciende. El ascensor está muerto, como todo el edificio.',
     lampara: 'luzAscensor',
   },

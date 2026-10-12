@@ -158,6 +158,7 @@ function montar(def: DefAscensor = PISO_3.ascensor!, banderas: string[] = [], in
   };
   const progreso = { tiene: (b: string) => banderas.includes(b), tieneObjeto: (o: string) => inventario.includes(o) };
   const falso = crearContextoFalso({
+    piso: PISO_3,
     jugador,
     entidad,
     progreso,
@@ -224,8 +225,26 @@ describe('La máquina del ascensor', () => {
     expect(m.subtitulos).toEqual([def.muerto]);
     m.ascensor.alBandera(def.requiere!, m.falso.ctx);
     expect(m.ascensor.fase).toBe('viniendo');
-    // Y con la llave en el bolsillo (aunque la bandera sea de otro piso), al cargar ya funciona.
-    expect(montar(def, [], ['llave_escalera']).ascensor.fase).toBe('lejos');
+    // La primera bajada es por la escalera (decisión del creador): la llave sola no basta, hace falta abrir la reja.
+    expect(def.requiere).toBe('abierta:bajada');
+    expect(montar(def, ['objeto:llave_escalera'], ['llave_escalera']).ascensor.fase, 'con la llave pero la reja cerrada').toBe('muerto');
+    expect(montar(def, ['abierta:bajada'], ['llave_escalera']).ascensor.fase, 'al cargar con la reja abierta, funciona').toBe('lejos');
+  });
+
+  it('cada vez que lo llamo, la telemetría se entera de cómo respondió (muerto, viene, abre o nada)', () => {
+    const respuestas: string[] = [];
+    const muerto = montar(PISO_4.ascensor!);
+    muerto.falso.bus.on('ascensor-llamado', (e) => respuestas.push(`${e.piso}:${e.respuesta}`));
+    llamar(muerto);
+    const m = montar();
+    m.falso.bus.on('ascensor-llamado', (e) => respuestas.push(`${e.piso}:${e.respuesta}`));
+    llamar(m);
+    llamar(m);
+    m.correr(TIEMPOS_ASCENSOR.llamada + TIEMPOS_ASCENSOR.puertas + 0.5);
+    m.correr(TIEMPOS_ASCENSOR.abiertas + TIEMPOS_ASCENSOR.puertas + 0.5);
+    llamar(m);
+    // El piso es el del contexto (aquí el falso usa el Piso 3 en los dos montajes).
+    expect(respuestas).toEqual(['piso3:muerto', 'piso3:viene', 'piso3:nada', 'piso3:abre']);
   });
 
   it('el botón del panel solo se pulsa desde adentro y con las puertas abiertas', () => {

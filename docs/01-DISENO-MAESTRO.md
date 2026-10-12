@@ -97,8 +97,9 @@ contrario de la escalera: la escalera es lenta y callada; el ascensor es rápido
 muros unos segundos y la campanilla al llegar se oye en todo el piso, también en el piso al que llegas: llegas
 anunciado. Adentro se vibra y se puede mirar alrededor; el piso cambia con las puertas cerradas, sin negro, porque la
 cabina es la misma. Ella no viaja, pero con las puertas abiertas entra: no es un refugio. Justicia: al llegar, las
-puertas no abren si ella está a menos de 4 m. En el Piso 4 está muerto hasta tener la llave de la escalera (antes
-sería un atajo que salta el piso); entonces se pone en marcha solo, como si alguien lo hubiera llamado desde abajo.
+puertas no abren si ella está a menos de 4 m. En el Piso 4 está muerto hasta abrir la reja de la escalera: la
+primera bajada es por la escalera y el ascensor es el atajo después (decisión del creador, 2026-10-12). Al abrirse
+la reja se pone en marcha solo, como si alguien lo hubiera llamado desde abajo.
 
 **Siguientes pisos (diseño):**
 - **Piso 3:** los apartamentos se repiten con variaciones (el 301 es el 401 en espejo, pero con los muebles sin cubrir… y alguien comiendo).

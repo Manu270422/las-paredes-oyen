@@ -20,6 +20,16 @@
 | H8 | La cinta revela algo que el jugador entiende ("estaba ahí y no lo oí") | Eventos `cinta` con `presencia: true`; entrevista (pregunta 7b) | Nadie la menciona o nadie entiende que la línea "Tú no oíste nada" era real |
 | H9 | En una persecución, el jugador sabe de dónde viene la criatura | Muertes con `motivo` de caza; entrevista (pregunta 8b) | Alguien dice "no sé de dónde salió" en una muerte por caza |
 
+**Ronda 2 (preview de `sprint-4`, desde 2026-10-12): además**, lo nuevo después del Piso 4: la llave, la escalera que
+se camina, el ascensor y el Piso 3.
+
+| # | Hipótesis | Cómo la medimos | Se cae si… |
+|---|---|---|---|
+| H10 | La escalera se baja y se sube caminando sin ayuda | `piso-cambiado` con `por: "caminando"`; hoja 4.4 (momento 14) | Alguien pasa más de 2 min frente al tramo abierto sin saber cómo bajar, o activa "Escaleras con fundido" porque se marea |
+| H11 | La llave de la escalera se encuentra por el ruido de su caída | Tiempo entre `piso-cambiado` con `por: "despertar"` y la bandera `objeto:llave_escalera`; evento `pista` | La mayoría necesita la pista escrita o tarda más de 5 min |
+| H12 | El ascensor se entiende como un atajo que hace ruido | `ascensor-llamado`, `piso-cambiado` con `por: "cabina"`, muertes con `motivo: "maquina"`; entrevista (14) | Nadie lo usa, o alguien muere por él y no sabe por qué |
+| H13 | El Piso 3 se termina sin trabarse | Banderas `averiguo:piso3`, `imitacion:piso3`, `medido:302`, `final:piso3` y el tiempo entre ellas | Alguien pasa más de 10 min sin cambiar de objetivo y sin saber qué hacer |
+
 ---
 
 ## 2. Preparación
@@ -35,17 +45,30 @@
   En una red local sirve igual: `http://192.168.1.10:5173/?telemetria=1`.
 - Alternativa: Ajustes → **Pruebas** → "Registrar sesiones de prueba".
 - Empezar con **Nueva partida** (no "Continuar").
+- **Ronda 2:** el enlace es el preview de `sprint-4` en Vercel con `?telemetria=1`
+  (`https://las-paredes-oyen-git-sprint-4-el-mundo-de-manu.vercel.app/?telemetria=1`): trae la escalera que se
+  camina, el ascensor y el Piso 3, que todavía no están en `main`. **Antes de mandarlo, ábrelo en una ventana de
+  incógnito** (sin tu sesión de Vercel): si pide iniciar sesión, los probadores no van a poder entrar; hay que
+  quitar la protección de los previews en Vercel o publicar en `main`. Es otro dominio: las partidas y registros de
+  ahí no se mezclan con los del enlace principal. La versión exacta queda en cada registro (`entorno.compilacion`,
+  "0.1.0+" y el commit) y en el pie del menú.
+- **Ronda 2, versión congelada:** el enlace de arriba sigue a la rama, así que cada push a `sprint-4` cambia lo que
+  juegan los probadores. La versión de la ronda es la de la etiqueta `ronda2`. Para que todos jueguen esa, manda la
+  URL propia de su despliegue (Vercel → Deployments → el del commit de `ronda2` → su dominio, también probado en
+  incógnito) o no hagas push a `sprint-4` mientras dure la ronda. Si se mezclaron versiones, `entorno.compilacion`
+  dice cuál jugó cada uno.
 
 **Prueba a distancia (el probador juega solo, cuando pueda)**
 Sin observador no hay F9 ni hoja de observación: se pierde la parte más fina, pero el JSON y una nota de voz
 siguen valiendo. Mensaje para mandarle:
 
 > 1. Abre `https://almendros.elmundodemanu.com/?telemetria=1` (en PC con Chrome o Edge; en celular, acostado).
-> 2. Audífonos puestos, luz apagada, unos 30 minutos sin interrupciones. Nueva partida, dificultad **Normal**.
+> 2. Audífonos puestos, luz apagada, unos 30 minutos sin interrupciones (en la ronda 2, hasta una hora: son dos
+>    pisos). Nueva partida, dificultad **Normal**.
 > 3. Juega sin buscar ayuda. Si te cansas o te frustras, para: eso también me sirve.
-> 4. Cuando pares, o al terminar el Piso 4: **Pausa (Esc o el botón de pausa) → Ajustes → pestaña Pruebas →
->    Exportar (.json)**. Si llegaste a la pantalla final, el botón "Exportar registro de la prueba" hace lo mismo.
->    Se descarga un archivo `.json`; mándamelo por WhatsApp o correo.
+> 4. Cuando pares, o al llegar a la pantalla final: **Pausa (Esc o el botón de pausa) → "Exportar registro de la
+>    prueba"** (o Ajustes → pestaña Pruebas → Exportar (.json)). En la pantalla final, el botón "Exportar registro
+>    de la prueba" hace lo mismo. Se descarga un archivo `.json`; mándamelo por WhatsApp o correo.
 
 Ajustes → Pruebas → Exportar existe en todas las versiones publicadas; el atajo "Exportar registro de la prueba" en
 la pausa llega con la versión que lo trae (`sprint-4` desde 2026-10-08).
@@ -102,7 +125,8 @@ En móvil no hay F9: anotar la hora a mano en la hoja.
 | Luz de la habitación | oscura / penumbra / con luz |
 | ¿Juega terror seguido? | nunca / a veces / seguido |
 | ¿Ya conocía el juego? | no / vio videos / ya lo jugó |
-| Enlace usado | ¿termina en `?telemetria=1`? sí / no |
+| Enlace usado | ¿termina en `?telemetria=1`? sí / no — ¿principal o preview de `sprint-4`? |
+| Versión del juego | la del pie del menú (ej. `0.1.0+9c3bd61`) |
 | ¿Grabación con permiso? | pantalla / cara / voz / ninguna |
 
 ### 4.2 Escala de reacción (para no discutir después)
@@ -143,6 +167,19 @@ Nivel 2 o 3 = pulsar **F9** (en PC). En celular, anotar la hora del reloj en la 
 | 8 | Medición del 403 | H1 | sí / no | | | |
 | 9 | Apagón del pasillo (las lámparas revientan hacia él) | H7 | sí / no | | | |
 | 10 | Llegó al 402 / al final | — | sí / no | | | |
+| **Ronda 2** | | | | | | |
+| 11 | Despertó en la escalera después del 402 | — | sí / no | | | ¿entendió que el piso había terminado? |
+| 12 | Oyó caer la llave y la buscó | H11 | sí / no | | | ¿fue al 402 solo? ¿le salió la pista escrita? |
+| 13 | Abrió el candado de la reja | H11 | sí / no | | | |
+| 14 | Bajó caminando por la escalera | H10 | sí / no | | | ¿dudó frente al tramo? ¿se atascó en el descanso? ¿notó el parpadeo al cambiar de piso? |
+| 15 | Pulsó el botón del ascensor con la reja cerrada ("está muerto") | H12 | sí / no | | | |
+| 16 | El ascensor se puso en marcha solo (al abrir la reja) | H12 | sí / no | | | ¿fue a verlo? ¿se alejó? |
+| 17 | Usó el ascensor | H12 | sí / no · cuántas veces: | | | ¿para qué? (atajo / huir / curiosidad) ¿reaccionó a la vibración o a la campanilla? |
+| 18 | Piso 3: tres golpes al llegar | H13 | sí / no | | | |
+| 19 | Juntó la libreta (revienta la luz de la escalera) | H13 | sí / no | | | ¿leyó la carta del 301? |
+| 20 | Grabó la pared del cuarto de Andrés y oyó su cinta | H8, H13 | sí / no | | | |
+| 21 | Ella lo esperaba en el pasillo: cómo pasó | H13 | sí / no | | | ¿grabadora? ¿la iluminó quieto? ¿murió? |
+| 22 | El final del Piso 3 (golpes desde abajo) y la pantalla final | — | sí / no | | | |
 
 ### 4.5 Conducta observada (sí / no / no aplica)
 
@@ -161,6 +198,11 @@ Nivel 2 o 3 = pulsar **F9** (en PC). En celular, anotar la hora del reloj en la 
 | ¿Apagó la linterna a propósito? | | |
 | ¿Pidió ayuda o preguntó algo? (anotar la pregunta textual) | | |
 | ¿Quiso abandonar? ¿Abandonó? | | minuto exacto y qué acababa de pasar |
+| **Ronda 2:** ¿Bajó y subió por la escalera sin ayuda? ¿Se atascó en algún escalón o en el descanso? | | |
+| ¿Activó "Escaleras con fundido" (Accesibilidad)? ¿Por qué? | | |
+| ¿Usó el ascensor para huir de ella? ¿Le funcionó? | | |
+| ¿Se quedó dentro del ascensor con las puertas abiertas, como escondite? | | ¿qué pasó? |
+| ¿Supo siempre en qué piso estaba? | | |
 
 ### 4.6 Solo en celular o tableta
 
@@ -171,6 +213,7 @@ Nivel 2 o 3 = pulsar **F9** (en PC). En celular, anotar la hora del reloj en la 
 | ¿Giró el teléfono a vertical? ¿Entendió el aviso? | |
 | ¿El celular se calentó o el juego se puso lento? ¿En qué momento? | |
 | FPS que mostró el juego (Ajustes → Video → mostrar FPS), si se activó | |
+| Ronda 2: al cambiar de piso (escalera o ascensor), ¿la imagen se congeló? ¿Cuánto, más o menos? | |
 
 ### 4.7 Cierre de la sesión (el observador, justo al terminar)
 
@@ -199,6 +242,10 @@ cumple la condición de la columna "Se cae si…" de la sección 1.
 | H7 La tensión sube y baja | | | | | | |
 | H8 La cinta revela algo que entiende | | | | | | |
 | H9 Sabe de dónde viene en la persecución | | | | | | |
+| H10 La escalera se camina sin ayuda (ronda 2) | | | | | | |
+| H11 La llave se encuentra por su ruido (ronda 2) | | | | | | |
+| H12 El ascensor se entiende como atajo ruidoso (ronda 2) | | | | | | |
+| H13 El Piso 3 se termina sin trabarse (ronda 2) | | | | | | |
 
 **Gate 1 cumplido** cuando: 5 o más personas, al menos 1 en celular, cada una con su JSON y su hoja.
 Se entregan juntos: los `.json`, estas hojas y las notas de la entrevista.
@@ -224,6 +271,15 @@ Hacerla **justo al terminar**, con las luces aún bajas. Preguntas abiertas, en 
 10. ¿Qué lugar te pareció seguro? ¿Cuál evitaste?
 11. ¿En algún momento quisiste dejar de jugar?
 12. De todo lo que hiciste en el juego, ¿qué recuerdas más?
+
+**Ronda 2, además** (después de la 12, sin apurar):
+
+13. ¿Cómo bajaste al Piso 3? ¿Fue fácil? ¿Te mareaste o te trabaste en la escalera? *(H10)*
+14. ¿Usaste el ascensor? ¿Por qué sí o por qué no? ¿Qué pasaba cuando lo llamabas? *(H12)*
+15. ¿Cómo encontraste la llave de la reja? *(H11)*
+16. En el Piso 3, ¿hubo un momento en que no supiste qué hacer? ¿Qué te sacó de ahí? *(H13)*
+17. En la pantalla final, ¿qué entendiste de los tiempos de cada piso? *(El mejor tiempo ahora es de cada piso y
+    solo aparece cuando se bate: comprobar que no confunda.)*
 
 ---
 
@@ -260,6 +316,17 @@ Cada sesión trae un bloque `resumen`. Lo primero que hay que mirar:
 | `curva` (estrés en el tiempo) | Olas: sube, baja, sube más | Plana (aburrimiento) o siempre alta (fatiga) |
 | `contadores` (`segundos-corriendo`, `ruido:paso-pared`…) | Estilo de juego | Mucho `paso-pared` sin muertes: la regla central no pesa lo suficiente |
 | `fpsMedio` | ≥ 45 en PC, ≥ 30 en móvil | Por debajo: revisar perfil de calidad de ese equipo |
+
+**Ronda 2: eventos nuevos** (en la lista `eventos` de cada sesión; comprobado exportando un registro real en
+`telemetriaViajes.spec.ts`):
+
+| Evento | Qué trae | Para qué |
+|---|---|---|
+| `entorno.compilacion` (no es evento: va en la sesión) | La versión: `0.1.0+<commit>` (o `+local` en desarrollo) | Saber qué versión jugó cada probador |
+| `piso-cambiado` | `desde`, `hacia` y `por`: `caminando` (escalera caminada), `fundido` (escalera con E, la opción de accesibilidad), `cabina` (ascensor) o `despertar` (tras el final del 402) | H10, H11, H12 |
+| `ascensor-llamado` | `piso`, `respuesta` (`muerto`, `viene`, `abre`, `nada`) y el estado del peligro: cuarto, batería, estado de ella y distancia si tenía cuerpo | H12: ¿lo llamó con ella cerca? |
+| `muerte` con `motivo: "maquina"` | Lo atrapó por el ruido del ascensor (motor o campanilla) | H12, H5 |
+| `piso-completado` | `piso`, `tiempo` (solo el de ese piso) y `muertes` | Tiempo por piso |
 
 Cruzar siempre con las marcas F9 (`marca-observador`): una marca sin evento del juego cerca
 significa que el miedo vino de algo que el sistema no registra (¿la imaginación? ¡bien!).

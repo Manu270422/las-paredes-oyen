@@ -7,8 +7,8 @@
 //   cerrado con una reja y una cadena, y el que sube al 5, tapado con tablas y escombros. Por ahí no se
 //   pasa (todavía): las celdas 'E' bloquean como un muro, pero se ve y se oye a través de ellas.
 // - Pasillo largo y estrecho: una sola línea de visión, oscuro, sin escapatoria lateral.
-// - Ascensor (la 'A', al sur del pasillo junto a la escalera): muerto hasta tener la llave de la escalera. Entonces
-//   se pone en marcha solo, y desde ahí es la otra forma de bajar: rápida, pero se oye en todo el edificio.
+// - Ascensor (la 'A', al sur del pasillo junto a la escalera): muerto hasta abrir la reja de la escalera. Entonces
+//   se pone en marcha solo, y desde ahí es la otra forma de ir y venir: rápida, pero se oye en todo el edificio.
 // - 401 (norte-oeste): la lámpara está encendida... en un edificio sin luz. Nadie sabe por qué.
 // - 403 (norte-este): el estudio del vecino que grababa las paredes.
 // - 402 (sur): cerrado con llave. Todos los muebles cubiertos. El final.

@@ -14,8 +14,10 @@ import { soloMirada } from '../entrada/AccionesEntrada';
 import { Renderizador } from '../render/Renderizador';
 import { BibliotecaMateriales } from '../render/Materiales';
 import { crearCookieLinterna } from '../render/texturas/CookieLinterna';
+import { EfectosFotograma } from '../render/EfectosFotograma';
 import { MotorAudio } from '../audio/MotorAudio';
 import { AmbienteSonoro } from '../audio/AmbienteSonoro';
+import { MezclaFotograma } from '../audio/MezclaFotograma';
 import { Nivel } from '../mundo/Nivel';
 import { PISO_INICIAL, PISOS, pisoPorId } from '../pisos/catalogo';
 import { precalentarPiso } from '../mundo/PrecalentarPiso';
@@ -47,7 +49,6 @@ import { FondoMenu } from './FondoMenu';
 import { DificultadPartida } from './DificultadPartida';
 import { mostrarSusto } from './Susto';
 import type { ContextoJuego } from './ContextoJuego';
-import { amortiguar } from '../utilidades/Matematicas';
 
 /** 'viaje': voy por una escalera a otro piso (a oscuras, unos segundos, sin poder moverme). */
 type EstadoApp = 'cargando' | 'inicio' | 'menu' | 'jugando' | 'pausa' | 'documento' | 'muerte' | 'fin' | 'viaje';
@@ -96,7 +97,7 @@ export class Juego {
     armarPiso: (destino) => this.cambiarNivel(destino),
     ponerEn: (llegada) => {
       this.soloMirar = false;
-      this.interferencia = 0;
+      this.efectosPantalla.calmar();
       this.puntoControl = llegada;
       this.ponerEnPunto();
     },
@@ -158,8 +159,10 @@ export class Juego {
   private soloMirar = false;
   private puntoControl = this.piso.puntoInicial;
   private tiempoJugado = 0;
-  private temporizadorLento = 0;
-  private interferencia = 0;
+  /** El audio de cada fotograma de juego (ambiente, oyente, oclusión). */
+  private readonly mezcla = new MezclaFotograma();
+  /** Lo que el postprocesado muestra del jugador y de ella (estrés, pulso, interferencia). */
+  private readonly efectosPantalla = new EfectosFotograma(this.bus);
 
   constructor(contenedor: HTMLElement) {
     this.lienzo = contenedor.querySelector('#lienzo') as HTMLCanvasElement;
@@ -361,9 +364,6 @@ export class Juego {
       }
     });
     this.perfilGuardado.conectar(this.bus);
-    this.bus.on('interferencia', ({ intensidad }) => {
-      this.interferencia = Math.max(this.interferencia, intensidad);
-    });
 
     this.pantalla.alCambiar(() => this.redimensionar());
     document.addEventListener('visibilitychange', () => {
@@ -460,7 +460,7 @@ export class Juego {
     this.audio.fijarSilencioAmbiente(1);
     this.ambiente.olvidarFuentes();
     this.soloMirar = false;
-    this.interferencia = 0;
+    this.efectosPantalla.calmar();
     if (piso.id !== this.piso.id) this.cambiarNivel(piso);
 
     // "Continuar" y reintentar retoman la dificultad de la partida guardada; una partida nueva ya fijó la suya.
@@ -616,7 +616,8 @@ export class Juego {
         break;
     }
     if (this.estado === 'cargando') return;
-    this.actualizarEfectos(dt);
+    const enJuego = this.estado === 'jugando' || this.estado === 'muerte' || this.estado === 'viaje';
+    this.efectosPantalla.actualizar(dt, this.renderizador.efectos, enJuego, this.ctx);
     this.renderizador.dibujar(this.escena, this.jugador.camara, dt, this.bucle.dtReal);
   }
 
@@ -657,19 +658,7 @@ export class Juego {
     this.linterna.actualizar(dt, distanciaEntidad, ctx);
     const j = this.jugador.posicion;
     this.nivel.actualizar(dt, ctx, j.x, j.z);
-
-    // Audio.
-    this.temporizadorLento -= dt;
-    if (this.temporizadorLento <= 0) {
-      this.temporizadorLento = 0.25;
-      this.ambiente.sincronizarLamparas(this.nivel.lamparas);
-      this.ambiente.fijarTension(this.director.tension);
-      this.ambiente.fijarEstres(this.jugador.estres);
-    }
-    this.ambiente.actualizar(dt, j.x, j.z, this.nivel.rejilla);
-    this.audio.fijarEscucha(this.jugador.nivelEscucha);
-    this.audio.actualizarOyente(this.jugador.camara);
-    this.audio.actualizar(dt);
+    this.mezcla.actualizar(dt, ctx);
     this.telemetria.actualizar(dt, this.bucle.dtReal);
 
     // ¿Me atrapó? Regla de justicia: SOLO mata cuando está cazando. La caza
@@ -681,18 +670,5 @@ export class Juego {
     }
 
     alimentarHUD(this.ui.hud, ctx, this.interaccion.enfocado, this.bucle.dtReal);
-  }
-
-  /** Paso el estado del jugador al postprocesado. */
-  private actualizarEfectos(dt: number): void {
-    const efectos = this.renderizador.efectos;
-    const enJuego = this.estado === 'jugando' || this.estado === 'muerte' || this.estado === 'viaje';
-    efectos.estres = enJuego ? this.jugador.estres : 0;
-    efectos.escuchando = enJuego ? this.jugador.nivelEscucha : 0;
-    efectos.pulso = enJuego ? this.jugador.corazon.pulso : 0;
-    efectos.susto = amortiguar(efectos.susto, 0, 2.5, dt);
-    this.interferencia = Math.max(0, this.interferencia - dt * 1.6);
-    const cercania = this.entidad?.fisica ? Math.max(0, 1 - this.entidad.distanciaAlJugador(this.ctx) / 8) * 0.25 : 0;
-    efectos.interferencia = Math.min(1, this.interferencia + (enJuego ? cercania : 0));
   }
 }

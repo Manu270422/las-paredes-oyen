@@ -194,7 +194,9 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
   partida guardada (`pisosCompletados`, v7) y avisa con `piso-completado`, que la telemetría registra. Los guiones
   lo piden con `AccionesGuion`.
 - `Juego.ts` tiene un tope de 700 líneas (A5), vigilado por `topeComplejidad.test.ts`. Lo que no cabe va a su propio
-  archivo; por ejemplo, `ui/hud/AlimentarHUD.ts` pasa el estado del juego al HUD en cada fotograma.
+  archivo; por ejemplo, `ui/hud/AlimentarHUD.ts` pasa el estado del juego al HUD en cada fotograma, y desde el
+  2026-10-12 `audio/MezclaFotograma.ts` (el audio de cada fotograma) y `render/EfectosFotograma.ts` (estrés, pulso e
+  interferencia para el postprocesado). Con eso quedó en 674 líneas: hay margen para lo próximo.
 - `Juego.cambiarNivel` suelta el nivel viejo (`Nivel.destruir`: geometrías y texturas propias, no las de la biblioteca
   compartida) y arma el nuevo. Lo comparten el viaje y cargar una partida guardada en otro piso.
 
@@ -251,6 +253,8 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
 - Datos: `ascensor` del paquete (`DefAscensor`: celda, número del indicador, paradas, `requiere`, mensaje de muerto
   y lámpara). `pisos/EnlacesAscensor.ts` valida el catálogo (una sola `A`, misma celda y mismo panel en cada parada,
   ida y vuelta, nada adentro de la cabina). Lo prueban `ascensor.test.ts` y, caminando, `ascensor.spec.ts`.
+- `Ascensor.ts` pasa de 250 líneas (~445, casi un cuarto comentarios y blancos) a propósito: es una sola máquina de
+  estados y sus reglas de justicia comparten estado; el porqué está en su cabecera. Si crece, el sonido sale primero.
 
 ## Lo que se lee y lo que se examina
 

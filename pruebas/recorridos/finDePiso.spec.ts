@@ -114,7 +114,11 @@ test('la tarjeta del piso completado sale una vez al bajar, sobre el negro, y la
   expect(r.titulo).toBe('Piso 3 completado');
   expect(r.pisosVisibles, 'con dos pisos, la lista se ve').toBe(true);
   expect(r.pisos).toHaveLength(2);
-  expect(r.pisos[0]).toMatch(/^Piso 4\d+:\d\d · /);
-  expect(r.pisos[1]).toMatch(/^Piso 3\d+:\d\d · /);
+  // Cada línea: el tiempo de ese piso, (la marca solo si la batió), las veces que te cazó y las que te oyó ahí.
+  const linea = /^\d+:\d\d( · nunca lo pasaste tan rápido)? · (no te cazó|te cazó \d+ (vez|veces)) · (no te oyó|te oyó \d+ (vez|veces))$/;
+  expect(r.pisos[0]).toMatch(/^Piso 4/);
+  expect(r.pisos[0].replace(/^Piso 4/, '')).toMatch(linea);
+  expect(r.pisos[1]).toMatch(/^Piso 3/);
+  expect(r.pisos[1].replace(/^Piso 3/, '')).toMatch(linea);
   expect(errores).toEqual([]);
 });

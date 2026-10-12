@@ -1,5 +1,5 @@
-// El ascensor (C2 §3), jugado como una persona en el juego real. En el Piso 4 está muerto hasta tener la llave de
-// la escalera; con ella se pone en marcha solo. Lo llamo, entro caminando, pulso "Bajar al Piso 3" en el panel y
+// El ascensor (C2 §3), jugado como una persona en el juego real. En el Piso 4 está muerto hasta abrir la reja de
+// la escalera (la primera bajada es por la escalera; la llave sola no basta); al abrirla se pone en marcha solo. Lo llamo, entro caminando, pulso "Bajar al Piso 3" en el panel y
 // viajo: las puertas se cierran, la cabina vibra y a mitad del viaje el piso cambia SIN NEGRO (la cabina es la
 // misma). Llego al Piso 3 en el mismo punto de la cabina, mirando hacia donde miraba, salgo caminando y vuelvo a
 // subir. La otra prueba: con las puertas abiertas la cabina no es un refugio (ella entra y me alcanza).
@@ -62,7 +62,7 @@ async function calmar(page: Page): Promise<void> {
   });
 }
 
-test('el ascensor: muerto sin la llave, viene solo con ella y bajo al Piso 3 sin negro; salgo caminando y vuelvo a subir', async ({ page }, info) => {
+test('el ascensor: muerto hasta abrir la reja (la llave sola no basta), viene solo y bajo al Piso 3 sin negro; salgo caminando y vuelvo a subir', async ({ page }, info) => {
   test.setTimeout(300_000);
   const errores: string[] = [];
   page.on('console', (m) => {
@@ -86,15 +86,38 @@ test('el ascensor: muerto sin la llave, viene solo con ella y bajo al Piso 3 sin
     return { ...pulsado, fase: ctx.nivel.ascensor!.fase };
   });
   expect(muerto.texto).toBe('Llamar al ascensor');
-  expect(muerto.fase, 'sin la llave de la escalera, el ascensor no responde').toBe('muerto');
+  expect(muerto.fase, 'con la reja de la escalera cerrada, el ascensor no responde').toBe('muerto');
   await captura('1-muerto');
 
-  // Con la llave en la mano se pone en marcha solo: zumba un rato y llega con la campanilla.
-  await page.evaluate(() => window.__juego!.ctx.progreso.agregarObjeto('llave_escalera'));
-  const llegada = await page.evaluate(() => window.__esperarFase!('abierto', 20_000));
+  // La llave sola no lo despierta: la primera bajada es por la escalera.
+  const conLlave = await page.evaluate(async () => {
+    const { ctx } = window.__juego!;
+    ctx.progreso.agregarObjeto('llave_escalera');
+    await window.__pulsarAscensor!('llamar');
+    return ctx.nivel.ascensor!.fase;
+  });
+  expect(conLlave, 'con la llave pero la reja cerrada, sigue muerto').toBe('muerto');
+
+  // Abro el candado de la reja caminando, como una persona: al abrirse, el ascensor se pone en marcha solo, zumba un
+  // rato y llega con la campanilla.
+  const reja = await page.evaluate(async () => {
+    const J = window.__juego!;
+    const { ctx } = J;
+    const P = window.__piloto!;
+    await P.caminar([[2.4, 10.45]]);
+    const tramo = ctx.nivel.interactuables.find((i) => i.id === 'bajada')!.objeto.position;
+    P.mirarA(tramo.x, tramo.y, tramo.z);
+    await P.esperarJuego(0.3);
+    const texto = J.interaccion.enfocado ? J.interaccion.enfocado.texto(ctx) : null;
+    await P.pulsar('KeyE');
+    return texto;
+  });
+  expect(reja).toBe('Abrir el candado');
+  const llegada = await page.evaluate(() => window.__esperarFase!('abierto', 40_000));
   expect(llegada.piso).toBe('piso4');
   await page.evaluate(async () => {
     const { ctx } = window.__juego!;
+    await window.__piloto!.caminar([[5.3, 10.45]]);
     const c = ctx.nivel.ascensor!.marco;
     window.__piloto!.mirarA(c.cx, 1.5, c.cz);
     await window.__piloto!.esperarJuego(0.4);
@@ -193,6 +216,7 @@ test('con las puertas abiertas la cabina no es refugio: si ella caza, entra y me
   await page.evaluate(async () => {
     const { ctx } = window.__juego!;
     ctx.progreso.agregarObjeto('llave_escalera');
+    ctx.progreso.marcar('abierta:bajada');
     await window.__esperarFase!('abierto', 20_000);
     await window.__piloto!.caminar([[4.4, 10.5], [5.5, 10.6], [5.5, 11.6]], 0.12);
   });

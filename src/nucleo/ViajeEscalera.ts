@@ -18,6 +18,7 @@ import { pisoPorId } from '../pisos/catalogo';
 import type { PaquetePiso } from '../pisos/TiposPiso';
 import type { TramoPie } from '../mundo/EscaleraCaminable';
 import type { ContextoJuego, PuenteViaje } from './ContextoJuego';
+import type { ModoViaje } from './Eventos';
 
 /**
  * Los tiempos del viaje, en segundos: fundido a negro, cuándo cambio de piso (ya a oscuras), cuánto sigo a
@@ -31,8 +32,6 @@ const EN_CABINA = { fundido: 0, cambio: 0, llegada: 0, aparecer: 0 };
 /** Cuánto más dura el negro con la tarjeta de un piso completado, y desde cuándo se puede adelantar (segundos). */
 const RESUMEN = { extra: 3.5, adelantarDesde: 0.8 };
 
-/** Cómo llego: por la escalera con fundido, despertando (sin pasos), caminando (crucé un descanso) o en ascensor. */
-type ModoViaje = 'fundido' | 'despertar' | 'caminando' | 'cabina';
 
 /** Lo que el viaje le pide al juego sin conocerlo. */
 export interface SalidaViaje {
@@ -151,7 +150,7 @@ export class ViajeEscalera {
       this.salida.armarPiso(destino);
       this.llegarA(llegada, ctx);
       colocar?.();
-      ctx.bus.emit('piso-cambiado', { desde, hacia: destino.id });
+      ctx.bus.emit('piso-cambiado', { desde, hacia: destino.id, por: modo });
       if (modo === 'fundido') pasosEscalera(ctx, 4);
       if (resumen) ctx.bus.emit('tarjeta', { ...resumen, estilo: 'capitulo' });
       const llegar = () => {

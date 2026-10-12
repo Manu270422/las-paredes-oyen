@@ -4,7 +4,7 @@
 //
 // Reglas que me impuse (las mismas del resto del juego):
 // - Premia jugar BIEN, no jugar más: las marcas son "mejor tiempo" y
-//   "menos veces que te oyó", nunca rachas ni contadores que castiguen.
+//   "menos veces que te oyó", nunca rachas ni contadores que castiguen. El mejor tiempo es de cada piso.
 // - Se entera de lo que pasa por el bus: no toca la lógica de nadie.
 // - Versionado con migraciones, como la partida y los ajustes.
 import { esDificultad, masDificil, type IdDificultad } from '../config/Dificultad';
@@ -14,7 +14,7 @@ import { escribirJSON } from '../utilidades/Almacenamiento';
 import { leerVersionado } from './AlmacenVersionado';
 import type { Migracion } from './Versionado';
 
-export const VERSION_PERFIL = 2;
+export const VERSION_PERFIL = 3;
 
 export interface DatosPerfil {
   version: typeof VERSION_PERFIL;
@@ -23,7 +23,11 @@ export interface DatosPerfil {
   partidasIniciadas: number;
   /** Veces que llegó al final. */
   finales: number;
-  /** Mejor tiempo de juego hasta el final (s), o null si nunca terminó. */
+  /**
+   * Tiempo de juego total de la partida al terminar un piso, el menor (s), o null si nunca terminó uno. Es la marca
+   * vieja: con varios pisos mezclaba el tiempo de uno con el total de otro. El final ya no la muestra (2026-10-12):
+   * muestra el mejor tiempo de cada piso (`mejoresTiempos`).
+   */
   mejorTiempo: number | null;
   /** Menos muertes en una partida terminada, o null si nunca terminó. */
   menosMuertes: number | null;
@@ -31,13 +35,16 @@ export interface DatosPerfil {
   encuentrosSuperados: number;
   /** Cada piso terminado (por id), con la dificultad más alta en que se terminó. */
   pisosCompletados: Readonly<Record<string, IdDificultad>>;
+  /** El mejor tiempo de cada piso (por id): solo lo que tardé EN ese piso, en segundos. */
+  mejoresTiempos: Readonly<Record<string, number>>;
 }
 
-/** Lo que el final le muestra al jugador. */
-export interface MarcasFinal {
-  mejorTiempo: number;
-  nuevoMejorTiempo: boolean;
-  finales: number;
+/** Lo que el final dice de un piso recién terminado: si su tiempo batió el mejor que había para ese piso. */
+export interface MarcaPiso {
+  /** El mejor tiempo que había para ese piso, o null si es la primera vez que lo termino (no había nada que batir). */
+  mejorAnterior: number | null;
+  /** Lo hice más rápido que nunca (solo si había una marca anterior). */
+  batido: boolean;
 }
 
 const CLAVE = 'perfil';
@@ -45,12 +52,16 @@ const MIGRACIONES: readonly Migracion[] = [
   // v1 → v2: qué pisos se completaron y en qué dificultad. Un perfil v1 que llegó al final lo hizo en el
   // Piso 4 y en el juego de siempre (Normal): los únicos que existían. Es un hecho histórico, no una regla.
   { desde: 1, migrar: (v1) => ({ ...v1, pisosCompletados: typeof v1.finales === 'number' && v1.finales > 0 ? { piso4: 'normal' } : {} }) },
+  // v2 → v3: el mejor tiempo de cada piso. De un perfil v2 no se sabe de qué piso era su mejor tiempo (mezclaba el
+  // tiempo del Piso 4 con el total de la partida): cada piso empieza sin marca.
+  { desde: 2, migrar: (v2) => ({ ...v2, mejoresTiempos: {} }) },
 ];
 
 function esPerfil(d: Record<string, unknown>): d is Record<string, unknown> & DatosPerfil {
   const numero = (v: unknown) => typeof v === 'number' && Number.isFinite(v) && v >= 0;
   const marca = (v: unknown) => v === null || numero(v);
   const completados = (v: unknown) => typeof v === 'object' && v !== null && !Array.isArray(v) && Object.values(v).every(esDificultad);
+  const tiempos = (v: unknown) => typeof v === 'object' && v !== null && !Array.isArray(v) && Object.values(v).every(numero);
   return (
     d.version === VERSION_PERFIL &&
     numero(d.creado) &&
@@ -60,12 +71,13 @@ function esPerfil(d: Record<string, unknown>): d is Record<string, unknown> & Da
     marca(d.menosMuertes) &&
     numero(d.muertesTotales) &&
     numero(d.encuentrosSuperados) &&
-    completados(d.pisosCompletados)
+    completados(d.pisosCompletados) &&
+    tiempos(d.mejoresTiempos)
   );
 }
 
 function perfilNuevo(): DatosPerfil {
-  return { version: VERSION_PERFIL, creado: Date.now(), partidasIniciadas: 0, finales: 0, mejorTiempo: null, menosMuertes: null, muertesTotales: 0, encuentrosSuperados: 0, pisosCompletados: {} };
+  return { version: VERSION_PERFIL, creado: Date.now(), partidasIniciadas: 0, finales: 0, mejorTiempo: null, menosMuertes: null, muertesTotales: 0, encuentrosSuperados: 0, pisosCompletados: {}, mejoresTiempos: {} };
 }
 
 export class Perfil {
@@ -91,18 +103,28 @@ export class Perfil {
     this.cambiar({ partidasIniciadas: this.datos.partidasIniciadas + 1 });
   }
 
-  /** Terminó un piso: actualizo las marcas (y la dificultad más alta de ese piso) y le digo al final qué mostrar. */
-  registrarFinal(piso: string, dificultad: IdDificultad, tiempo: number, muertes: number): MarcasFinal {
-    const anterior = this.datos.mejorTiempo;
-    const nuevoMejorTiempo = anterior === null || tiempo < anterior;
+  /**
+   * Terminé un piso: actualizo las marcas (la dificultad más alta de ese piso y su mejor tiempo) y le digo al final
+   * si batí el mejor tiempo de ese piso. `tiempoTotal` y `muertes` son de toda la partida; `tiempoPiso`, solo de
+   * este piso.
+   */
+  registrarFinal(piso: string, dificultad: IdDificultad, tiempoTotal: number, muertes: number, tiempoPiso: number): MarcaPiso {
     const previa = this.datos.pisosCompletados[piso];
+    const mejorAnterior = this.datos.mejoresTiempos[piso] ?? null;
+    const batido = mejorAnterior !== null && tiempoPiso < mejorAnterior;
     this.cambiar({
       pisosCompletados: { ...this.datos.pisosCompletados, [piso]: previa ? masDificil(previa, dificultad) : dificultad },
+      mejoresTiempos: { ...this.datos.mejoresTiempos, [piso]: mejorAnterior === null ? tiempoPiso : Math.min(mejorAnterior, tiempoPiso) },
       finales: this.datos.finales + 1,
-      mejorTiempo: nuevoMejorTiempo ? tiempo : anterior,
+      mejorTiempo: this.datos.mejorTiempo === null ? tiempoTotal : Math.min(this.datos.mejorTiempo, tiempoTotal),
       menosMuertes: this.datos.menosMuertes === null ? muertes : Math.min(this.datos.menosMuertes, muertes),
     });
-    return { mejorTiempo: this.datos.mejorTiempo ?? tiempo, nuevoMejorTiempo, finales: this.datos.finales };
+    return { mejorAnterior, batido };
+  }
+
+  /** El mejor tiempo de un piso (solo lo que tardé en él), o null si nunca lo terminé. */
+  mejorTiempoDe(piso: string): number | null {
+    return this.datos.mejoresTiempos[piso] ?? null;
   }
 
   /** ¿Terminó algún piso, en cualquier dificultad? Eso desbloquea Pesadilla. */

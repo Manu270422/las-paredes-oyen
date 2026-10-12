@@ -7,7 +7,7 @@
 // partida guardada. También lo registro en el perfil (las mejores marcas). Lo saqué de Juego.ts: del juego
 // solo pido lo suyo.
 import { siguienteDe } from '../pisos/catalogo';
-import type { MarcasFinal, Perfil } from '../guardado/Perfil';
+import type { Perfil } from '../guardado/Perfil';
 import type { SistemaGuardado } from '../guardado/SistemaGuardado';
 import type { Telemetria } from '../telemetria/Telemetria';
 import { vecesQueTeOyo, type EstadisticasFin } from '../ui/pantallas/PantallaFin';
@@ -22,7 +22,11 @@ export interface PisoCompletado {
   nombre: string;
   tiempo: number;
   muertes: number;
+  /** Las veces que ella me cazó en este piso (me haya atrapado o no). */
+  persecuciones: number;
   cambiosMundo: number;
+  /** Su tiempo batió el mejor que tenía ese piso en el perfil (no cuenta la primera vez: no había nada que batir). */
+  mejorTiempo: boolean;
   /** Ya salió su tarjeta al bajar de él: no se repite. */
   tarjetaVista: boolean;
 }
@@ -90,7 +94,7 @@ export class FinDePiso {
   terminarPartida(ctx: ContextoJuego): void {
     const tiempo = this.salida.tiempoJugado();
     // Primero completo el piso: así la telemetría alcanza a anotarlo antes de cerrar la sesión.
-    const marcas = this.completar(ctx);
+    this.completar(ctx);
     ctx.bus.emit('fin-partida', { tiempo });
     this.piezas.telemetria.cerrarSesion('fin');
     this.salida.terminar();
@@ -106,32 +110,33 @@ export class FinDePiso {
       cambiosMundo: ctx.memoria.cambiosMundo,
       persecuciones: ctx.memoria.persecuciones,
       muertes: ctx.memoria.muertes,
-      marcas,
-      pisos: this.completados.map(({ nombre, tiempo: t, muertes }) => ({ nombre, tiempo: t, muertes })),
+      pisos: this.completados.map(({ nombre, tiempo: t, muertes, persecuciones, mejorTiempo }) => ({ nombre, tiempo: t, muertes, persecuciones, mejorTiempo })),
     });
     this.salida.fundir(false, 0.5);
   }
 
   /**
-   * Anoto el piso en el perfil y, si es la primera vez que lo completo en esta partida, lo que dejó: lo de toda
-   * la partida menos lo que ya se llevaron los pisos anteriores.
+   * Si es la primera vez que completo este piso en la partida, anoto lo que dejó (lo de toda la partida menos lo que
+   * ya se llevaron los pisos anteriores) y lo registro en el perfil, que me dice si batí su mejor tiempo.
    */
-  private completar(ctx: ContextoJuego): MarcasFinal {
+  private completar(ctx: ContextoJuego): void {
+    if (this.completados.some((c) => c.piso === ctx.piso.id)) return;
     const tiempo = this.salida.tiempoJugado();
-    const marcas = this.piezas.perfil.registrarFinal(ctx.piso.id, this.piezas.dificultad.masBaja, tiempo, ctx.memoria.muertes);
-    if (!this.completados.some((c) => c.piso === ctx.piso.id)) {
-      const antes = (campo: 'tiempo' | 'muertes' | 'cambiosMundo') => this.completados.reduce((suma, c) => suma + c[campo], 0);
-      const p: PisoCompletado = {
-        piso: ctx.piso.id,
-        nombre: ctx.piso.nombre,
-        tiempo: Math.max(0, tiempo - antes('tiempo')),
-        muertes: Math.max(0, ctx.memoria.muertes - antes('muertes')),
-        cambiosMundo: Math.max(0, ctx.memoria.cambiosMundo - antes('cambiosMundo')),
-        tarjetaVista: false,
-      };
-      this.completados.push(p);
-      ctx.bus.emit('piso-completado', { piso: p.piso, tiempo: p.tiempo, muertes: p.muertes });
-    }
-    return marcas;
+    const m = ctx.memoria;
+    const antes = (campo: 'tiempo' | 'muertes' | 'persecuciones' | 'cambiosMundo') => this.completados.reduce((suma, c) => suma + c[campo], 0);
+    const tiempoPiso = Math.max(0, tiempo - antes('tiempo'));
+    const marca = this.piezas.perfil.registrarFinal(ctx.piso.id, this.piezas.dificultad.masBaja, tiempo, m.muertes, tiempoPiso);
+    const p: PisoCompletado = {
+      piso: ctx.piso.id,
+      nombre: ctx.piso.nombre,
+      tiempo: tiempoPiso,
+      muertes: Math.max(0, m.muertes - antes('muertes')),
+      persecuciones: Math.max(0, m.persecuciones - antes('persecuciones')),
+      cambiosMundo: Math.max(0, m.cambiosMundo - antes('cambiosMundo')),
+      mejorTiempo: marca.batido,
+      tarjetaVista: false,
+    };
+    this.completados.push(p);
+    ctx.bus.emit('piso-completado', { piso: p.piso, tiempo: p.tiempo, muertes: p.muertes });
   }
 }
