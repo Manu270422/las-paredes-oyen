@@ -133,7 +133,7 @@ este contenido sin esperar la ronda de testers de la Fase 10 (el Gate 1), que si
 | La trampa del Piso 3: "averiguar" se cumple con la carta o con la libreta; la X dice qué falta | ✅ 2026-10-10 |
 | **Escaleras que se caminan** (C2 §1): bajar y subir escalón por escalón, cambio de piso al cruzar el descanso, ella puede seguirte hasta el descanso; el fundido queda como opción de accesibilidad | ✅ 2026-10-10 (sin probar con jugadores ni en un celular) |
 | Monstruo más tenebroso, en código: piel mate con venas (antes la linterna le sacaba un brillo gris de maniquí), costillas, columna, cuencas, mandíbula con dientes que se desencaja, dedos con uñas, tics extremos; el susto pone su cara dentro del haz de la linterna | ✅ 2026-10-10 (sin probar con jugadores) |
-| Ascensor (C2 §3) | Siguiente |
+| **Ascensor** (C2 §3) entre el Piso 4 y el 3: llamarlo zumba por los muros y la campanilla delata; adentro vibra y se mira alrededor; el piso cambia sin negro (la cabina es la misma); ella no viaja pero entra si está abierto; no abre con ella a menos de 4 m; en el Piso 4, muerto hasta tener la llave de la escalera | ✅ 2026-10-12 (sin probar con jugadores ni en un celular) |
 | Piso 2 → Piso 1 → salir del edificio ("Sobreviviste") | Pendiente |
 
 **Resuelto:** la regla `imitacionCompletaCon` del Piso 3 (`imitacion:piso3`) ya se cumple: la marca el guion del

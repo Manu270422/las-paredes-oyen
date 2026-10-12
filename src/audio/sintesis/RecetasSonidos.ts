@@ -729,6 +729,78 @@ export const RECETAS_SONIDO: Record<IdSonido, RecetaSonido> = {
     },
   },
 
+  // El motor del ascensor: un zumbido grave de 55 Hz con sus armónicos, el retumbar de la cabina en el pozo y el
+  // tic de los cables al pasar por las poleas. Es un bucle: todo lo periódico cabe justo en sus 2 s, y el ruido se
+  // empalma consigo mismo para que la vuelta no haga clic.
+  motor_ascensor: {
+    variantes: 1,
+    bucle: true,
+    generar: (tasa) => {
+      const duracion = 2;
+      const empalme = 0.15;
+      const retumbe = new PasaBajos(180, tasa);
+      const cable = new PasaBanda(2300, 9, tasa);
+      const largo = crearMuestras(duracion + empalme, tasa, (t) => {
+        const zumbido = Math.sin(DOS_PI * 55 * t) * 0.6 + Math.sin(DOS_PI * 110 * t) * 0.35 + Math.sin(DOS_PI * 165 * t) * 0.18;
+        const vaiven = 0.85 + 0.15 * Math.sin(DOS_PI * 0.5 * t);
+        const fase = (t % 0.25) / 0.25;
+        const tic = fase < 0.004 ? azar(0.5, 1) : 0;
+        return saturar(zumbido, 1.6) * 0.5 * vaiven + retumbe.procesar(ruido()) * 0.9 + cable.procesar(tic) * 0.35;
+      });
+      const n = Math.round(duracion * tasa);
+      const f = largo.length - n;
+      const datos = largo.slice(0, n);
+      for (let i = 0; i < f; i++) datos[i] = datos[i] * (i / f) + largo[n + i] * (1 - i / f);
+      return terminar(datos, tasa, 0.6, true);
+    },
+  },
+
+  // La campanilla de llegada: dos golpes de campana (ding-dong, el segundo más grave), con los parciales
+  // inarmónicos de una campana pequeña. Es lo más fuerte que hace el ascensor.
+  campanilla: {
+    variantes: 1,
+    generar: (tasa) => {
+      const parciales: Array<[number, number, number]> = [
+        [1, 1, 1.1],
+        [2.76, 0.45, 0.5],
+        [5.4, 0.25, 0.25],
+        [8.93, 0.12, 0.12],
+      ];
+      const golpe = (t: number, f: number) => {
+        if (t < 0) return 0;
+        let s = 0;
+        for (const [k, a, d] of parciales) s += Math.sin(DOS_PI * f * k * t) * a * envolvente(t, 0.002, d);
+        return s;
+      };
+      return terminar(
+        crearMuestras(2.4, tasa, (t) => golpe(t, 1046) + golpe(t - 0.5, 784) * 0.9),
+        tasa,
+      );
+    },
+  },
+
+  // Las puertas de metal: el rodar de las hojas por su riel, el gemido del motor de las puertas y el golpe seco al
+  // final del recorrido.
+  puertas_ascensor: {
+    variantes: 2,
+    generar: (tasa) => {
+      const riel = new PasaBanda(700, 1.5, tasa);
+      const golpe = new PasaBanda(850, 10, tasa);
+      const fin = 1.32 + azar(-0.04, 0.04);
+      return terminar(
+        crearMuestras(1.7, tasa, (t) => {
+          const corre = t < fin ? Math.sin(Math.PI * Math.min(1, t / fin)) : 0;
+          const rodar = riel.procesar(ruido()) * (0.6 + 0.4 * Math.sin(DOS_PI * 17 * t)) * corre;
+          const gemido = Math.sin(DOS_PI * (300 + 120 * Math.min(1, t / fin)) * t) * 0.08 * corre;
+          const imp = t >= fin && t < fin + 0.002 ? 1 : 0;
+          const sordo = Math.sin(DOS_PI * 90 * (t - fin)) * envolvente(t - fin, 0.001, 0.06);
+          return rodar * 0.7 + gemido + golpe.procesar(imp) * 4 + sordo * 0.8;
+        }),
+        tasa,
+      );
+    },
+  },
+
   ui: {
     variantes: 1,
     generar: (tasa) => {

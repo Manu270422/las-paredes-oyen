@@ -49,6 +49,8 @@ const DEFINICIONES: Record<IdMaterial, DefMaterial> = {
 
 export class BibliotecaMateriales {
   private readonly materiales = new Map<IdMaterial, MeshStandardMaterial>();
+  /** Materiales propios de piezas del motor que se repiten en varios pisos (el ascensor), por clave. */
+  private readonly conservados = new Map<string, Material>();
   private readonly texturas = new Map<IdTextura, ConjuntoTexturas>();
   private detalleTexturas = { tamano: 512, anisotropia: 4 };
 
@@ -93,9 +95,25 @@ export class BibliotecaMateriales {
     return DEFINICIONES[id].escala;
   }
 
+  /**
+   * Un material propio de una pieza del motor que aparece en varios pisos (el ascensor): lo creo la primera vez y lo
+   * guardo aquí. Al cambiar de piso no se suelta, así su programa de shader no se vuelve a compilar. Soltarlo hacía
+   * que cada cambio de piso recompilara los del ascensor: en el navegador de las pruebas (sin GPU) el cruce de la
+   * escalera pasó de ~1.3 s a 3–6 s, y en un celular también sería un tirón.
+   */
+  conservado<T extends Material>(clave: string, crear: () => T): T {
+    let material = this.conservados.get(clave) as T | undefined;
+    if (!material) {
+      material = crear();
+      this.conservados.set(clave, material);
+    }
+    return material;
+  }
+
   /** Cuando cambio sombras en caliente, los shaders deben recompilarse. */
   marcarParaRecompilar(): void {
     for (const material of this.materiales.values()) material.needsUpdate = true;
+    for (const material of this.conservados.values()) material.needsUpdate = true;
   }
 
   /** Devuelve true si este material o textura pertenece a la biblioteca compartida (no lo dispongo al cambiar de piso). */
@@ -103,6 +121,10 @@ export class BibliotecaMateriales {
     for (const m of this.materiales.values()) {
       if ((m as unknown) === recurso) return true;
       if (m.map === recurso || m.normalMap === recurso || m.roughnessMap === recurso) return true;
+    }
+    for (const m of this.conservados.values()) {
+      if ((m as unknown) === recurso) return true;
+      if (Object.values(m).includes(recurso)) return true;
     }
     return false;
   }

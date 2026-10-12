@@ -26,11 +26,19 @@ export class Rejilla {
 
   esMuro(gx: number, gy: number): boolean {
     const c = this.caracter(gx, gy);
-    return c !== '.' && c !== 'P' && c !== 'E';
+    return c !== '.' && c !== 'P' && c !== 'E' && c !== 'A';
   }
 
   esPuerta(gx: number, gy: number): boolean {
     return this.caracter(gx, gy) === 'P';
+  }
+
+  /**
+   * La cabina de un ascensor ('A'): se pisa como cualquier piso, pero sus puertas de metal están en el borde que da
+   * al pasillo. Para la vista y el sonido cuenta como una puerta: cerrada, tapa (lo responde la misma consulta).
+   */
+  esCabina(gx: number, gy: number): boolean {
+    return this.caracter(gx, gy) === 'A';
   }
 
   /**
@@ -95,7 +103,7 @@ export class Rejilla {
     let total = 0;
     let enMuro = false;
     this.recorrer(ax, az, bx, bz, (gx, gy) => {
-      if (this.esPuerta(gx, gy)) {
+      if (this.esPuerta(gx, gy) || this.esCabina(gx, gy)) {
         if (puertaCerrada(gx, gy)) total += 0.6;
         enMuro = false;
       } else if (this.esMuro(gx, gy)) {
@@ -114,7 +122,7 @@ export class Rejilla {
   hayLineaDeVision(ax: number, az: number, bx: number, bz: number, puertaCerrada: ConsultaPuertaCerrada): boolean {
     let libre = true;
     this.recorrer(ax, az, bx, bz, (gx, gy) => {
-      if (this.esMuro(gx, gy) || (this.esPuerta(gx, gy) && puertaCerrada(gx, gy))) {
+      if (this.esMuro(gx, gy) || ((this.esPuerta(gx, gy) || this.esCabina(gx, gy)) && puertaCerrada(gx, gy))) {
         libre = false;
         return false;
       }

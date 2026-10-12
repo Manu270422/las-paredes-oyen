@@ -28,12 +28,12 @@ LasParedesOyen/
    │  ├─ shaders/              GLSL del postprocesado
    │  └─ texturas/             Generador procedural, recetas, cookie de la linterna, pintor de rastros
    ├─ audio/                   Motor, fuentes 3D, reverberación, ambiente, biblioteca
-   │  └─ sintesis/             Sintetizador y recetas de los 41 sonidos
-   ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, letreros, rastros, colisiones
+   │  └─ sintesis/             Sintetizador y recetas de los 44 sonidos
+   ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, letreros, rastros, escaleras, ascensor, colisiones
    │  └─ datos/                Tipos de mapa (la forma; los mapas viven en cada piso)
    ├─ jugador/                 Jugador, cámara, respiración, corazón, linterna, grabadora
    ├─ interaccion/             Sistema de interacción e interactuables
-   │  └─ objetos/              Puerta, documento, recogible, examinable, medición, tablero, radio, modelos
+   │  └─ objetos/              Puerta, documento, recogible, examinable, medición, tablero, radio, botones del ascensor, modelos
    ├─ ia/                      Entidad, modelo, navegación A*, percepción, memoria, FSM, imitador
    │  └─ estados/              Paredes, investigando (con encuentro), cazando, acechando, retirada
    ├─ director/                Director de terror, memoria del mundo, visibilidad
@@ -221,6 +221,36 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
 - **Rapidez:** armar un piso era ~1.3 s (casi todo pintar rastros y letreros píxel por píxel). Los lienzos pintados
   quedan guardados (`render/texturas/LienzosGuardados.ts`) y los de los otros pisos se pintan durante la carga
   (`mundo/PrecalentarPiso.ts`): ahora se arma en ~0.1–0.3 s en el navegador de pruebas.
+
+## El ascensor (C2 §3)
+
+- **Una celda nueva en la rejilla: `A`, la cabina.** Se pisa como piso (`Rejilla.esCabina`; no es muro ni hueco), con
+  tres lados de muro y una sola boca hacia una celda de piso. Entre la cabina y el pasillo, `ConstructorGeometria`
+  levanta el muro con el vano de las puertas desde los dos lados (dintel y jambas, sin grosor) y sus colisiones.
+  Para la vista y el sonido, la cabina con las puertas cerradas cuenta como una puerta cerrada (0.6 de oclusión,
+  tapa la línea de visión): lo responde la misma `consultaPuertaCerrada` del nivel.
+- `mundo/MarcoCabina.ts`: la cabina en su marco propio (u hacia afuera, v a la derecha de quien sale), dónde van el
+  botón de llamar y el panel, y si alguien está adentro o cruzando el vano. `mundo/ModeloAscensor.ts` dibuja las
+  hojas, el marco, el indicador de piso (afuera y adentro, con luz propia: `render/texturas/TexturasAscensor.ts`), el
+  revestimiento de acero, el pasamanos y el panel. Su luz es una lámpara del mapa (tubo) que nombra el paquete.
+  Sus materiales se piden con `BibliotecaMateriales.conservado`: se crean una vez y no se sueltan al cambiar de piso.
+  Si se soltaran, el piso nuevo recompilaría sus shaders (en el navegador de pruebas, el cruce de la escalera llegó a
+  5.8 s). Ojo: rótulos, placas, rastros y el fondo de la escalera todavía se sueltan y se recompilan en cada cambio.
+- `mundo/Ascensor.ts` es la máquina: `muerto` (no cumple lo que pide el paquete) → `lejos` → `viniendo` (7 s; el
+  motor zumba por los muros y hace ruido para ella cada 1.5 s) → `abriendo` → `abierto` → `cerrando` → `viajando`
+  (6 s; vibra, el director se bloquea) → `reteniendo` → `abriendo`. Las puertas se vuelven a abrir si algo está en el
+  vano (yo o ella); abiertas, la cabina es un cuarto más y ella entra (no es refugio).
+- **El cambio de piso sin negro:** a la mitad del viaje el ascensor pide `ctx.viaje.porAscensor`. `ViajeEscalera`
+  arma el piso de destino en el modo `cabina` (sin fundido, salvo la tarjeta de un piso completado), llega al punto
+  inicial del piso (de ahí se reaparece si se muere) y me pone en el mismo punto de la cabina, mirando igual: la
+  cabina está en la misma celda en todos los pisos y su panel es el mismo. El ascensor del piso nuevo retoma el
+  viaje (`recibir`) y al llegar suena la campanilla (ruido fuerte, causa `maquina`).
+- **Ella no viaja:** si tenía cuerpo cuando se cerraron las puertas, golpea el metal y vuelve a las paredes. Con las
+  puertas cerradas, `Nivel.costoCriatura` le da costo infinito a la cabina y `Entidad.avanzar` no la atraviesa.
+  **Justicia:** al llegar conmigo adentro, no abre con ella a menos de 4 m; si no se va en 6 s, va a las paredes.
+- Datos: `ascensor` del paquete (`DefAscensor`: celda, número del indicador, paradas, `requiere`, mensaje de muerto
+  y lámpara). `pisos/EnlacesAscensor.ts` valida el catálogo (una sola `A`, misma celda y mismo panel en cada parada,
+  ida y vuelta, nada adentro de la cabina). Lo prueban `ascensor.test.ts` y, caminando, `ascensor.spec.ts`.
 
 ## Lo que se lee y lo que se examina
 

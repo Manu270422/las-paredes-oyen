@@ -27,6 +27,8 @@ export type CausaRuido =
   | 'senuelo'
   | 'radio'
   | 'tablero'
+  /** Una máquina del edificio: el motor y la campanilla del ascensor. */
+  | 'maquina'
   | 'otro';
 
 /** Por qué la criatura empezó a cazarme (lo que me mató, si me atrapa). */

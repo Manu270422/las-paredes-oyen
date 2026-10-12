@@ -5,6 +5,8 @@
 // Caminando (lo normal), el viaje empieza al cruzar el descanso de lado a lado: el pozo es igual en los dos pisos,
 // así que el cambio es un parpadeo y sigo en el mismo punto del descanso, ahora del otro piso. Ella no cruza
 // conmigo: puede seguirme por el tramo hasta el descanso, y esos segundos expuesto son el costo de huir por aquí.
+// En ascensor tampoco hay negro: a mitad del viaje, con las puertas cerradas, armo el piso de destino y sigo en el
+// mismo punto de su cabina, que es idéntica (ver mundo/Ascensor.ts).
 // Llego con lo que traía (la linterna y sus pilas, el inventario). Lo que pasó en el piso que dejo queda en el
 // progreso: si vuelvo, sigue como lo dejé. Lo saqué de Juego.ts: del juego solo pido lo que es suyo (su
 // estado, armar el piso, ponerme en un punto de control y guardar).
@@ -15,7 +17,7 @@ import { guardaAlLlegarAOtroPiso } from '../config/Dificultad';
 import { pisoPorId } from '../pisos/catalogo';
 import type { PaquetePiso } from '../pisos/TiposPiso';
 import type { TramoPie } from '../mundo/EscaleraCaminable';
-import type { ContextoJuego } from './ContextoJuego';
+import type { ContextoJuego, PuenteViaje } from './ContextoJuego';
 
 /**
  * Los tiempos del viaje, en segundos: fundido a negro, cuándo cambio de piso (ya a oscuras), cuánto sigo a
@@ -24,11 +26,13 @@ import type { ContextoJuego } from './ContextoJuego';
 const VIAJE = { fundido: 0.5, cambio: 0.55, llegada: 1.5, aparecer: 1.2 };
 /** Caminando, el cambio de piso es un parpadeo (salvo que salga la tarjeta de un piso completado). */
 const PARPADEO = { fundido: 0.12, cambio: 0.15, llegada: 0.05, aparecer: 0.3 };
+/** En ascensor no hay negro: la cabina es la misma en los dos pisos y el cambio pasa con las puertas cerradas. */
+const EN_CABINA = { fundido: 0, cambio: 0, llegada: 0, aparecer: 0 };
 /** Cuánto más dura el negro con la tarjeta de un piso completado, y desde cuándo se puede adelantar (segundos). */
 const RESUMEN = { extra: 3.5, adelantarDesde: 0.8 };
 
-/** Cómo llego: por la escalera con fundido, despertando (sin pasos) o caminando (crucé un descanso). */
-type ModoViaje = 'fundido' | 'despertar' | 'caminando';
+/** Cómo llego: por la escalera con fundido, despertando (sin pasos), caminando (crucé un descanso) o en ascensor. */
+type ModoViaje = 'fundido' | 'despertar' | 'caminando' | 'cabina';
 
 /** Lo que el viaje le pide al juego sin conocerlo. */
 export interface SalidaViaje {
@@ -80,6 +84,35 @@ export class ViajeEscalera {
     this.ir(destino, llegada, ctx, sinPasos ? 'despertar' : 'fundido');
   }
 
+  /** Lo que el contexto del juego ofrece a los tramos y al ascensor (el contexto se lee al usarlo: cambia con el piso). */
+  puente(ctx: () => ContextoJuego): PuenteViaje {
+    return {
+      cambiarDePiso: (hacia, llegada) => this.cambiarDePiso(hacia, llegada, ctx()),
+      porAscensor: (hacia, alLlegar) => this.porAscensor(hacia, ctx(), alLlegar),
+    };
+  }
+
+  /**
+   * A mitad de un viaje en ascensor: armo el piso de destino sin negro (salvo la tarjeta de un piso completado) y me
+   * dejan en el mismo punto de la cabina, que está en la misma celda en los dos pisos, mirando hacia donde miraba.
+   * Llego al punto inicial del piso (de ahí reaparezco si muero antes de otro punto de control) y de inmediato me
+   * paso a la cabina. `alLlegar`: el ascensor del piso nuevo retoma el viaje.
+   */
+  porAscensor(hacia: string, ctx: ContextoJuego, alLlegar: () => void): void {
+    const destino = pisoPorId(hacia);
+    if (!destino) {
+      ctx.bus.emit('subtitulo', { texto: 'El ascensor no lleva a ninguna parte.', duracion: 2.5 });
+      return;
+    }
+    const j = ctx.jugador;
+    const { x, z } = j.posicion;
+    const { yaw, pitch } = j;
+    this.ir(destino, destino.puntoInicial, ctx, 'cabina', () => {
+      this.salida.colocar(x, 0, z, yaw, pitch, 'piso');
+      alLlegar();
+    });
+  }
+
   /** Cada fotograma (caminando): si crucé el descanso hacia un tramo que lleva a otro piso, voy. */
   revisarCruce(ctx: ContextoJuego): void {
     if (ctx.ajustes.valores.escalerasConFundido || !this.salida.puedeSalir()) return;
@@ -105,9 +138,9 @@ export class ViajeEscalera {
     // El resumen lo tomo ANTES de llegar: la llegada guarda, y así la tarjeta queda vista en la partida. Con
     // tarjeta, aun caminando, el negro dura lo que ella (el piso completado merece su momento).
     const resumen = destino.id === desde ? null : this.salida.resumenAlSalir(desde);
-    const t = modo === 'caminando' && !resumen ? PARPADEO : VIAJE;
+    const t = resumen ? VIAJE : modo === 'caminando' ? PARPADEO : modo === 'cabina' ? EN_CABINA : VIAJE;
     this.salida.salir();
-    this.salida.fundir(true, t.fundido);
+    if (t !== EN_CABINA) this.salida.fundir(true, t.fundido);
     if (modo === 'fundido') pasosEscalera(ctx, 2);
     window.setTimeout(() => {
       ctx.programador.cancelarTodo();

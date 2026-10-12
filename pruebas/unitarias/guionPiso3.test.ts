@@ -181,14 +181,15 @@ describe('El guion del Piso 3 (P3-guion)', () => {
     expect(progreso.tiene('golpe:llegada')).toBe(true);
   });
 
-  it('al juntar la libreta en vivo revienta la luz de la escalera (la del paquete) y el objetivo pasa a grabar la pared', () => {
+  it('al juntar la libreta en vivo revienta la luz de la escalera y la del ascensor (las del paquete) y el objetivo pasa a grabar la pared', () => {
     const { progreso, luces, relevantes, correrAgendado } = armar(['libreta_302', 'hoja_301'], ['golpe:llegada', 'leyo:carta_admin_301']);
     progreso.registrarDocumento('hoja_303');
     expect(luces, 'todavía no: espera unos segundos').toEqual([]);
     correrAgendado();
     expect(relevantes).toContain('algo revienta, lejos, en la escalera');
     expect(luces).toEqual([LIBRETA_COMPLETA]);
-    expect(PISO_3.luzPorBandera[LIBRETA_COMPLETA]?.lamparas).toEqual({ emergencia: 'rota' });
+    // Las dos únicas luces del piso junto a la escalera: la de emergencia y el tubo de la cabina del ascensor.
+    expect(PISO_3.luzPorBandera[LIBRETA_COMPLETA]?.lamparas).toEqual({ emergencia: 'rota', luzAscensor: 'rota' });
     expect(progreso.objetivoActual()?.id).toBe('grabar');
   });
 

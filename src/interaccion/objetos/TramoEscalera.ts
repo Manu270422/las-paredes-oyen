@@ -18,6 +18,7 @@ import { CONFIG } from '../../config/ConfiguracionJuego';
 import type { ContextoJuego } from '../../nucleo/ContextoJuego';
 import type { RejaEscalera } from '../../mundo/RejaEscalera';
 import type { DefEscaleraPiso } from '../../pisos/TiposPiso';
+import { cumpleRequisito } from '../../narrativa/Requisito';
 import { crearZonaToque, vincular, type Interactuable } from '../Interactuable';
 
 /** La zona queda a la altura de la cintura: ahí cae la mirada al asomarse a un tramo. */
@@ -29,15 +30,10 @@ const TEXTO_EN_CAZA = '[La cadena se traba]';
 const TEXTO_ABRIR = 'Abrir el candado';
 /** Con la reja cerrada y sin la llave, "Bajar al Piso 3" prometía algo que no pasa (lo dijo el creador al jugarlo). */
 const TEXTO_REVISAR = 'Revisar la reja';
-const PREFIJO_OBJETO = 'objeto:';
 
-/**
- * ¿Se cumple lo que pide el tramo? Si pide un objeto, miro el bolsillo: la bandera "objeto:" se queda en el piso
- * donde lo tomé, pero el objeto viaja conmigo.
- */
+/** ¿Se cumple lo que pide el tramo? (Si pide un objeto, lo que cuenta es tenerlo en el bolsillo.) */
 function cumple(ctx: ContextoJuego, requiere: string): boolean {
-  if (ctx.progreso.tiene(requiere)) return true;
-  return requiere.startsWith(PREFIJO_OBJETO) && ctx.progreso.tieneObjeto(requiere.slice(PREFIJO_OBJETO.length));
+  return cumpleRequisito(ctx.progreso, requiere);
 }
 
 export class TramoEscalera implements Interactuable {

@@ -290,7 +290,7 @@ export class Juego {
       memoria: this.memoria,
       director: this.director,
       ui: { abrirDocumento: (id) => this.abrirDocumento(id) },
-      viaje: { cambiarDePiso: (hacia, llegada) => this.viajeEscalera.cambiarDePiso(hacia, llegada, this.ctx) },
+      viaje: this.viajeEscalera.puente(() => this.ctx),
     };
     this.conectarPiso();
     this.redimensionar();

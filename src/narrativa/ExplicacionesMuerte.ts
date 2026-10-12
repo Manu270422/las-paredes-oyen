@@ -102,6 +102,14 @@ export function explicarMuerte(motivo: MotivoCaza, enPared: boolean): Explicacio
         consejo: 'Agachado abres y cierras las puertas despacio, casi sin ruido.',
         eco: { id: 'puerta_crujido', repeticiones: 1, intervalo: 0, volumen: 0.7 },
       };
+    case 'maquina':
+      return {
+        clave: 'maquina',
+        titulo: 'Te oyó.',
+        linea: 'Oyó el ascensor.',
+        consejo: 'El ascensor se oye en todo el edificio: el motor por los muros y la campanilla al llegar. Úsalo cuando esté lejos.',
+        eco: { id: 'campanilla', repeticiones: 1, intervalo: 0, volumen: 0.8 },
+      };
     case 'presencia':
       return {
         clave: 'presencia',

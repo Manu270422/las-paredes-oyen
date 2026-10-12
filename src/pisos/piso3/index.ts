@@ -3,7 +3,7 @@
 // llegar: 'llego:piso3' se marca en silencio antes de ponerEnPunto(), y el director arranca de inmediato.
 // Aquí se junta la libreta de Andrés (el cuaderno del 302 y las hojas que le arrancaron, en el 301 y el 303).
 // El guion completo (propuesta P3-guion): el golpe al llegar, el apagón al juntar la libreta, grabar la pared del
-// cuarto de Andrés, ella en el pasillo al volver y el final en la escalera. Falta el ascensor (solo su sonido).
+// cuarto de Andrés, ella en el pasillo al volver y el final en la escalera. El ascensor sube al 4 desde el principio.
 import type { PaquetePiso } from '../TiposPiso';
 import { DOCUMENTOS } from './documentos';
 import { EXAMINABLES } from './examinables';
@@ -52,7 +52,8 @@ export const PISO_3: PaquetePiso = {
   puntosControl: { 'llego:piso3': 'escalera', 'leyo:libreta_302': 'cuarto302', 'medido:302': 'dormitorio302', [CINTA_302]: 'dormitorio302' },
   puntosControlMayores: ['leyo:libreta_302', 'medido:302'],
   // Al juntar la libreta revienta la única luz del piso: la emergencia de la escalera.
-  luzPorBandera: { [LIBRETA_COMPLETA]: { lamparas: { emergencia: 'rota' } } },
+  // El tubo del ascensor revienta con ella (lo hace el mismo apagón): la escalera queda a oscuras de verdad.
+  luzPorBandera: { [LIBRETA_COMPLETA]: { lamparas: { emergencia: 'rota', luzAscensor: 'rota' } } },
   placas: [
     { puerta: 'p301', texto: '301', lugar: 'Apartamento 301' },
     { puerta: 'p303', texto: '303', lugar: 'Apartamento 303' },
@@ -99,6 +100,8 @@ export const PISO_3: PaquetePiso = {
   opcionesEscalera: { rejaAbajo: true, escombrosArriba: false },
   // El tramo que sube está a la derecha de la boca (celda x 3); el de la izquierda (x 1) baja, con su reja al Piso 2.
   escaleras: [{ id: 'subida', hacia: 'piso4', llegada: 'escalera', x: 3.5, y: 10.5, texto: 'Subir al Piso 4' }],
+  // El ascensor funciona desde que llego (es el mismo que en el 4: misma celda, misma cabina). Por ahora solo sube.
+  ascensor: { x: 5, y: 11, numero: '3', paradas: [{ hacia: 'piso4', texto: 'Subir al Piso 4' }], lampara: 'luzAscensor' },
   siguiente: { id: 'piso2', nombre: 'Piso 2' },
   guion: (acciones) => new GuionPiso3(acciones),
   menu: {

@@ -80,6 +80,35 @@ export interface DefEscaleraPiso {
   readonly cerrada?: string;
 }
 
+/** Un piso al que lleva el ascensor: lo que dice su botón en el panel de la cabina ("Bajar al Piso 3"). */
+export interface ParadaAscensor {
+  /** El id del piso (clave del catálogo). Ese piso tiene su cabina en la misma celda: la cabina es la misma. */
+  readonly hacia: string;
+  readonly texto: string;
+}
+
+/**
+ * El ascensor del piso: una cabina de una celda ('A' en la rejilla) con puertas de metal hacia el pasillo, un botón
+ * para llamarlo afuera y un panel adentro. Es rápido y se oye en todo el edificio: llamarlo zumba por los muros y la
+ * campanilla de llegada delata a quien viaja. La cabina es idéntica en todos los pisos: el piso cambia con las
+ * puertas cerradas, sin negro.
+ */
+export interface DefAscensor {
+  /** La celda de la cabina (la 'A' de la rejilla), en celdas. */
+  readonly x: number;
+  readonly y: number;
+  /** Lo que marca el indicador sobre las puertas en este piso ("4"). */
+  readonly numero: string;
+  /** Los pisos a los que lleva: un botón del panel por cada uno. */
+  readonly paradas: readonly ParadaAscensor[];
+  /** Desde qué bandera responde (sin ella, el botón de llamar no hace nada). Una bandera "objeto:" mira el bolsillo. */
+  readonly requiere?: string;
+  /** Lo que se dice al llamarlo sin `requiere`. */
+  readonly muerto?: string;
+  /** El id de la lámpara de la cabina (una lámpara del mapa, dentro de la celda). */
+  readonly lampara?: string;
+}
+
 /** Qué luces cambian cuando se marca una bandera de progreso. */
 export interface CambioDeLuz {
   /** Un circuito entero: todas sus lámparas pasan a ese estado. */
@@ -226,6 +255,8 @@ export interface PaquetePiso {
    * 'E'): al pulsar E, el motor funde a negro, pone pasos y monta el piso de destino.
    */
   readonly escaleras?: readonly DefEscaleraPiso[];
+  /** El ascensor del piso (opcional): su cabina es la celda 'A' de la rejilla. */
+  readonly ascensor?: DefAscensor;
   /** Banderas que se marcan en silencio al llegar a este piso, antes de ponerEnPunto (para que el director ya las vea). */
   readonly banderasAlLlegar?: readonly string[];
   /** Qué hay en los tramos de la escalera: por defecto reja abajo y escombros arriba. */

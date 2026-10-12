@@ -1,7 +1,8 @@
 // El Piso 3 del Edificio Almendros. Mismo esqueleto que el Piso 4 (la escalera en la misma columna, el pasillo
 // en la misma fila, los tres apartamentos en los mismos sitios) pero con interiores, texturas y luces distintas.
 // El 302 está directamente debajo del 402: la historia de los dos pisos comparte esa geometría.
-// Las lámparas arrancan casi todas rotas: el circuito falló antes. Solo la emergencia de la escalera enciende.
+// Las lámparas arrancan casi todas rotas: el circuito falló antes. Solo la emergencia de la escalera enciende... y el
+// tubo de la cabina del ascensor (la 'A', junto a la escalera), que funciona en un piso sin luz.
 import type { DefMapa } from '../../mundo/datos/TiposMapa';
 
 export const MAPA_PISO_3: DefMapa = {
@@ -20,7 +21,7 @@ export const MAPA_PISO_3: DefMapa = {
     '#...#........###...........##..#', // 8
     '#...###P############P########..#', // 9
     '#...........................#..#', // 10  (servicio tapiado: sin puerta, celda sellada)
-    '#EEE##########P##############..#', // 11
+    '#EEE#A########P##############..#', // 11  (A: la cabina del ascensor)
     '#EEE####.............########..#', // 12
     '########.............###########', // 13
     '########.............###########', // 14
@@ -47,6 +48,8 @@ export const MAPA_PISO_3: DefMapa = {
     { id: 'cuarto302', nombre: 'Cuarto pequeño del 302', x0: 15, y0: 17, x1: 20, y1: 18, reverb: 'habitacion', pared: 'azulejo', piso: 'azulejo', apartamento: '302' },
     // El cuarto de servicio existe pero su puerta está tapiada con muebles: nadie entra.
     { id: 'servicio', nombre: 'Cuarto de servicio', x0: 29, y0: 8, x1: 30, y1: 12, reverb: 'ducto', pared: 'concreto', piso: 'concreto' },
+    // La cabina del ascensor, en la misma celda que la del Piso 4: es la misma cabina.
+    { id: 'ascensor', nombre: 'Ascensor', x0: 5, y0: 11, x1: 5, y1: 11, reverb: 'bano', pared: 'concreto', piso: 'concreto' },
   ],
 
   puertas: [
@@ -78,6 +81,8 @@ export const MAPA_PISO_3: DefMapa = {
     { id: 'lampara301', x: 8.5, y: 6.5, tipo: 'bombillo', circuito: 'general', estado: 'rota' },
     { id: 'lampara303', x: 21.5, y: 6.5, tipo: 'bombillo', circuito: 'general', estado: 'rota' },
     { id: 'lampara302', x: 14.5, y: 13.5, tipo: 'bombillo', circuito: 'general', estado: 'rota' },
+    // El tubo de la cabina del ascensor: titila en un piso sin luz (como la lámpara del 401). Revienta con la libreta.
+    { id: 'luzAscensor', x: 5.5, y: 11.5, tipo: 'tubo', circuito: 'ascensor', estado: 'parpadeante', color: 0xe4ecff, intensidad: 1.1 },
   ],
 
   muebles: [

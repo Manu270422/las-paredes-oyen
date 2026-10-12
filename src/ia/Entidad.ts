@@ -163,7 +163,7 @@ export class Entidad {
     // En una escalera solo piso el tramo por el que voy o, desde el piso, el del jugador (para seguirlo).
     const lado = PozosCaminables.ladoDe(this.pie) ?? PozosCaminables.ladoDe(ctx.jugador.pie);
     const pisableExtra = lado ? (gx: number, gy: number) => ctx.nivel.escaleras.pisableCriatura(gx, gy, lado) : undefined;
-    const camino = this.navegacion.buscar(desde, hasta, (gx, gy) => (ctx.nivel.consultaPuertaCerrada(gx, gy) ? 3 : 0), pisableExtra);
+    const camino = this.navegacion.buscar(desde, hasta, ctx.nivel.costoCriatura, pisableExtra);
     if (!camino) return false;
     this.camino = camino;
     this.indiceCamino = camino.length > 1 ? 1 : 0;
@@ -186,6 +186,12 @@ export class Entidad {
       return this.camino.length > 0 ? 'llego' : 'sin-camino';
     }
     const celda = this.camino[this.indiceCamino];
+    // La cabina de un ascensor que se cerró mientras yo iba hacia ella: no la abro ni la atravieso.
+    if (ctx.nivel.ascensor?.tapa(celda.gx, celda.gy)) {
+      this.camino = [];
+      this.velocidadActual = 0;
+      return 'sin-camino';
+    }
     const puerta = ctx.nivel.puertaEn(celda.gx, celda.gy);
     if (puerta && !puerta.abierta && !puerta.enMovimiento) {
       // Ni las puertas con llave la detienen: las fuerza.
@@ -264,7 +270,7 @@ export class Entidad {
       for (let ox = -radioCeldas; ox <= radioCeldas; ox++) {
         const gx = gx0 + ox;
         const gy = gy0 + oy;
-        if (!r.esTransitable(gx, gy) || r.esPuerta(gx, gy)) continue;
+        if (!r.esTransitable(gx, gy) || r.esPuerta(gx, gy) || r.esCabina(gx, gy)) continue;
         const cx = r.centro(gx);
         const cz = r.centro(gy);
         if (distancia2D(cx, cz, j.x, j.z) < distanciaMinima) continue;

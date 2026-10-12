@@ -92,6 +92,14 @@ No es un clon de: Amnesia (no hay cordura ni escondites mágicos), Outlast (no h
 
 **Piso 4 (vertical slice, implementado):** escalera (zona "segura" con luz roja) → pasillo estrecho de 1.3 m → 401 (lámpara encendida sin electricidad) → 403 (estudio del vecino que grababa las paredes) → cuarto de servicio sin salida con el tablero → 402 cerrado, todo cubierto con sábanas. Entre 401 y 403 hay **3.9 m de muro macizo que no deberían existir**.
 
+**El ascensor (implementado el 2026-10-12, entre el Piso 4 y el 3):** junto a la escalera, al sur del pasillo. Es lo
+contrario de la escalera: la escalera es lenta y callada; el ascensor es rápido y te delata. Llamarlo zumba por los
+muros unos segundos y la campanilla al llegar se oye en todo el piso, también en el piso al que llegas: llegas
+anunciado. Adentro se vibra y se puede mirar alrededor; el piso cambia con las puertas cerradas, sin negro, porque la
+cabina es la misma. Ella no viaja, pero con las puertas abiertas entra: no es un refugio. Justicia: al llegar, las
+puertas no abren si ella está a menos de 4 m. En el Piso 4 está muerto hasta tener la llave de la escalera (antes
+sería un atajo que salta el piso); entonces se pone en marcha solo, como si alguien lo hubiera llamado desde abajo.
+
 **Siguientes pisos (diseño):**
 - **Piso 3:** los apartamentos se repiten con variaciones (el 301 es el 401 en espejo, pero con los muebles sin cubrir… y alguien comiendo).
 - **"El hueco":** el espacio entre el 401 y el 403, accesible rompiendo el papel de colgar. Un pasillo que no aparece en los planos.
@@ -114,7 +122,7 @@ No es un clon de: Amnesia (no hay cordura ni escondites mágicos), Outlast (no h
 - **Audio 3D HRTF** (binaural) en calidad media/alta; paneo simple en baja.
 - **Oclusión por rejilla**: cuento muros y puertas cerradas entre oyente y fuente → filtro pasa-bajos + atenuación; los muros "reverberan" más.
 - **Reverb por habitación** con convolución: impulsos generados por código (pasillo, sala, cuarto, baño, escalera, ducto metálico) y fundido cruzado al cambiar de cuarto.
-- **Todo sintetizado** (41 sonidos con variantes): pasos por superficie, crujidos por *stick-slip*, golpes, respiración con formantes, susurros con fonemas falsos, zumbido de 60 Hz, tuberías inarmónicas, y la firma de la criatura.
+- **Todo sintetizado** (44 sonidos con variantes): pasos por superficie, crujidos por *stick-slip*, golpes, respiración con formantes, susurros con fonemas falsos, zumbido de 60 Hz, tuberías inarmónicas, y la firma de la criatura.
 - **Audio híbrido**: `public/audio/manifiesto.json` permite reemplazar (o sumar variantes a) cualquier `IdSonido` con una grabación real; si falla, queda la síntesis. Hoy el manifiesto está vacío.
 - **La grabadora como segunda realidad** (`jugador/CapturaGrabadora.ts`): la cinta capta los sonidos reales a < 12 m y la presencia silenciosa de la criatura, con dirección y distancia.
 - **Modo escuchar**: baja ambiente, sube la entidad, reduce la oclusión.
