@@ -115,6 +115,14 @@ function armarEscena(banderas: string[] = []) {
     reanudar() {
       this.pedidos.push('reanudar');
     },
+    /** Lo que le pasó a la trampilla del techo (aparte: no es el viaje). */
+    trampilla: [] as string[],
+    sacudirTrampilla(f: number) {
+      this.trampilla.push(f.toFixed(2));
+    },
+    reventarTrampilla() {
+      this.trampilla.push('revienta');
+    },
   };
   const entidad = {
     estado: 'investigando',
@@ -186,7 +194,9 @@ describe('La cabina se detiene entre el 2 y el 1 (P2-guion, momento 7)', () => {
     m.jugar(0.1);
     m.correrAgendado();
     expect(m.subtitulos).toContain(TEXTOS_CABINA.golpe);
+    expect(m.ascensor.trampilla[0], 'el golpe sacude la trampilla').toBe('1.00');
     m.jugar(ACERCARSE_MINIMO + 3.5);
+    expect(m.ascensor.trampilla, 'y cada rasguño la hace temblar').toContain('0.55');
     expect(m.marcadas.has(CABINA_SUPERADA)).toBe(true);
     expect(m.subtitulos).toContain(TEXTOS_CABINA.seVa);
     m.correrAgendado();
@@ -204,6 +214,7 @@ describe('La cabina se detiene entre el 2 y el 1 (P2-guion, momento 7)', () => {
     m.falso.bus.emit('ruido', { x: 6.5, z: 14.3, intensidad: CONFIG.ruido.jadeo, origen: 'jugador', causa: 'jadeo' });
     expect(m.subtitulos).toContain(TEXTOS_CABINA.trampilla);
     expect(m.entidad.pedidos).toEqual(['manifestar', 'caer:2.25', 'cazar:jadeo']);
+    expect(m.ascensor.trampilla.at(-1), 'cae por la trampilla').toBe('revienta');
     expect(m.marcadas.has(CABINA_SUPERADA)).toBe(false);
     expect(m.ascensor.pedidos, 'la cabina no sigue').toEqual(['detener']);
   });

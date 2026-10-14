@@ -16,7 +16,8 @@
 //   parpadea (la señal de siempre: está cerca). Si no se va en unos segundos, la mando a las paredes.
 // - Con las puertas abiertas, la cabina es un cuarto más: ella puede entrar. No es un refugio.
 // - Un botón del panel puede pedir algo (la llave de servicio, haber estado en ese piso): sin eso no se enciende.
-// - Un guion puede detener la cabina entre pisos y soltarla después (detener / reanudar): el Piso 2 lo hace.
+// - Un guion puede detener la cabina entre pisos y soltarla después (detener / reanudar): el Piso 2 lo hace. Y
+//   puede sacudir la trampilla del techo (algo pesa encima) o reventarla (cae adentro): la tapa la dibuja el modelo.
 // - Un botón puede llevar a un piso que todavía no existe: la cabina baja hasta el último que existe y, al llegar,
 //   no abre; avisa ('ascensor-fin-recorrido') y lo que pasa ahí es del guion de ese piso (el final de lo que hay).
 //
@@ -99,6 +100,10 @@ export class Ascensor implements MandoAscensor {
   private flecha = 0;
   /** Cuánto llevaba de viaje cuando un guion me detuvo entre pisos (para seguir desde ahí). */
   private tiempoAlDetener = 0;
+  /** La trampilla del techo: reventada (cuelga abierta hasta restablecer), cuánto abrió y cuánto tiembla (0..1). */
+  private trampillaRota = false;
+  private aperturaTrampilla = 0;
+  private temblorTrampilla = 0;
   /** Lo que suena (motor, puertas, campanilla, golpes): la máquina decide cuándo. */
   private readonly sonido: SonidoAscensor;
 
@@ -255,6 +260,7 @@ export class Ascensor implements MandoAscensor {
       default:
     }
     this.vista.fijarApertura(this.apertura);
+    this.moverTrampilla(dt);
   }
 
   private cambiarFase(fase: FaseAscensor): void {
@@ -445,6 +451,7 @@ export class Ascensor implements MandoAscensor {
     this.sonido.detenerMotor();
     this.sacudon(ctx, 0.7);
     this.sonido.golpe(ctx, 1);
+    this.sonido.freno(ctx);
     this.lampara?.interferir(2.5);
     return true;
   }
@@ -457,6 +464,27 @@ export class Ascensor implements MandoAscensor {
     this.sacudon(ctx, 0.35);
     this.sonido.arrancarMotor(ctx, false);
     ctx.director.bloquear(TIEMPOS_ASCENSOR.viaje - this.tiempo + 3);
+  }
+
+  /** Algo pesa sobre el techo: la trampilla tiembla contra su marco (`fuerza` 0..1) y se calma sola. */
+  sacudirTrampilla(fuerza: number): void {
+    this.temblorTrampilla = Math.max(this.temblorTrampilla, fuerza);
+  }
+
+  /** La trampilla revienta hacia adentro: cae en un instante y queda colgando hasta restablecer la cabina. */
+  reventarTrampilla(): void {
+    this.trampillaRota = true;
+  }
+
+  /** Cómo está la trampilla (para las pruebas): cuánto abrió y cuánto tiembla. */
+  get estadoTrampilla(): { readonly apertura: number; readonly temblor: number } {
+    return { apertura: this.aperturaTrampilla, temblor: this.temblorTrampilla };
+  }
+
+  private moverTrampilla(dt: number): void {
+    if (this.trampillaRota) this.aperturaTrampilla = Math.min(1, this.aperturaTrampilla + dt * 7);
+    this.temblorTrampilla = Math.max(0, this.temblorTrampilla - dt * 2.2);
+    this.vista.fijarTrampilla(this.aperturaTrampilla, this.temblorTrampilla);
   }
 
   // --- Cargar y la historia ---------------------------------------------------------------------------------------
@@ -477,6 +505,10 @@ export class Ascensor implements MandoAscensor {
     this.vista.fijarApertura(0);
     this.vista.fijarLlamada(false);
     this.vista.fijarBoton(null);
+    this.trampillaRota = false;
+    this.aperturaTrampilla = 0;
+    this.temblorTrampilla = 0;
+    this.vista.fijarTrampilla(0, 0);
     const lejos = this.def.paradas[0] ? this.numeroDe(this.def.paradas[0].hacia) : this.def.numero;
     this.vista.fijarIndicador(lejos, 0, this.fase !== 'muerto');
   }

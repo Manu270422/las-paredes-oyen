@@ -319,6 +319,19 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
 - Pruebas: `cabinaDetenida.test.ts`, `ascensor.test.ts` (detener y reanudar) y el recorrido `cabinaDetenida.spec.ts`
   (los dos caminos, cada uno en su partida).
 
+## El pulido del Piso 2 (tanda 4, 2026-10-14)
+
+- **La trampilla del techo de la cabina** (`ModeloAscensor`: marco de caucho negro y tapa de acero con bisagra;
+  `VistaAscensor.fijarTrampilla`). Va corrida 34 cm del centro, en el eje que se aleja del tubo de la lámpara (que
+  siempre va a lo largo de X): en el centro quedaba debajo del tubo. `Ascensor.sacudirTrampilla` la hace temblar
+  (se calma sola) y `reventarTrampilla` la deja colgando hasta restablecer la cabina. La escena de la cabina la sacude
+  con el golpe y cada rasguño, y la revienta antes de que ella caiga.
+- **El frenazo suena** (`SonidoAscensor.freno`: fricción de metal grave y los cables sacudiéndose arriba).
+- **El Piso 2 tiene rastros** (frase, mano y humedad: solo datos) y **la radio** de Hernando en el pasillo, sobre la
+  caja del fondo: es la radio genérica del nivel; el director la puede encender y la atrae lejos del 202.
+- Pruebas: `ascensor.test.ts` (la trampilla), `cabinaDetenida.spec` (tiembla al caer encima; abierta al caer adentro)
+  y `rastrosPiso2.spec`.
+
 ## Lo que se lee y lo que se examina
 
 - **Documentos** (`interaccion/objetos/Documento.ts`): abren el lector y **pausan** el mundo (estado `documento`).

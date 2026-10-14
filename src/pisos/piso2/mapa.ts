@@ -139,6 +139,11 @@ export const MAPA_PISO_2: DefMapa = {
     { tipo: 'medicion', id: 'medir202', apartamento: '202', x: 13.5, y: 13.6, accion: 'Grabar el cuarto sordo (quédate quieto)' },
     // La llave de servicio: aparece al terminar la cinta (lo que sonó a metal, en el rincón de la sala).
     { tipo: 'recogible', id: 'llaveServicio', objeto: 'llave_servicio', x: 20.55, y: 15.55, altura: 0.01, aparece: 'cinta:202' },
+    // La radio de Hernando, sobre la caja del fondo del pasillo: "la dejé a todo volumen en el pasillo, para que crea
+    // que estoy allá". Muerta; el director la puede encender (y atraerla lejos del 202).
+    { tipo: 'radio', id: 'radioPasillo', x: 27.6, y: 10.72, altura: 0.521, rot: -90 },
+    // 203: la carta que la vecina no alcanzó a mandar, en la mesa de la sala (opcional: no la pide ningún objetivo).
+    { tipo: 'documento', id: 'docCarta203', documento: 'carta_203', x: 18.4, y: 6.1, altura: 0.781 },
     // Pilas: en la mesa de la cocina del 203 y en una caja del archivo del 201.
     { tipo: 'recogible', id: 'pilas1', objeto: 'pilas', x: 19.2, y: 2.4, altura: 0.761 },
     { tipo: 'recogible', id: 'pilas2', objeto: 'pilas', x: 8.55, y: 2.0, altura: 0.003 },

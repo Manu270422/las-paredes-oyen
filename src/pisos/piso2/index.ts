@@ -62,6 +62,14 @@ export const PISO_2: PaquetePiso = {
     { puerta: 'p202', texto: '202', lugar: 'Apartamento 202' },
   ],
   rotulos: [{ texto: '2', x: 2.45, y: 8, altura: 1.6, rot: 0, alto: 0.45 }],
+  // Lo que quedó en el piso de Hernando: lo que le escribieron a la administración, la mano de alguien que tocó en
+  // su puerta y nadie abrió, y lo que se filtró desde el 302 hasta su techo, por encima de los colchones (la humedad
+  // está justo debajo del charco del umbral del 302).
+  rastros: [
+    { tipo: 'frase', id: 'frase_mentiroso', x: 10.5, y: 10, rot: 0, altura: 1.5, ancho: 1.3, alto: 0.3, lineas: ['MENTIROSO'] },
+    { tipo: 'mano', id: 'mano_202', x: 15.6, y: 11, rot: 180, altura: 0.9, ancho: 0.8, alto: 0.75 },
+    { tipo: 'humedad', id: 'humedad_202', x: 14.7, y: 13.1, rot: 0, ancho: 1.0, alto: 1.4 },
+  ],
   // El tramo que sube está abierto (por ahí bajé); el que baja, tapiado con ladrillo nuevo.
   opcionesEscalera: { escombrosArriba: false, tapiadaAbajo: true },
   escaleras: [{ id: 'subida', hacia: 'piso3', llegada: 'escalera', x: 3.5, y: 10.5, texto: 'Subir al Piso 3' }],

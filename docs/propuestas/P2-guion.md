@@ -70,7 +70,7 @@ Objetivos (borrador): bajar → averiguar quién lo tapó todo → encontrar la 
 | 1 | Bajar al 2 y terminarlo: la reja del 3 se abre sola, el mapa, la tapia, el libro de quejas, la lista de llaves, el cuaderno de Hernando, grabar el 202, la llave y el botón «1» con un final simple | Hecha el 2026-10-13 (ver la bitácora) |
 | 2 | El cuarto sordo de verdad: muros acolchados (se ven y bloquean el sonido en los dos sentidos), ella entra caminando, las luces la delatan | Hecha el 2026-10-13 (ver la bitácora y 02-ARQUITECTURA) |
 | 3 | La cabina se detiene entre el 2 y el 1 con ella encima (quieto y sin aire); morir ahí devuelve al 202 con la llave | Hecha el 2026-10-14 (ver la bitácora y 02-ARQUITECTURA) |
-| 4 | Pulido: la radio del pasillo, rastros, sonidos propios, revisar textos con el creador | Pendiente |
+| 4 | Pulido: la trampilla visible en el techo de la cabina (tiembla con ella encima, revienta si cae), el frenazo que suena, tres rastros ("MENTIROSO", la mano junto al 202, la humedad del 302 en el techo del 202), la radio de Hernando en el pasillo y la carta del 203 | Hecha el 2026-10-14; los textos, para revisar con el creador |
 
 **Cambio respecto del borrador:** la llave de servicio no está a la vista desde el principio. Aparece en el rincón de
 la sala cuando termina la cinta del cuarto sordo (la cinta trae "algo de metal que cae entre los colchones"). Si
