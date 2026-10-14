@@ -54,7 +54,7 @@ export class SistemaInteraccion {
   }
 
   actualizar(ctx: ContextoJuego, quiereInteractuar: boolean): void {
-    const candidatos = ctx.nivel.interactuables.filter((i) => i.activo);
+    const candidatos = ctx.nivel.interactuables.filter((i) => i.activo && (i.enfocable?.(ctx) ?? true));
     const objetos = candidatos.map((i) => i.objeto);
     this.rayo.setFromCamera(CENTRO, ctx.camara);
 

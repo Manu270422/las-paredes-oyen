@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Las Paredes Oyen</string>
+    <string name="title_activity_main">Las Paredes Oyen</string>
+    <string name="package_name">com.elmundodemanu.lasparedesoyen</string>
+    <string name="custom_url_scheme">com.elmundodemanu.lasparedesoyen</string>
+</resources>

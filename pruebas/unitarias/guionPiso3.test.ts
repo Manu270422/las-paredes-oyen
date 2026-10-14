@@ -5,25 +5,94 @@ import { describe, expect, it } from 'vitest';
 import { Progreso } from '../../src/narrativa/Progreso';
 import type { ContextoJuego } from '../../src/nucleo/ContextoJuego';
 import { PISO_3 } from '../../src/pisos/piso3';
-import { GuionPiso3, LIBRETA_COMPLETA, PARTES_LIBRETA, REFLEXION_LIBRETA } from '../../src/pisos/piso3/guion';
+import {
+  CARTA_ADMINISTRACION,
+  CINTA_302,
+  FINAL_PISO_3,
+  GOLPES_FINALES,
+  GuionPiso3,
+  LIBRETA_COMPLETA,
+  PARTES_LIBRETA,
+  PISO_AVERIGUADO,
+  REFLEXION_LIBRETA,
+  REJA_ABAJO,
+  REJA_SOLA,
+} from '../../src/pisos/piso3/guion';
 import { crearContextoFalso } from './contextoFalso';
 
-function armar(leidos: readonly string[] = []) {
+function armar(leidos: readonly string[] = [], otras: readonly string[] = []) {
   const falso = crearContextoFalso();
   const progreso = new Progreso(falso.bus, PISO_3.objetivos, PISO_3.reglas);
-  progreso.importar({ banderas: ['llego:piso3', ...leidos.map((id) => `leyo:${id}`)], inventario: [], documentos: [...leidos] });
+  progreso.importar({ banderas: ['llego:piso3', ...leidos.map((id) => `leyo:${id}`), ...otras], inventario: [], documentos: [...leidos] });
   const subtitulos: string[] = [];
   const banderas: string[] = [];
+  const relevantes: string[] = [];
+  const acciones: string[] = [];
   falso.bus.on('subtitulo', (s) => subtitulos.push(s.texto));
   falso.bus.on('bandera', (b) => banderas.push(b.nombre));
-  const ctx = { ...falso.ctx, piso: PISO_3, progreso } as unknown as ContextoJuego;
-  const guion = new GuionPiso3();
+  falso.bus.on('sonido-relevante', (s) => relevantes.push(s.descripcion));
+  // Lo agendado se guarda y corre cuando la prueba lo pide (el guion agenda el apagón, la cinta y el final).
+  let agendado: Array<() => void> = [];
+  const correrAgendado = () => {
+    for (let vuelta = 0; vuelta < 5 && agendado.length; vuelta++) {
+      const ahora = agendado;
+      agendado = [];
+      for (const f of ahora) f();
+    }
+  };
+  const emergencia = { id: 'emergencia', estado: 'encendida', posicion: { x: 3, y: 2.3, z: 10 }, interferir: () => undefined };
+  const luces: string[] = [];
+  const entidad = {
+    estado: 'paredes',
+    puedeManifestarse: true,
+    donde: null as { x: number; z: number } | null,
+    buscarPuntoSalida: () => null,
+    manifestar(x: number, z: number) {
+      this.donde = { x, z };
+    },
+    cambiarEstado(e: string) {
+      this.estado = e;
+    },
+  };
+  const memoria = { habitacionActual: 'escalera' };
+  const ctx = {
+    ...falso.ctx,
+    piso: PISO_3,
+    progreso,
+    memoria,
+    entidad,
+    jugador: { posicion: { x: 14.5 * 1.3, y: 0, z: 10.5 * 1.3 }, yaw: 0 },
+    programador: {
+      ahora: 0,
+      despues: (_t: number, f: () => void) => agendado.push(f),
+      secuencia: (lista: Array<[number, () => void]>) => lista.forEach(([, f]) => agendado.push(f)),
+    },
+    director: { bloquear: () => undefined, activo: true },
+    linterna: { forzarApagada: () => undefined },
+    grabadora: { captura: { lineas: () => [] } },
+    nivel: {
+      lamparas: [emergencia],
+      aplicarLuzDe: (b: string) => {
+        luces.push(b);
+        emergencia.estado = 'rota';
+      },
+    },
+  } as unknown as ContextoJuego;
+  const anotar = (n: string) => () => acciones.push(n);
+  const guion = new GuionPiso3({
+    mostrarSusto: anotar('susto'),
+    fundido: anotar('fundido'),
+    fijarSoloMirar: (a: boolean) => acciones.push(`soloMirar:${a}`),
+    terminarPartida: anotar('terminar'),
+    despertar: anotar('despertar'),
+    completarPiso: anotar('completar'),
+  });
   guion.conectar(ctx);
   guion.reiniciar(ctx);
   const jugar = (segundos: number) => {
     for (let t = 0; t < segundos; t += 0.1) guion.actualizar(0.1, ctx);
   };
-  return { ctx, guion, progreso, subtitulos, banderas, jugar };
+  return { ctx, guion, progreso, subtitulos, banderas, relevantes, acciones, luces, entidad, memoria, sonidos: falso.sonidos, correrAgendado, jugar };
 }
 
 /** Todas las maneras de ordenar las tres partes. */
@@ -99,5 +168,127 @@ describe('La libreta en el paquete del Piso 3', () => {
   it('leer el cuaderno crea el punto de control del cuarto del 302 (también en Difícil)', () => {
     expect(PISO_3.puntosControl['leyo:libreta_302']).toBe('cuarto302');
     expect(PISO_3.puntosControlMayores).toContain('leyo:libreta_302');
+  });
+});
+
+describe('El guion del Piso 3 (P3-guion)', () => {
+  it('a los 8 s de llegar, tres golpes despacio desde la pared del cuarto de Andrés, una sola vez', () => {
+    const { relevantes, sonidos, jugar, progreso } = armar();
+    jugar(7.5);
+    expect(relevantes).toEqual([]);
+    jugar(1);
+    expect(relevantes).toEqual(['tres golpes, despacio, lejos']);
+    expect(sonidos.filter((x) => x === 'golpe')).toHaveLength(3);
+    jugar(20);
+    expect(relevantes, 'no se repite').toHaveLength(1);
+    expect(progreso.tiene('golpe:llegada')).toBe(true);
+  });
+
+  it('al juntar la libreta en vivo revienta la luz de la escalera y la del ascensor (las del paquete) y el objetivo pasa a grabar la pared', () => {
+    const { progreso, luces, relevantes, correrAgendado } = armar(['libreta_302', 'hoja_301'], ['golpe:llegada', 'leyo:carta_admin_301']);
+    progreso.registrarDocumento('hoja_303');
+    expect(luces, 'todavía no: espera unos segundos').toEqual([]);
+    correrAgendado();
+    expect(relevantes).toContain('algo revienta, lejos, en la escalera');
+    expect(luces).toEqual([LIBRETA_COMPLETA]);
+    // Las dos únicas luces del piso junto a la escalera: la de emergencia y el tubo de la cabina del ascensor.
+    expect(PISO_3.luzPorBandera[LIBRETA_COMPLETA]?.lamparas).toEqual({ emergencia: 'rota', luzAscensor: 'rota' });
+    expect(progreso.objetivoActual()?.id).toBe('grabar');
+  });
+
+  it('medir el 302 reproduce su cinta y, al terminar, la marca; el objetivo pasa a volver a la escalera', () => {
+    const { progreso, subtitulos, correrAgendado } = armar([...PARTES_LIBRETA], ['golpe:llegada', 'leyo:carta_admin_301']);
+    progreso.marcar('medido:302');
+    correrAgendado();
+    expect(subtitulos.some((x) => x.includes('Hoy mi mamá me midió'))).toBe(true);
+    expect(subtitulos.some((x) => x.includes('Ya casi estoy completo'))).toBe(true);
+    expect(progreso.tiene(CINTA_302)).toBe(true);
+    expect(progreso.objetivoActual()?.id).toBe('huir');
+  });
+
+  it('una partida guardada al medir (antes de la cinta) carga con la cinta ya sonada, en silencio', () => {
+    const { progreso, banderas } = armar([...PARTES_LIBRETA], ['medido:302', 'golpe:llegada']);
+    expect(progreso.tiene(CINTA_302)).toBe(true);
+    expect(banderas).toEqual([]);
+  });
+
+  it('al volver al pasillo después de la cinta, ella espera entre la escalera y yo, acechando (una vez)', () => {
+    const { progreso, entidad, memoria, jugar } = armar([...PARTES_LIBRETA], ['medido:302', CINTA_302, 'golpe:llegada']);
+    memoria.habitacionActual = 'sala302';
+    jugar(1);
+    expect(entidad.donde, 'dentro del 302, todavía no').toBeNull();
+    memoria.habitacionActual = 'pasillo';
+    jugar(0.2);
+    expect(entidad.estado).toBe('acechando');
+    expect(entidad.donde!.x, 'hacia la escalera (al oeste)').toBeLessThan(14.5 * 1.3 - 4.5);
+    expect(progreso.tiene('pasillo:302')).toBe(true);
+  });
+
+  it('en la escalera después de la cinta: solo mirar, tres golpes desde abajo, la reja se abre sola y el piso queda completado (la partida sigue)', () => {
+    const { ctx, progreso, acciones, subtitulos, memoria, entidad, jugar, correrAgendado } = armar([...PARTES_LIBRETA], ['medido:302', CINTA_302, 'golpe:llegada']);
+    memoria.habitacionActual = 'escalera';
+    jugar(0.2);
+    expect(progreso.tiene(FINAL_PISO_3)).toBe(true);
+    expect(acciones).toEqual(['soloMirar:true']);
+    expect(ctx.director.activo, 'durante el final, sin director').toBe(false);
+    correrAgendado();
+    expect(subtitulos).toContain(GOLPES_FINALES);
+    expect(subtitulos).toContain(REJA_SOLA);
+    expect(progreso.tiene(REJA_ABAJO), 'la bandera que abre la reja del tramo que baja').toBe(true);
+    expect(acciones).toEqual(['soloMirar:true', 'soloMirar:false', 'completar']);
+    expect(ctx.director.activo, 'ella vuelve, con unos segundos de calma para bajar').toBe(true);
+    expect(entidad.puedeManifestarse).toBe(true);
+    expect(progreso.objetivoActual()?.texto).toBe('Baja al Piso 2');
+    jugar(5);
+    expect(acciones.filter((a) => a === 'completar'), 'una sola vez').toHaveLength(1);
+  });
+
+  it('si vuelvo a subir desde el Piso 2, el final no se repite', () => {
+    const { acciones, memoria, jugar } = armar([...PARTES_LIBRETA], ['medido:302', CINTA_302, 'golpe:llegada', FINAL_PISO_3, REJA_ABAJO, 'abierta:bajada']);
+    memoria.habitacionActual = 'escalera';
+    jugar(2);
+    expect(acciones).toEqual([]);
+  });
+
+  it('en la escalera sin la cinta no pasa nada (es donde se llega al piso)', () => {
+    const { progreso, acciones, jugar } = armar([...PARTES_LIBRETA], ['golpe:llegada']);
+    jugar(3);
+    expect(progreso.tiene(FINAL_PISO_3)).toBe(false);
+    expect(acciones).toEqual([]);
+  });
+});
+
+describe('Ningún orden de lectura traba el Piso 3', () => {
+  // Así se atascó el creador: juntó la libreta sin ver el sobre del 301. El objetivo seguía en "Averigua por qué
+  // cerraron este piso" y la X del dormitorio no dejaba grabar.
+  it('juntar la libreta sin haber leído la carta del 301 también cumple "averiguar": el objetivo pasa a grabar', () => {
+    const { progreso, banderas } = armar();
+    for (const id of PARTES_LIBRETA) progreso.registrarDocumento(id);
+    expect(progreso.tiene(`leyo:${CARTA_ADMINISTRACION}`), 'la carta sigue sin leer').toBe(false);
+    expect(progreso.tiene(PISO_AVERIGUADO)).toBe(true);
+    expect(banderas, 'en vivo: pasa por el bus como cualquier avance').toContain(PISO_AVERIGUADO);
+    expect(progreso.objetivoActual()?.id).toBe('grabar');
+  });
+
+  it('la carta sola cumple "averiguar", y el objetivo pasa a juntar la libreta', () => {
+    const { progreso } = armar();
+    expect(progreso.objetivoActual()?.id).toBe('averiguar');
+    progreso.registrarDocumento(CARTA_ADMINISTRACION);
+    expect(progreso.tiene(PISO_AVERIGUADO)).toBe(true);
+    expect(progreso.objetivoActual()?.id).toBe('juntar');
+  });
+
+  it('una hoja o el cuaderno sueltos no lo cumplen: todavía no se sabe nada', () => {
+    const { progreso } = armar();
+    progreso.registrarDocumento('hoja_301');
+    progreso.registrarDocumento('carta_madre_302');
+    expect(progreso.tiene(PISO_AVERIGUADO)).toBe(false);
+  });
+
+  it('una partida de antes (carta leída, sin la bandera nueva) se repara al cargar, en silencio', () => {
+    const { progreso, banderas } = armar([CARTA_ADMINISTRACION]);
+    expect(progreso.tiene(PISO_AVERIGUADO)).toBe(true);
+    expect(banderas, 'cargar no es un hecho nuevo').toEqual([]);
+    expect(progreso.objetivoActual()?.id).toBe('juntar');
   });
 });

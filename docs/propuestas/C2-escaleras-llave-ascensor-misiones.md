@@ -3,6 +3,11 @@
 > **Sin programar.** Costos en días de una persona, con pruebas caminando. Ver la nota de C1 al final.
 
 ## 1. Escaleras que se caminan
+
+> **Hecho el 2026-10-10** (ver 02-ARQUITECTURA, "Escaleras que se caminan"). Como estaba planeado: el corte es al
+> cruzar el descanso, ella puede seguir hasta el descanso y nunca cambia de piso, y el fundido queda como opción. Lo
+> que cambió: el corte no es de 0.3 s fijos sino lo que tarda en armarse el piso de al lado (un parpadeo; en el
+> navegador de pruebas, sin GPU, ~1.3 s).
 - **Hoy el motor no tiene altura.** Es 2.5D: el jugador se mueve en x y z, la cámara va a la altura de los ojos sobre
   y = 0, las colisiones son cajas en planta y la celda `E` bloquea como un muro. La escalera sí está dibujada con
   medidas reales: 8 contrahuellas de 17 cm por medio piso y el descanso a −1.35 m.

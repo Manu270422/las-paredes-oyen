@@ -59,6 +59,11 @@ export interface AjustesJugador {
   sinSustosFuertes: boolean;
   /** Con poco aire: el borde de la pantalla late y un subtítulo avisa antes del jadeo (accesibilidad). */
   ayudaVisualAire: boolean;
+  /**
+   * Cambiar de piso con un fundido (pulsando E en la boca del tramo) en vez de caminar los escalones: bajar
+   * girando en el descanso puede marear (accesibilidad).
+   */
+  escalerasConFundido: boolean;
 }
 
 export const AJUSTES_POR_DEFECTO: AjustesJugador = {
@@ -82,6 +87,7 @@ export const AJUSTES_POR_DEFECTO: AjustesJugador = {
   indicadorAireSiempre: false,
   sinSustosFuertes: false,
   ayudaVisualAire: false,
+  escalerasConFundido: false,
 };
 
 type Oyente = (ajustes: Readonly<AjustesJugador>, clave: keyof AjustesJugador | null) => void;

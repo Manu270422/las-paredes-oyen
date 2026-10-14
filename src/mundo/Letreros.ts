@@ -52,6 +52,16 @@ export function colgarPlaca(def: DefPlaca, puerta: Puerta): Mesh {
   return placa;
 }
 
+/** Pinto por adelantado los dibujos de las placas y rótulos de un piso al que todavía no llego (quedan guardados). */
+export function precalentarLetreros(placas: readonly DefPlaca[], rotulos: readonly DefRotulo[]): void {
+  for (const p of placas) {
+    const t = texturaPlaca(p.texto, PLACA.alto / PLACA.ancho, PLACA.cifras / PLACA.alto);
+    t.color.dispose();
+    t.material.dispose();
+  }
+  for (const r of rotulos) texturaRotulo(r.texto, FRACCION_ROTULO).dispose();
+}
+
 /** Pinto un rótulo sobre la cara de un muro. Se llama "rotulo:<texto>". */
 export function pintarRotulo(def: DefRotulo): Mesh {
   const lado = def.alto / FRACCION_ROTULO;

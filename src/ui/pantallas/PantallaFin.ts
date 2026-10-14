@@ -3,7 +3,6 @@
 // fanfarria: el silencio es parte del final.
 import { crearBoton } from '../componentes/Boton';
 import type { PuenteTelemetria } from '../PuenteTelemetria';
-import type { MarcasFinal } from '../../guardado/Perfil';
 import { reloj } from '../../utilidades/Reloj';
 import { Pantalla } from './Pantalla';
 
@@ -19,15 +18,30 @@ export interface EstadisticasFin {
   cambiosMundo: number;
   persecuciones: number;
   muertes: number;
-  /** Las mejores marcas del perfil (sobreviven a todas las partidas). */
-  marcas: MarcasFinal;
-  /** Cada piso completado en esta partida, en orden: su nombre, lo que tardé en él y las veces que me atrapó ahí. */
-  pisos: ReadonlyArray<{ nombre: string; tiempo: number; muertes: number }>;
+  /**
+   * Cada piso completado en esta partida, en orden: su nombre, lo que tardé en él, las veces que me cazó y me atrapó
+   * ahí, y si batí el mejor tiempo de ese piso.
+   */
+  pisos: ReadonlyArray<{ nombre: string; tiempo: number; muertes: number; persecuciones: number; mejorTiempo: boolean }>;
 }
 
 /** Las veces que la criatura me atrapó, dicho como en el resto del final ("te oyó"). */
 export function vecesQueTeOyo(muertes: number): string {
   return muertes === 0 ? 'no te oyó' : muertes === 1 ? 'te oyó 1 vez' : `te oyó ${muertes} veces`;
+}
+
+/** Las veces que la criatura me cazó (me haya atrapado o no). */
+export function vecesQueTeCazo(persecuciones: number): string {
+  return persecuciones === 0 ? 'no te cazó' : persecuciones === 1 ? 'te cazó 1 vez' : `te cazó ${persecuciones} veces`;
+}
+
+/**
+ * La línea de un piso en el final: su tiempo, la marca solo si la batí (dicha en voz baja), y las veces que me cazó y
+ * me atrapó ahí. El mejor tiempo es de cada piso: junto al total de la partida confundía (el creador, 2026-10-12).
+ */
+export function lineaDePiso(p: EstadisticasFin['pisos'][number]): string {
+  const marca = p.mejorTiempo ? ' · nunca lo pasaste tan rápido' : '';
+  return `${reloj(p.tiempo)}${marca} · ${vecesQueTeCazo(p.persecuciones)} · ${vecesQueTeOyo(p.muertes)}`;
 }
 
 export class PantallaFin extends Pantalla {
@@ -73,19 +87,13 @@ export class PantallaFin extends Pantalla {
     this.titulo.textContent = `${e.piso} completado`;
     this.exportar.hidden = !this.telemetria.activa();
     this.exportar.textContent = 'Exportar registro de la prueba';
-    const m = e.marcas;
-    // Sin fanfarria: la marca es un dato más, dicho en voz baja.
-    const frase = m.finales <= 1 ? 'Tu primera vez hasta el final' : m.nuevoMejorTiempo ? 'Tu mejor tiempo. Nunca saliste tan rápido' : 'Tu mejor tiempo';
-    // Si la marca es este mismo tiempo (la primera vez, o al batirla), no repito el número: la frase va con "Tiempo".
-    const tiempo = reloj(e.tiempo);
-    const repetida = reloj(m.mejorTiempo) === tiempo;
+    // Los totales de la partida. El mejor tiempo no va aquí: es de cada piso y va en su línea, solo si lo batí.
     const datos: Array<[string, string]> = [
-      [tiempo, repetida ? `Tiempo · ${frase.charAt(0).toLowerCase()}${frase.slice(1)}` : 'Tiempo'],
+      [reloj(e.tiempo), 'Tiempo'],
       [e.dificultad, 'Dificultad'],
       [String(e.cambiosMundo), 'Cosas que cambiaron'],
       [String(e.persecuciones), 'Veces que te cazó'],
       [String(e.muertes), 'Veces que te oyó'],
-      ...(repetida ? [] : [[reloj(m.mejorTiempo), frase] as [string, string]]),
     ];
     this.lista.replaceChildren(
       ...datos.map(([valor, nombre]) => {
@@ -96,14 +104,14 @@ export class PantallaFin extends Pantalla {
         return li;
       }),
     );
-    // Una línea por piso, solo si fueron varios (con uno solo, repetiría los datos de arriba).
-    this.pisos.hidden = e.pisos.length < 2;
+    // Una línea por piso, si fueron varios. Con uno solo repetiría los datos de arriba, salvo que batiera su marca.
+    this.pisos.hidden = e.pisos.length === 0 || (e.pisos.length === 1 && !e.pisos[0].mejorTiempo);
     this.pisos.replaceChildren(
       ...e.pisos.map((p) => {
         const li = document.createElement('li');
         const fuerte = document.createElement('strong');
         fuerte.textContent = p.nombre;
-        li.append(fuerte, `${reloj(p.tiempo)} · ${vecesQueTeOyo(p.muertes)}`);
+        li.append(fuerte, lineaDePiso(p));
         return li;
       }),
     );

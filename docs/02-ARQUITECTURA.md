@@ -28,12 +28,12 @@ LasParedesOyen/
    │  ├─ shaders/              GLSL del postprocesado
    │  └─ texturas/             Generador procedural, recetas, cookie de la linterna, pintor de rastros
    ├─ audio/                   Motor, fuentes 3D, reverberación, ambiente, biblioteca
-   │  └─ sintesis/             Sintetizador y recetas de los 41 sonidos
-   ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, letreros, rastros, colisiones
+   │  └─ sintesis/             Sintetizador y recetas de los 44 sonidos
+   ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, letreros, rastros, escaleras, ascensor, colisiones
    │  └─ datos/                Tipos de mapa (la forma; los mapas viven en cada piso)
    ├─ jugador/                 Jugador, cámara, respiración, corazón, linterna, grabadora
    ├─ interaccion/             Sistema de interacción e interactuables
-   │  └─ objetos/              Puerta, documento, recogible, examinable, medición, tablero, radio, modelos
+   │  └─ objetos/              Puerta, documento, recogible, examinable, medición, tablero, radio, botones del ascensor, modelos
    ├─ ia/                      Entidad, modelo, navegación A*, percepción, memoria, FSM, imitador
    │  └─ estados/              Paredes, investigando (con encuentro), cazando, acechando, retirada
    ├─ director/                Director de terror, memoria del mundo, visibilidad
@@ -41,7 +41,8 @@ LasParedesOyen/
    ├─ narrativa/               Progreso, acciones del guion, tipos de documento/objetivo/cinta, explicaciones de muerte
    ├─ pisos/                   Catálogo de pisos y la forma de un paquete (TiposPiso)
    │  ├─ piso4/                El Piso 4: mapa, objetivos, documentos, cintas, guion y secuencia final
-   │  └─ piso3/                El Piso 3: mapa, documentos, examinables y guion (la libreta de Andrés)
+   │  ├─ piso3/                El Piso 3: mapa, documentos, examinables y guion (la libreta de Andrés)
+   │  └─ piso2/                El Piso 2: mapa, documentos, cinta y guion (Hernando y el cuarto sordo)
    ├─ telemetria/              Telemetría LOCAL de playtesting: recolector, almacén, resumen, reacción, vigilancia, ?telemetria=1
    ├─ guardado/                Sistema de guardado versionado
    ├─ ui/                      Gestor de UI, íconos, navegación con mando
@@ -194,9 +195,85 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
   partida guardada (`pisosCompletados`, v7) y avisa con `piso-completado`, que la telemetría registra. Los guiones
   lo piden con `AccionesGuion`.
 - `Juego.ts` tiene un tope de 700 líneas (A5), vigilado por `topeComplejidad.test.ts`. Lo que no cabe va a su propio
-  archivo; por ejemplo, `ui/hud/AlimentarHUD.ts` pasa el estado del juego al HUD en cada fotograma.
+  archivo; por ejemplo, `ui/hud/AlimentarHUD.ts` pasa el estado del juego al HUD en cada fotograma, y desde el
+  2026-10-12 `audio/MezclaFotograma.ts` (el audio de cada fotograma) y `render/EfectosFotograma.ts` (estrés, pulso e
+  interferencia para el postprocesado). Con eso quedó en 674 líneas: hay margen para lo próximo.
 - `Juego.cambiarNivel` suelta el nivel viejo (`Nivel.destruir`: geometrías y texturas propias, no las de la biblioteca
   compartida) y arma el nuevo. Lo comparten el viaje y cargar una partida guardada en otro piso.
+
+## Escaleras que se caminan (C2 §1)
+
+- El motor sigue siendo un plano: el pozo de una escalera (celdas `E`) es el único lugar donde el suelo sube y baja.
+  `mundo/EscaleraCaminable.ts` (lógica pura, en el marco local del hueco) dice a qué altura están los pies en cada
+  huella, qué frena dentro del pozo y cuándo se cruza el descanso. Usa las MISMAS medidas con que
+  `ConstructorEscalera` dibuja los escalones (`medidasEscalera`): lo que se ve y lo que se pisa no se separan.
+- Quien camina sabe por dónde va (`TramoPie`: `piso`, `bajando` o `subiendo`): en el mismo punto del plano hay dos
+  descansos, uno encima del otro, y lo que se pisa depende de por dónde se llegó.
+- `mundo/PozosCaminables.ts` junta los huecos de un piso: qué tramo lleva a qué piso (las `escaleras` del paquete,
+  por el lado de la boca donde arrancan), qué los cierra (la reja hasta que termina de abrirse; tablas y escombros,
+  siempre) y por qué celdas del pozo puede ir la criatura.
+- **Cambiar de piso caminando:** al cruzar el descanso de lado a lado (con 25 cm de margen a cada lado de la mitad),
+  `ViajeEscalera.revisarCruce` arma el piso vecino en un parpadeo y me pone en el mismo punto del descanso del otro
+  piso, con la mirada y el impulso que traía (el pozo es idéntico en los dos). Si sale la tarjeta de un piso
+  completado, el negro dura lo que ella.
+- **Ella** puede seguirme por mi tramo hasta el descanso (`Navegacion` acepta celdas extra; sus pies también siguen
+  los escalones), pero nunca cruza a otro piso. La distancia para atraparme cuenta la altura. Así el pozo no es
+  refugio, y huir por la escalera cuesta unos segundos expuesto (la regla de la caza ya no hace falta caminando).
+- **Accesibilidad:** "Escaleras con fundido" (Ajustes → Accesibilidad) devuelve el viaje con E y fundido, para quien
+  se marea; en ese modo, durante una caza la cadena se traba.
+- **Rapidez:** armar un piso era ~1.3 s (casi todo pintar rastros y letreros píxel por píxel). Los lienzos pintados
+  quedan guardados (`render/texturas/LienzosGuardados.ts`) y los de los otros pisos se pintan durante la carga
+  (`mundo/PrecalentarPiso.ts`): ahora se arma en ~0.1–0.3 s en el navegador de pruebas.
+
+## El ascensor (C2 §3)
+
+- **Una celda nueva en la rejilla: `A`, la cabina.** Se pisa como piso (`Rejilla.esCabina`; no es muro ni hueco), con
+  tres lados de muro y una sola boca hacia una celda de piso. Entre la cabina y el pasillo, `ConstructorGeometria`
+  levanta el muro con el vano de las puertas desde los dos lados (dintel y jambas, sin grosor) y sus colisiones.
+  Para la vista y el sonido, la cabina con las puertas cerradas cuenta como una puerta cerrada (0.6 de oclusión,
+  tapa la línea de visión): lo responde la misma `consultaPuertaCerrada` del nivel.
+- `mundo/MarcoCabina.ts`: la cabina en su marco propio (u hacia afuera, v a la derecha de quien sale), dónde van el
+  botón de llamar y el panel, y si alguien está adentro o cruzando el vano. `mundo/ModeloAscensor.ts` dibuja las
+  hojas, el marco, el indicador de piso (afuera y adentro, con luz propia: `render/texturas/TexturasAscensor.ts`), el
+  revestimiento de acero, el pasamanos y el panel. Su luz es una lámpara del mapa (tubo) que nombra el paquete.
+  Sus materiales se piden con `BibliotecaMateriales.conservado`: se crean una vez y no se sueltan al cambiar de piso.
+  Si se soltaran, el piso nuevo recompilaría sus shaders (en el navegador de pruebas, el cruce de la escalera llegó a
+  5.8 s). Ojo: rótulos, placas, rastros y el fondo de la escalera todavía se sueltan y se recompilan en cada cambio.
+- `mundo/Ascensor.ts` es la máquina: `muerto` (no cumple lo que pide el paquete) → `lejos` → `viniendo` (7 s; el
+  motor zumba por los muros y hace ruido para ella cada 1.5 s) → `abriendo` → `abierto` → `cerrando` → `viajando`
+  (6 s; vibra, el director se bloquea) → `reteniendo` → `abriendo`. Las puertas se vuelven a abrir si algo está en el
+  vano (yo o ella); abiertas, la cabina es un cuarto más y ella entra (no es refugio).
+- **El cambio de piso sin negro:** a la mitad del viaje el ascensor pide `ctx.viaje.porAscensor`. `ViajeEscalera`
+  arma el piso de destino en el modo `cabina` (sin fundido, salvo la tarjeta de un piso completado), llega al punto
+  inicial del piso (de ahí se reaparece si se muere) y me pone en el mismo punto de la cabina, mirando igual: la
+  cabina está en la misma celda en todos los pisos y su panel es el mismo. El ascensor del piso nuevo retoma el
+  viaje (`recibir`) y al llegar suena la campanilla (ruido fuerte, causa `maquina`).
+- **Ella no viaja:** si tenía cuerpo cuando se cerraron las puertas, golpea el metal y vuelve a las paredes. Con las
+  puertas cerradas, `Nivel.costoCriatura` le da costo infinito a la cabina y `Entidad.avanzar` no la atraviesa.
+  **Justicia:** al llegar conmigo adentro, no abre con ella a menos de 4 m; si no se va en 6 s, va a las paredes.
+- Datos: `ascensor` del paquete (`DefAscensor`: celda, número del indicador, paradas, `requiere`, mensaje de muerto
+  y lámpara). `pisos/EnlacesAscensor.ts` valida el catálogo (una sola `A`, misma celda y mismo panel en cada parada,
+  ida y vuelta, nada adentro de la cabina). Lo prueban `ascensor.test.ts` y, caminando, `ascensor.spec.ts`.
+- `Ascensor.ts` pasa de 250 líneas (~445, casi un cuarto comentarios y blancos) a propósito: es una sola máquina de
+  estados y sus reglas de justicia comparten estado; el porqué está en su cabecera. Si crece, el sonido sale primero.
+
+## Lo que trajo el Piso 2 (P2-guion, tanda 1, 2026-10-13)
+
+- **Botones que piden algo.** Una `ParadaAscensor` puede tener `requiere` y `cerrada`: sin eso, el botón dice por qué
+  y las puertas siguen abiertas. Los botones que se repiten en varios pisos viven en `pisos/paradasAscensor.ts` (el
+  panel es uno solo): al 2, `visitado:piso2`; al 1, `objeto:llave_servicio`.
+- **`visitado:<piso>`** (`narrativa/Requisito.ts`): se cumple si ya estuve en ese piso (`Progreso.visitado`: el que
+  juego o uno que dejé). Así, la primera bajada a un piso es siempre por la escalera.
+- **Un piso que todavía no existe.** Una parada puede llevar al `siguiente` de un piso aunque no esté en el catálogo
+  (con `numero` para su botón; `EnlacesAscensor` lo valida). La cabina viaja hasta el último piso que existe
+  (`pisoAntesDe`) y, al llegar conmigo, no abre: emite `ascensor-fin-recorrido` y lo que pasa es del guion de ese
+  piso (el Piso 2 cierra la partida). Cuando exista el Piso 1, esa parada será un viaje normal.
+- **Escalera tapiada** (`opcionesEscalera.tapiadaAbajo`): un muro de ladrillo nuevo (material `ladrillo`, receta
+  procedural) donde iría la reja. `PozosCaminables` lo cuenta como tramo tapado para siempre (ni yo ni ella).
+- **La reja que se abre sola** (`DefEscaleraPiso.seAbreCon`): al marcarse esa bandera, `TramoEscalera.alBandera` la
+  abre sin llave (`RejaEscalera.abrir(…, true)`: no suena la llave). Al cargar, abierta si la bandera ya está.
+- **Completar sin moverme** (`AccionesGuion.completarPiso`, `FinDePiso.completarPiso`): el piso queda completado y la
+  partida sigue donde estoy. Así termina ahora el Piso 3; su tarjeta sale al bajar, como la del 4.
 
 ## Lo que se lee y lo que se examina
 

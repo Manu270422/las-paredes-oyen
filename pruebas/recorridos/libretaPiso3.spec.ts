@@ -8,7 +8,7 @@
 //
 // La criatura queda en las paredes y el director quieto: aquí se prueba que todo se alcanza y se lee caminando.
 import { expect, test, type Page } from '@playwright/test';
-import { abrirEleccion, elegirYEmpezar, esperarJugando, PREFIJO } from './acciones';
+import { abrirEleccion, elegirYEmpezar, esperarJugando, PREFIJO, usarEscalerasConFundido } from './acciones';
 import { instalarPiloto } from './piloto';
 
 /** Lo que el guion dice al juntar las tres partes (src/pisos/piso3/guion.ts). */
@@ -98,6 +98,7 @@ test('la libreta de Andrés se junta caminando por el 301, el 303 y el 302, y al
   await abrirEleccion(page);
   await elegirYEmpezar(page, 'Historia');
   await esperarJugando(page);
+  await usarEscalerasConFundido(page);
 
   // Bajo al Piso 3 por la escalera con la llave (el final del 402 lo camina guion.spec.ts).
   await page.evaluate(async () => {
@@ -240,7 +241,7 @@ test('la libreta de Andrés se junta caminando por el 301, el 303 y el 302, y al
   await captura('cuarto-302');
   expect(final.completa, 'la tercera parte cierra la libreta').toBe(true);
   expect(final.imitacion, 'y con ella la criatura imita completo').toBe(true);
-  expect(final.objetivo, 'no queda objetivo pendiente en el piso (lo que sigue es del guion de la próxima tanda)').toBeNull();
+  expect(final.objetivo, 'con la libreta completa, toca grabar la pared del cuarto de Andrés (P3-guion)').toBe('grabar');
   expect(final.examinados).toEqual(['exDibujo', 'exCarrito', 'exMedidor']);
   expect(final.subtitulos.filter((s) => s === REFLEXION), 'la reflexión sale una vez').toHaveLength(1);
   expect(final.enPantalla).toContain(REFLEXION);

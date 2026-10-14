@@ -10,13 +10,17 @@ import { DIFICULTAD_POR_DEFECTO, puntoDeControlDe, TABLA_DIFICULTAD, type IdDifi
 import { detectarDispositivo, sugerirCalidad } from '../plataforma/DetectorDispositivo';
 import { GestorPantalla } from '../plataforma/GestorPantalla';
 import { GestorEntrada } from '../entrada/GestorEntrada';
+import { soloMirada } from '../entrada/AccionesEntrada';
 import { Renderizador } from '../render/Renderizador';
 import { BibliotecaMateriales } from '../render/Materiales';
 import { crearCookieLinterna } from '../render/texturas/CookieLinterna';
+import { EfectosFotograma } from '../render/EfectosFotograma';
 import { MotorAudio } from '../audio/MotorAudio';
 import { AmbienteSonoro } from '../audio/AmbienteSonoro';
+import { MezclaFotograma } from '../audio/MezclaFotograma';
 import { Nivel } from '../mundo/Nivel';
-import { PISO_INICIAL, pisoPorId } from '../pisos/catalogo';
+import { PISO_INICIAL, PISOS, pisoPorId } from '../pisos/catalogo';
+import { precalentarPiso } from '../mundo/PrecalentarPiso';
 import type { GuionPiso, PaquetePiso } from '../pisos/TiposPiso';
 import { Jugador } from '../jugador/Jugador';
 import { Linterna } from '../jugador/Linterna';
@@ -45,7 +49,6 @@ import { FondoMenu } from './FondoMenu';
 import { DificultadPartida } from './DificultadPartida';
 import { mostrarSusto } from './Susto';
 import type { ContextoJuego } from './ContextoJuego';
-import { amortiguar } from '../utilidades/Matematicas';
 
 /** 'viaje': voy por una escalera a otro piso (a oscuras, unos segundos, sin poder moverme). */
 type EstadoApp = 'cargando' | 'inicio' | 'menu' | 'jugando' | 'pausa' | 'documento' | 'muerte' | 'fin' | 'viaje';
@@ -94,11 +97,12 @@ export class Juego {
     armarPiso: (destino) => this.cambiarNivel(destino),
     ponerEn: (llegada) => {
       this.soloMirar = false;
-      this.interferencia = 0;
+      this.efectosPantalla.calmar();
       this.puntoControl = llegada;
       this.ponerEnPunto();
     },
     guardar: () => this.guardarPartida(),
+    colocar: (x, y, z, yaw, pitch, pie) => this.jugador.colocarEnEscalera(x, y, z, yaw, pitch, pie),
     llegar: () => {
       this.estado = 'jugando';
       // Si mientras viajaba se ocultó la pestaña o se soltó el ratón, no pude pausar (no estaba jugando): ahora sí.
@@ -123,6 +127,7 @@ export class Juego {
     fijarSoloMirar: (activo) => (this.soloMirar = activo),
     terminarPartida: () => this.finDePiso.terminarPartida(this.ctx),
     despertar: () => this.finDePiso.despertar(this.ctx),
+    completarPiso: () => this.finDePiso.completarPiso(this.ctx),
   };
   private readonly lienzo: HTMLCanvasElement;
   private readonly raizUI: HTMLElement;
@@ -155,8 +160,10 @@ export class Juego {
   private soloMirar = false;
   private puntoControl = this.piso.puntoInicial;
   private tiempoJugado = 0;
-  private temporizadorLento = 0;
-  private interferencia = 0;
+  /** El audio de cada fotograma de juego (ambiente, oyente, oclusión). */
+  private readonly mezcla = new MezclaFotograma();
+  /** Lo que el postprocesado muestra del jugador y de ella (estrés, pulso, interferencia). */
+  private readonly efectosPantalla = new EfectosFotograma(this.bus);
 
   constructor(contenedor: HTMLElement) {
     this.lienzo = contenedor.querySelector('#lienzo') as HTMLCanvasElement;
@@ -223,6 +230,8 @@ export class Juego {
     this.ui.carga.fijarProgreso(0.95);
     this.conectarEventos();
     this.precompilar();
+    // Los dibujos de los otros pisos, ya pintados: cruzar a ellos caminando por la escalera es un parpadeo.
+    for (const p of PISOS) if (p.id !== this.piso.id) precalentarPiso(p, this.materiales.detalle);
     this.ui.carga.fijarProgreso(1);
 
     this.bucle = new BucleJuego((dt) => this.fotograma(dt));
@@ -285,7 +294,7 @@ export class Juego {
       memoria: this.memoria,
       director: this.director,
       ui: { abrirDocumento: (id) => this.abrirDocumento(id) },
-      viaje: { cambiarDePiso: (hacia, llegada) => this.viajeEscalera.cambiarDePiso(hacia, llegada, this.ctx) },
+      viaje: this.viajeEscalera.puente(() => this.ctx),
     };
     this.conectarPiso();
     this.redimensionar();
@@ -356,9 +365,6 @@ export class Juego {
       }
     });
     this.perfilGuardado.conectar(this.bus);
-    this.bus.on('interferencia', ({ intensidad }) => {
-      this.interferencia = Math.max(this.interferencia, intensidad);
-    });
 
     this.pantalla.alCambiar(() => this.redimensionar());
     document.addEventListener('visibilitychange', () => {
@@ -455,7 +461,7 @@ export class Juego {
     this.audio.fijarSilencioAmbiente(1);
     this.ambiente.olvidarFuentes();
     this.soloMirar = false;
-    this.interferencia = 0;
+    this.efectosPantalla.calmar();
     if (piso.id !== this.piso.id) this.cambiarNivel(piso);
 
     // "Continuar" y reintentar retoman la dificultad de la partida guardada; una partida nueva ya fijó la suya.
@@ -509,6 +515,12 @@ export class Juego {
       tiempoJugado: this.tiempoJugado,
       estadisticas: this.memoria.estadisticas,
     });
+  }
+
+  /** El botón "atrás" de Android: en juego, pausa; en los menús, vuelve. */
+  atras(): void {
+    if (this.estado === 'jugando') this.pausar();
+    else this.ui.volver();
   }
 
   private pausar(): void {
@@ -605,7 +617,8 @@ export class Juego {
         break;
     }
     if (this.estado === 'cargando') return;
-    this.actualizarEfectos(dt);
+    const enJuego = this.estado === 'jugando' || this.estado === 'muerte' || this.estado === 'viaje';
+    this.efectosPantalla.actualizar(dt, this.renderizador.efectos, enJuego, this.ctx);
     this.renderizador.dibujar(this.escena, this.jugador.camara, dt, this.bucle.dtReal);
   }
 
@@ -622,14 +635,7 @@ export class Juego {
       this.pausar();
       return;
     }
-    if (this.soloMirar) {
-      e.moverX = 0;
-      e.moverY = 0;
-      e.correr = false;
-      e.interactuar = false;
-      e.senuelo = false;
-      e.agacharse = false;
-    }
+    if (this.soloMirar) soloMirada(e);
     if (e.linterna) this.linterna.alternar(ctx);
     if (e.senuelo) {
       if (this.grabadora.puedeUsarSenuelo(ctx)) this.grabadora.colocarSenuelo(ctx);
@@ -640,7 +646,8 @@ export class Juego {
     this.programador.actualizar(dt);
     this.jugador.actualizar(dt, e, ctx, true);
     this.interaccion.actualizar(ctx, e.interactuar);
-    // Si abrí un documento, este fotograma termina aquí.
+    this.viajeEscalera.revisarCruce(ctx);
+    // Si abrí un documento (o crucé un descanso hacia otro piso), este fotograma termina aquí.
     if (this.estado !== 'jugando') return;
     this.grabadora.actualizar(dt, ctx);
     this.entidad.actualizar(dt, ctx);
@@ -652,19 +659,7 @@ export class Juego {
     this.linterna.actualizar(dt, distanciaEntidad, ctx);
     const j = this.jugador.posicion;
     this.nivel.actualizar(dt, ctx, j.x, j.z);
-
-    // Audio.
-    this.temporizadorLento -= dt;
-    if (this.temporizadorLento <= 0) {
-      this.temporizadorLento = 0.25;
-      this.ambiente.sincronizarLamparas(this.nivel.lamparas);
-      this.ambiente.fijarTension(this.director.tension);
-      this.ambiente.fijarEstres(this.jugador.estres);
-    }
-    this.ambiente.actualizar(dt, j.x, j.z, this.nivel.rejilla);
-    this.audio.fijarEscucha(this.jugador.nivelEscucha);
-    this.audio.actualizarOyente(this.jugador.camara);
-    this.audio.actualizar(dt);
+    this.mezcla.actualizar(dt, ctx);
     this.telemetria.actualizar(dt, this.bucle.dtReal);
 
     // ¿Me atrapó? Regla de justicia: SOLO mata cuando está cazando. La caza
@@ -676,18 +671,5 @@ export class Juego {
     }
 
     alimentarHUD(this.ui.hud, ctx, this.interaccion.enfocado, this.bucle.dtReal);
-  }
-
-  /** Paso el estado del jugador al postprocesado. */
-  private actualizarEfectos(dt: number): void {
-    const efectos = this.renderizador.efectos;
-    const enJuego = this.estado === 'jugando' || this.estado === 'muerte' || this.estado === 'viaje';
-    efectos.estres = enJuego ? this.jugador.estres : 0;
-    efectos.escuchando = enJuego ? this.jugador.nivelEscucha : 0;
-    efectos.pulso = enJuego ? this.jugador.corazon.pulso : 0;
-    efectos.susto = amortiguar(efectos.susto, 0, 2.5, dt);
-    this.interferencia = Math.max(0, this.interferencia - dt * 1.6);
-    const cercania = this.entidad?.fisica ? Math.max(0, 1 - this.entidad.distanciaAlJugador(this.ctx) / 8) * 0.25 : 0;
-    efectos.interferencia = Math.min(1, this.interferencia + (enJuego ? cercania : 0));
   }
 }

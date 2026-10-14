@@ -20,10 +20,13 @@ test('sin telemetría, la pantalla final no muestra "Exportar registro de la pru
   await expect(page.locator('.fin__estadisticas')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Exportar registro de la prueba' })).toBeHidden();
   await expect(page.getByRole('button', { name: 'Volver al menú' })).toBeVisible();
-  // La primera vez la marca ES este tiempo: no se repite el número, la frase va junto a "Tiempo".
+  // Los totales de la partida, sin marcas: el mejor tiempo es de cada piso y va en su línea (decisión del creador,
+  // 2026-10-12: "Tu mejor tiempo" del Piso 4 junto al tiempo total confundía).
+  // Cada dato es el valor (en negrita) y su nombre (el texto que sigue).
+  const nombres = await page.locator('.fin__estadisticas li').evaluateAll((lis) => lis.map((li) => li.lastChild?.textContent ?? ''));
+  expect(nombres).toEqual(['Tiempo', 'Dificultad', 'Cosas que cambiaron', 'Veces que te cazó', 'Veces que te oyó']);
   const datos = await page.locator('.fin__estadisticas li').allTextContents();
-  expect(datos.some((d) => d.includes('Tiempo · tu primera vez hasta el final'))).toBe(true);
-  expect(datos.filter((d) => d.startsWith(datos[0].match(/^\d+:\d\d/)![0])), 'el tiempo aparece una sola vez').toHaveLength(1);
+  expect(datos.some((d) => /mejor tiempo/i.test(d)), 'sin "mejor tiempo" en los totales').toBe(false);
   // "Jugar otra vez" lleva a elegir la dificultad y empieza una partida nueva, sin pasar por el menú.
   await page.getByRole('button', { name: 'Jugar otra vez' }).click();
   await page.getByRole('button', { name: 'Empezar', exact: true }).click();

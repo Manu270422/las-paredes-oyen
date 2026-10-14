@@ -1,7 +1,8 @@
 // El Piso 3 del Edificio Almendros. Mismo esqueleto que el Piso 4 (la escalera en la misma columna, el pasillo
 // en la misma fila, los tres apartamentos en los mismos sitios) pero con interiores, texturas y luces distintas.
 // El 302 está directamente debajo del 402: la historia de los dos pisos comparte esa geometría.
-// Las lámparas arrancan casi todas rotas: el circuito falló antes. Solo la emergencia de la escalera enciende.
+// Las lámparas arrancan casi todas rotas: el circuito falló antes. Solo la emergencia de la escalera enciende... y el
+// tubo de la cabina del ascensor (la 'A', junto a la escalera), que funciona en un piso sin luz.
 import type { DefMapa } from '../../mundo/datos/TiposMapa';
 
 export const MAPA_PISO_3: DefMapa = {
@@ -20,7 +21,7 @@ export const MAPA_PISO_3: DefMapa = {
     '#...#........###...........##..#', // 8
     '#...###P############P########..#', // 9
     '#...........................#..#', // 10  (servicio tapiado: sin puerta, celda sellada)
-    '#EEE##########P##############..#', // 11
+    '#EEE#A########P##############..#', // 11  (A: la cabina del ascensor)
     '#EEE####.............########..#', // 12
     '########.............###########', // 13
     '########.............###########', // 14
@@ -47,6 +48,8 @@ export const MAPA_PISO_3: DefMapa = {
     { id: 'cuarto302', nombre: 'Cuarto pequeño del 302', x0: 15, y0: 17, x1: 20, y1: 18, reverb: 'habitacion', pared: 'azulejo', piso: 'azulejo', apartamento: '302' },
     // El cuarto de servicio existe pero su puerta está tapiada con muebles: nadie entra.
     { id: 'servicio', nombre: 'Cuarto de servicio', x0: 29, y0: 8, x1: 30, y1: 12, reverb: 'ducto', pared: 'concreto', piso: 'concreto' },
+    // La cabina del ascensor, en la misma celda que la del Piso 4: es la misma cabina.
+    { id: 'ascensor', nombre: 'Ascensor', x0: 5, y0: 11, x1: 5, y1: 11, reverb: 'bano', pared: 'concreto', piso: 'concreto' },
   ],
 
   puertas: [
@@ -78,6 +81,8 @@ export const MAPA_PISO_3: DefMapa = {
     { id: 'lampara301', x: 8.5, y: 6.5, tipo: 'bombillo', circuito: 'general', estado: 'rota' },
     { id: 'lampara303', x: 21.5, y: 6.5, tipo: 'bombillo', circuito: 'general', estado: 'rota' },
     { id: 'lampara302', x: 14.5, y: 13.5, tipo: 'bombillo', circuito: 'general', estado: 'rota' },
+    // El tubo de la cabina del ascensor: titila en un piso sin luz (como la lámpara del 401). Revienta con la libreta.
+    { id: 'luzAscensor', x: 5.5, y: 11.5, tipo: 'tubo', circuito: 'ascensor', estado: 'parpadeante', color: 0xe4ecff, intensidad: 1.1 },
   ],
 
   muebles: [
@@ -140,6 +145,9 @@ export const MAPA_PISO_3: DefMapa = {
     { tipo: 'examinable', id: 'exMedidor', examinable: 'medidor_302', x: 13.6, y: 17.18 },
     { tipo: 'examinable', id: 'exCarrito', examinable: 'carrito_302', x: 10.1, y: 17.75 },
     { tipo: 'examinable', id: 'exDibujo', examinable: 'dibujo_302', x: 10.5, y: 12.01, altura: 1.05 },
+    // La X de cinta roja en el dormitorio del 302, frente a las rayas de estatura (entre la cama y la mesita): aquí
+    // se graba la pared del cuarto de Andrés (P3-guion).
+    { tipo: 'medicion', id: 'medir302', apartamento: '302', x: 11.5, y: 17.75, accion: 'Grabar la pared del cuarto (quédate quieto)' },
     // Dos pilas: en la mesa de la cocina del 303 y en la mesita del dormitorio del 301.
     { tipo: 'recogible', id: 'pilas1', objeto: 'pilas', x: 19.2, y: 2.4, altura: 0.761 },
     { tipo: 'recogible', id: 'pilas2', objeto: 'pilas', x: 8.5, y: 1.3, altura: 0.541 },
@@ -149,6 +157,8 @@ export const MAPA_PISO_3: DefMapa = {
     escalera: { x: 2.2, y: 10.5, angulo: -90 },
     // En el cuarto pequeño del 302, mirando hacia la silla y el cuaderno.
     cuarto302: { x: 16.3, y: 17.5, angulo: -90 },
+    // Junto a la X del dormitorio, mirando las rayas: si muero en el pasillo, vuelvo a pocos pasos de él.
+    dormitorio302: { x: 11.5, y: 17.4, angulo: 180 },
   },
 
   guaridaEntidad: { x: 14, y: 4.5 },

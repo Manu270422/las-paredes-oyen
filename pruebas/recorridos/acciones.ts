@@ -22,6 +22,15 @@ export async function elegirYEmpezar(page: Page, nombre: string): Promise<void> 
   await page.locator('.dificultad').getByRole('button', { name: 'Empezar', exact: true }).click();
 }
 
+/**
+ * Escaleras con fundido (el ajuste de accesibilidad): E en la boca del tramo viaja con un fundido, como antes de que
+ * la escalera se caminara. Lo usan los recorridos que llegan a otro piso para probar otra cosa; caminar la escalera
+ * lo prueba escaleraCaminada.spec.ts.
+ */
+export async function usarEscalerasConFundido(page: Page): Promise<void> {
+  await page.evaluate(() => window.__juego!.ctx.ajustes.cambiar('escalerasConFundido', true));
+}
+
 export async function esperarJugando(page: Page): Promise<void> {
   await page.waitForFunction(() => window.__juego?.estado === 'jugando', null, { timeout: 15_000 });
   await instalarPiloto(page);

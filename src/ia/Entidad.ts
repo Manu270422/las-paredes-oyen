@@ -12,6 +12,8 @@ import type { ContextoJuego } from '../nucleo/ContextoJuego';
 import type { MotivoCaza, Ruido } from '../nucleo/Eventos';
 import type { IdSonido } from '../audio/TiposAudio';
 import type { Rejilla } from '../mundo/Rejilla';
+import type { TramoPie } from '../mundo/EscaleraCaminable';
+import { PozosCaminables } from '../mundo/PozosCaminables';
 import { ModeloEntidad, type PoseEntidad } from './ModeloEntidad';
 import { Navegacion } from './Navegacion';
 import { Percepcion } from './Percepcion';
@@ -66,6 +68,8 @@ export class Entidad {
   /** El plano del piso por el que me muevo (cambia cuando el jugador baja o sube de piso). */
   private rejilla: Rejilla;
   private navegacion: Navegacion;
+  /** Por dónde voy en una escalera: puedo seguir al jugador por su tramo hasta el descanso, nunca a otro piso. */
+  private pie: TramoPie = 'piso';
 
   constructor(escena: Scene, rejilla: Rejilla) {
     this.rejilla = rejilla;
@@ -93,6 +97,7 @@ export class Entidad {
 
   reiniciar(x: number, z: number, ctx: ContextoJuego): void {
     this.posicion.set(x, 0, z);
+    this.pie = 'piso';
     this.memoria.reiniciar();
     this.camino = [];
     this.abriendo = 0;
@@ -117,9 +122,10 @@ export class Entidad {
     this.camino = [];
   }
 
+  /** Cuenta la altura: en una escalera, el descanso de arriba y el de abajo están en el mismo punto del plano. */
   distanciaAlJugador(ctx: ContextoJuego): number {
     const j = ctx.jugador.posicion;
-    return distancia2D(this.posicion.x, this.posicion.z, j.x, j.z);
+    return Math.hypot(distancia2D(this.posicion.x, this.posicion.z, j.x, j.z), j.y - this.posicion.y);
   }
 
   /** La criatura oye un ruido. La percepción decide cuánto le llega; la dificultad, qué tan fino es su oído. */
@@ -154,7 +160,10 @@ export class Entidad {
   irHacia(x: number, z: number, ctx: ContextoJuego): boolean {
     const desde = { gx: this.rejilla.aCelda(this.posicion.x), gy: this.rejilla.aCelda(this.posicion.z) };
     const hasta = { gx: this.rejilla.aCelda(x), gy: this.rejilla.aCelda(z) };
-    const camino = this.navegacion.buscar(desde, hasta, (gx, gy) => (ctx.nivel.consultaPuertaCerrada(gx, gy) ? 3 : 0));
+    // En una escalera solo piso el tramo por el que voy o, desde el piso, el del jugador (para seguirlo).
+    const lado = PozosCaminables.ladoDe(this.pie) ?? PozosCaminables.ladoDe(ctx.jugador.pie);
+    const pisableExtra = lado ? (gx: number, gy: number) => ctx.nivel.escaleras.pisableCriatura(gx, gy, lado) : undefined;
+    const camino = this.navegacion.buscar(desde, hasta, ctx.nivel.costoCriatura, pisableExtra);
     if (!camino) return false;
     this.camino = camino;
     this.indiceCamino = camino.length > 1 ? 1 : 0;
@@ -177,6 +186,12 @@ export class Entidad {
       return this.camino.length > 0 ? 'llego' : 'sin-camino';
     }
     const celda = this.camino[this.indiceCamino];
+    // La cabina de un ascensor que se cerró mientras yo iba hacia ella: no la abro ni la atravieso.
+    if (ctx.nivel.ascensor?.tapa(celda.gx, celda.gy)) {
+      this.camino = [];
+      this.velocidadActual = 0;
+      return 'sin-camino';
+    }
     const puerta = ctx.nivel.puertaEn(celda.gx, celda.gy);
     if (puerta && !puerta.abierta && !puerta.enMovimiento) {
       // Ni las puertas con llave la detienen: las fuerza.
@@ -255,7 +270,7 @@ export class Entidad {
       for (let ox = -radioCeldas; ox <= radioCeldas; ox++) {
         const gx = gx0 + ox;
         const gy = gy0 + oy;
-        if (!r.esTransitable(gx, gy) || r.esPuerta(gx, gy)) continue;
+        if (!r.esTransitable(gx, gy) || r.esPuerta(gx, gy) || r.esCabina(gx, gy)) continue;
         const cx = r.centro(gx);
         const cz = r.centro(gy);
         if (distancia2D(cx, cz, j.x, j.z) < distanciaMinima) continue;
@@ -283,8 +298,12 @@ export class Entidad {
     this.firma.actualizar(dt, this, ctx);
 
     if (!this.fisica) return;
+    // En un tramo de escalera, mis pies siguen sus escalones como los del jugador.
+    this.pie = ctx.nivel.escaleras.siguiente(this.pie, this.posicion.x, this.posicion.z);
+    this.posicion.y = ctx.nivel.escaleras.altura(this.pie, this.posicion.x, this.posicion.z);
     // Cuerpo: posición, orientación y animación.
     this.modelo.raiz.position.x = amortiguar(this.modelo.raiz.position.x, this.posicion.x, 20, dt);
+    this.modelo.raiz.position.y = amortiguar(this.modelo.raiz.position.y, this.posicion.y, 12, dt);
     this.modelo.raiz.position.z = amortiguar(this.modelo.raiz.position.z, this.posicion.z, 20, dt);
     this.modelo.raiz.rotation.y = this.rumbo;
     this.modelo.actualizar(dt, this.velocidadActual, this.pose);

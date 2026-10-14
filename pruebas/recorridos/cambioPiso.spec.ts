@@ -4,7 +4,7 @@
 // el plano del piso nuevo y el nivel viejo no se queda en la memoria de la GPU (lo mido en dos viajes de ida y
 // vuelta: si algo se filtra, la cuenta crece en cada uno).
 import { expect, test } from '@playwright/test';
-import { abrirEleccion, elegirYEmpezar, esperarJugando, leerLaOrden, PREFIJO } from './acciones';
+import { abrirEleccion, elegirYEmpezar, esperarJugando, leerLaOrden, PREFIJO, usarEscalerasConFundido } from './acciones';
 
 test('bajo a otro piso y vuelvo: cada piso recuerda lo suyo, se guarda al llegar y el nivel viejo no queda en memoria', async ({ page }) => {
   const errores: string[] = [];
@@ -15,6 +15,7 @@ test('bajo a otro piso y vuelvo: cada piso recuerda lo suyo, se guarda al llegar
   await abrirEleccion(page);
   await elegirYEmpezar(page, 'Historia');
   await esperarJugando(page);
+  await usarEscalerasConFundido(page);
   await leerLaOrden(page);
 
   const r = await page.evaluate(async (prefijo) => {

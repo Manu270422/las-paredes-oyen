@@ -7,6 +7,7 @@ import type { MapaEventos } from '../../src/nucleo/Eventos';
 import { Progreso, RECORDAR_OBJETIVO_CADA } from '../../src/narrativa/Progreso';
 import type { Objetivo } from '../../src/narrativa/TiposNarrativa';
 import { PISO_INICIAL } from '../../src/pisos/catalogo';
+import { cumpleRequisito } from '../../src/narrativa/Requisito';
 
 const OBJETIVOS_FALSOS: Objetivo[] = [
   { id: 'a', texto: 'Primero', bandera: 'hizo:a' },
@@ -87,6 +88,20 @@ describe('Progreso por piso (cada piso recuerda lo suyo; el inventario viaja con
     p.agregarObjeto('llave');
     return { p, bus };
   }
+
+  it('sabe en qué pisos estuve (el que juego y los que dejé), y "visitado:" lo pide como requisito', () => {
+    const { p } = jugarArriba();
+    p.usarPiso(ARRIBA);
+    expect(p.visitado('arriba')).toBe(true);
+    expect(p.visitado('abajo'), 'todavía no bajé').toBe(false);
+    expect(cumpleRequisito(p, 'visitado:abajo')).toBe(false);
+    p.cambiarPiso('arriba', ABAJO);
+    expect(p.visitado('abajo')).toBe(true);
+    expect(p.visitado('arriba'), 'lo que dejé queda guardado').toBe(true);
+    expect(cumpleRequisito(p, 'visitado:arriba')).toBe(true);
+    expect(cumpleRequisito(p, 'visitado:otro')).toBe(false);
+    expect(cumpleRequisito(p, 'objeto:llave'), 'el bolsillo sigue contando').toBe(true);
+  });
 
   it('al bajar, las banderas, documentos, objetivos y reglas son los del piso nuevo; la llave sigue en el bolsillo', () => {
     const { p } = jugarArriba();

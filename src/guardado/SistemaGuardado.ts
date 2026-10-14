@@ -11,7 +11,7 @@ import { borrar, escribirJSON } from '../utilidades/Almacenamiento';
 import { leerVersionado } from './AlmacenVersionado';
 import type { Migracion } from './Versionado';
 
-export const VERSION_PARTIDA = 7;
+export const VERSION_PARTIDA = 8;
 
 export interface DatosPartida {
   version: typeof VERSION_PARTIDA;
@@ -52,6 +52,17 @@ const MIGRACIONES: readonly Migracion[] = [
   // v6 → v7: los pisos completados de la partida. Una partida v6 no los anotaba: empieza sin ninguno (si ya
   // había pasado el Piso 4, no verá su tarjeta al bajar ni su línea en la pantalla final).
   { desde: 6, migrar: (v6) => ({ ...v6, pisosCompletados: [] }) },
+  // v7 → v8: cada piso completado dice las veces que ella me cazó ahí y si batió su mejor tiempo. De una partida v7
+  // no se sabe: 0 y no (el final mostrará "no te cazó" en un piso viejo; es un dato que no se anotaba).
+  {
+    desde: 7,
+    migrar: (v7) => ({
+      ...v7,
+      pisosCompletados: Array.isArray(v7.pisosCompletados)
+        ? v7.pisosCompletados.map((p: Record<string, unknown>) => ({ ...p, persecuciones: 0, mejorTiempo: false }))
+        : v7.pisosCompletados,
+    }),
+  },
 ];
 
 const CLAVE = 'partida';
@@ -66,13 +77,13 @@ function esOtrosPisos(v: unknown): boolean {
   });
 }
 
-/** Cada piso completado: su id y nombre, tres números y si ya se vio su tarjeta. */
+/** Cada piso completado: su id y nombre, cuatro números, si batió su mejor tiempo y si ya se vio su tarjeta. */
 function esPisosCompletados(v: unknown): boolean {
   if (!Array.isArray(v)) return false;
   return v.every((p: Partial<PisoCompletado> | null) => {
     if (typeof p !== 'object' || p === null) return false;
-    const numeros = [p.tiempo, p.muertes, p.cambiosMundo].every((n) => typeof n === 'number' && Number.isFinite(n) && n >= 0);
-    return typeof p.piso === 'string' && typeof p.nombre === 'string' && numeros && typeof p.tarjetaVista === 'boolean';
+    const numeros = [p.tiempo, p.muertes, p.persecuciones, p.cambiosMundo].every((n) => typeof n === 'number' && Number.isFinite(n) && n >= 0);
+    return typeof p.piso === 'string' && typeof p.nombre === 'string' && numeros && typeof p.mejorTiempo === 'boolean' && typeof p.tarjetaVista === 'boolean';
   });
 }
 

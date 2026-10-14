@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- El mismo negro del juego web (theme-color en index.html). -->
+    <color name="fondoJuego">#050505</color>
+</resources>

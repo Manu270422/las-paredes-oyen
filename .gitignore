@@ -7,3 +7,5 @@ Thumbs.db
 test-results/
 playwright-report/
 docs/PROMPT_SPRINT_3_ESCALAR_LAS_PAREDES_OYEN.md
+# Volcados de choque de Java (el demonio de Gradle de Android cuando se queda sin memoria)
+hs_err_pid*.log

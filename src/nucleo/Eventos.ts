@@ -27,6 +27,8 @@ export type CausaRuido =
   | 'senuelo'
   | 'radio'
   | 'tablero'
+  /** Una máquina del edificio: el motor y la campanilla del ascensor. */
+  | 'maquina'
   | 'otro';
 
 /** Por qué la criatura empezó a cazarme (lo que me mató, si me atrapa). */
@@ -98,6 +100,23 @@ export interface MapaEventos {
    * Si me quedo quieto y en silencio, se va. Es el momento central del juego.
    */
   encuentro: { estado: 'inicio' | 'superado' | 'fallido'; distancia: number };
-  /** El motor terminó de montar el piso nuevo (ya estoy en él y puedo moverme). */
-  'piso-cambiado': { desde: string; hacia: string };
+  /**
+   * El motor terminó de montar el piso nuevo (ya estoy en él y puedo moverme). `por`: cómo llegué. 'caminando' (crucé
+   * el descanso de una escalera), 'fundido' (la escalera con E, la opción de accesibilidad), 'cabina' (el ascensor) o
+   * 'despertar' (tras el final de un piso, sin moverme).
+   */
+  'piso-cambiado': { desde: string; hacia: string; por: ModoViaje };
+  /**
+   * Pulsé el botón de llamar el ascensor. `respuesta`: 'muerto' (todavía no funciona en este piso), 'viene' (estaba en
+   * otro piso: zumba por los muros y tarda), 'abre' (ya estaba aquí) o 'nada' (ya venía o ya estaba abierto).
+   */
+  'ascensor-llamado': { piso: string; respuesta: 'muerto' | 'viene' | 'abre' | 'nada' };
+  /**
+   * La cabina llegó, conmigo adentro, a un piso que todavía no existe (`hacia`: su id). Las puertas no se abren: lo
+   * que pasa ahí es del guion del último piso que existe (el final de lo que hay).
+   */
+  'ascensor-fin-recorrido': { hacia: string };
 }
+
+/** Cómo llego a otro piso (ver 'piso-cambiado'). */
+export type ModoViaje = 'fundido' | 'despertar' | 'caminando' | 'cabina';

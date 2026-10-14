@@ -1,6 +1,7 @@
 // Aquí guardo las sesiones de prueba en el navegador y las exporto a un
 // archivo .json que el probador me puede mandar. Nada viaja por internet.
 // Limito cuántas sesiones guardo para no llenar el almacenamiento del celular.
+import { compartirEnApp } from '../plataforma/CompartirArchivo';
 import { borrar, escribirJSON, leerJSON } from '../utilidades/Almacenamiento';
 import type { SesionTelemetria } from './TiposTelemetria';
 
@@ -42,17 +43,19 @@ export class AlmacenTelemetria {
     borrar(CLAVE);
   }
 
-  /** Descargo las sesiones como archivo .json (funciona en PC y en celulares). */
+  /** Descargo las sesiones como archivo .json (en PC y celulares); en la app de Android, se comparten. */
   exportar(sesiones: SesionTelemetria[] = this.cargar(), sufijo = 'todas'): boolean {
     if (sesiones.length === 0) return false;
     try {
       const contenido = JSON.stringify({ juego: 'Las Paredes Oyen', exportado: new Date().toISOString(), sesiones }, null, 1);
+      const fecha = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+      const nombre = `las-paredes-oyen-prueba-${sufijo}-${fecha}.json`;
+      if (compartirEnApp(nombre, contenido, 'Registro de la prueba')) return true;
       const blob = new Blob([contenido], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const enlace = document.createElement('a');
-      const fecha = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
       enlace.href = url;
-      enlace.download = `las-paredes-oyen-prueba-${sufijo}-${fecha}.json`;
+      enlace.download = nombre;
       document.body.appendChild(enlace);
       enlace.click();
       enlace.remove();

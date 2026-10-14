@@ -5,6 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { instalarPiloto } from './piloto';
+import { usarEscalerasConFundido } from './acciones';
 
 const PREFIJO = 'las-paredes-oyen:';
 /** Una partida v6 de verdad: la escribió el juego v6 al llegar al Piso 3 (con la llave, tras el final del 402). */
@@ -97,8 +98,8 @@ test('los datos de la versión publicada sobreviven a la actualización y el per
     partida: JSON.parse(localStorage.getItem(prefijo + 'partida') ?? 'null'),
     volumen: window.__juego!.ctx.ajustes.valores.volumenMaestro,
   }), PREFIJO);
-  expect(guardado.perfil).toMatchObject({ version: 2, muertesTotales: 1 });
-  expect(guardado.partida, 'la partida v1 quedó migrada a la actual, del Piso 4').toMatchObject({ version: 7, piso: 'piso4', dificultad: 'normal', dificultadInicial: 'normal', dificultadMasBaja: 'normal', puntoControl: 'sala401', pisosCompletados: [] });
+  expect(guardado.perfil).toMatchObject({ version: 3, muertesTotales: 1 });
+  expect(guardado.partida, 'la partida v1 quedó migrada a la actual, del Piso 4').toMatchObject({ version: 8, piso: 'piso4', dificultad: 'normal', dificultadInicial: 'normal', dificultadMasBaja: 'normal', puntoControl: 'sala401', pisosCompletados: [] });
   expect(typeof guardado.partida.estadisticas.cambiosMundo, 'con el contador nuevo').toBe('number');
   expect(guardado.volumen).toBe(0.37);
   await expect(page.getByRole('button', { name: 'Continuar', exact: true })).toBeVisible();
@@ -127,6 +128,7 @@ test('una partida v6 real (en el Piso 3) carga con "Continuar", sin pisos comple
   await page.getByRole('button', { name: 'Continuar', exact: true }).click();
   await page.waitForFunction(() => window.__juego?.estado === 'jugando');
   await instalarPiloto(page);
+  await usarEscalerasConFundido(page);
 
   const r = await page.evaluate(async (prefijo) => {
     const J = window.__juego!;
@@ -177,7 +179,7 @@ test('una partida v6 real (en el Piso 3) carga con "Continuar", sin pisos comple
   expect(r.alCargar.habitacion).toBe('escalera');
   expect(r.alCargar.llave, 'con el inventario que traía').toBe(true);
   expect(r.alCargar.completados, 'empieza sin pisos completados').toEqual([]);
-  expect(r.alCargar.guardada, 'la partida quedó migrada a la v7').toMatchObject({ version: 7, piso: 'piso3', pisosCompletados: [] });
+  expect(r.alCargar.guardada, 'la partida quedó migrada a la actual (v8)').toMatchObject({ version: 8, piso: 'piso3', pisosCompletados: [] });
   expect(r.alCargar.guardada.otrosPisos.piso4.banderas, 'lo que pasó en el Piso 4 sigue ahí').toContain('medido:402');
   expect([r.arriba, r.abajo], 'sube y baja por la escalera').toEqual(['piso4', 'piso3']);
   expect(r.tarjeta, 'sin pisos completados no sale tarjeta al bajar').toBe(false);

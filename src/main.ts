@@ -10,6 +10,7 @@ import './estilos/hud.css';
 import './estilos/tactil.css';
 import './estilos/orientacion.css';
 import { Juego } from './nucleo/Juego';
+import { conectarAppNativa } from './plataforma/AppNativa';
 
 function mostrarError(mensaje: string): void {
   const ui = document.getElementById('ui');
@@ -37,6 +38,7 @@ if (!soportaWebGL2()) {
   mostrarError('Tu navegador o tu tarjeta gráfica no soportan WebGL 2. Prueba con Chrome, Edge, Firefox o Safari actualizados.');
 } else {
   const juego = new Juego(contenedor);
+  conectarAppNativa(() => juego.atras());
   juego.arrancar().catch((error: unknown) => {
     console.error(error);
     mostrarError(error instanceof Error ? error.message : String(error));

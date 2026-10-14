@@ -32,7 +32,7 @@ function armar(banderas: string[], inventario: string[] = []) {
     entidad: { puedeManifestarse: true, estado: 'paredes', cambiarEstado: () => undefined },
   } as unknown as ContextoJuego;
   const nada = () => undefined;
-  const acciones: AccionesGuion = { mostrarSusto: nada, fundido: nada, fijarSoloMirar: nada, terminarPartida: nada, despertar: nada };
+  const acciones: AccionesGuion = { mostrarSusto: nada, fundido: nada, fijarSoloMirar: nada, terminarPartida: nada, despertar: nada, completarPiso: nada };
   const guion = new GuionPiso4(acciones);
   guion.conectar(ctx);
   guion.reiniciar(ctx);

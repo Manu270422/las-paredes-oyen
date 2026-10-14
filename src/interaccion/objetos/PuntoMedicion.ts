@@ -13,10 +13,13 @@ export class PuntoMedicion implements Interactuable {
   readonly id: string;
   readonly objeto = new Group();
   readonly apartamento: string;
+  /** Lo que dice el indicador: el del mapa ("Grabar la pared…") o, si no trae, medir la sala del apartamento. */
+  private readonly accion: string;
 
   constructor(def: DefInteractuable) {
     this.id = def.id;
     this.apartamento = def.apartamento ?? '';
+    this.accion = def.accion ?? `Medir la sala del ${this.apartamento} (quédate quieto)`;
     const zona = crearZonaToque(0.45);
     zona.position.y = 0.3;
     this.objeto.add(modeloMarcaMedicion(), zona);
@@ -33,13 +36,16 @@ export class PuntoMedicion implements Interactuable {
 
   texto(ctx: ContextoJuego): string {
     if (ctx.grabadora.midiendo) return 'Midiendo…';
-    return `Medir la sala del ${this.apartamento} (quédate quieto)`;
+    return this.accion;
   }
 
   interactuar(ctx: ContextoJuego): void {
     const objetivo = ctx.progreso.objetivoActual();
     if (objetivo?.bandera !== `medido:${this.apartamento}`) {
-      ctx.bus.emit('subtitulo', { texto: 'Todavía no. Primero lo que dice la orden de trabajo.', duracion: 3 });
+      // Digo qué falta de verdad: el objetivo que va primero (antes decía "lo que dice la orden de trabajo", que
+      // solo tenía sentido en el Piso 4 y en el 3 dejaba al jugador sin saber qué hacer).
+      const antes = objetivo ? ` Antes: ${objetivo.texto.charAt(0).toLowerCase()}${objetivo.texto.slice(1)}.` : '';
+      ctx.bus.emit('subtitulo', { texto: `Todavía no.${antes}`, duracion: 4 });
       return;
     }
     ctx.grabadora.iniciarMedicion(this, ctx);

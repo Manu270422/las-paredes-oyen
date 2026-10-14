@@ -137,16 +137,7 @@ export class GestorUI {
     // Escape en menús = volver.
     window.addEventListener('keydown', (e) => {
       if (e.code !== 'Escape' || e.repeat) return;
-      const dialogo = raiz.querySelector<HTMLElement & { alVolver?: () => void }>('.dialogo');
-      if (dialogo?.alVolver) {
-        dialogo.alVolver();
-        return;
-      }
-      const arriba = this.pila[this.pila.length - 1];
-      if (arriba?.visible && arriba.alVolver) {
-        e.preventDefault();
-        arriba.alVolver();
-      }
+      if (this.volver()) e.preventDefault();
     });
   }
 
@@ -199,6 +190,25 @@ export class GestorUI {
     this.hud.fijarVisible(false);
     this.muerte.fijarDatos(datos);
     this.reemplazar(this.muerte);
+  }
+
+  /**
+   * Volver en los menús: cierra el diálogo abierto o la pantalla de arriba. Lo usan Escape y el botón "atrás"
+   * de Android (que no puede fingir un Escape: el juego creería que hay teclado y escondería los controles).
+   * Devuelvo si algo respondió.
+   */
+  volver(): boolean {
+    const dialogo = this.raiz.querySelector<HTMLElement & { alVolver?: () => void }>('.dialogo');
+    if (dialogo?.alVolver) {
+      dialogo.alVolver();
+      return true;
+    }
+    const arriba = this.pila[this.pila.length - 1];
+    if (arriba?.visible && arriba.alVolver) {
+      arriba.alVolver();
+      return true;
+    }
+    return false;
   }
 
   mostrarFin(estadisticas: EstadisticasFin): void {

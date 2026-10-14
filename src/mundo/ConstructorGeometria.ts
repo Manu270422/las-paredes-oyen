@@ -62,6 +62,9 @@ class Acumulador {
   }
 }
 
+/** Medio grosor (en metros) de las cajas de colisión en el plano de las puertas de una cabina de ascensor. */
+export const MEDIO_GROSOR_VANO_CABINA = 0.03;
+
 export interface ResultadoGeometria {
   grupo: Group;
   cajasEstaticas: CajaColision[];
@@ -214,7 +217,10 @@ export function construirGeometria(
 
       const idPared = materialPared(habitacion);
       const guarda = llevaGuardaescoba(habitacion);
-      // Cada lado: si el vecino es muro, levanto el muro; si es puerta, levanto el dintel sobre ella.
+      const esCabina = rejilla.esCabina(gx, gy);
+      // Cada lado: si el vecino es muro, levanto el muro; si es puerta, levanto el dintel sobre ella. Entre una
+      // cabina de ascensor y el pasillo, el muro tiene el vano de sus puertas (sin grosor: van en el mismo plano),
+      // y lo levanto desde los dos lados como si el otro fuera una puerta.
       const lados = [
         { dx: 1, dy: 0, p0: new Vector3(x1, 0, z0), p1: new Vector3(x1, 0, z1), n: new Vector3(-1, 0, 0) },
         { dx: -1, dy: 0, p0: new Vector3(x0, 0, z1), p1: new Vector3(x0, 0, z0), n: new Vector3(1, 0, 0) },
@@ -224,8 +230,10 @@ export function construirGeometria(
       for (const lado of lados) {
         const nx = gx + lado.dx;
         const ny = gy + lado.dy;
+        const bocaCabina = esCabina !== rejilla.esCabina(nx, ny) && rejilla.esTransitable(nx, ny);
+        if (bocaCabina && esCabina) cajasEstaticas.push(...jambasCabina(lado.p0, lado.p1));
         if (rejilla.esMuro(nx, ny)) muro(idPared, lado.p0, lado.p1, 0, H, lado.n, guarda);
-        else if (rejilla.esPuerta(nx, ny)) {
+        else if (rejilla.esPuerta(nx, ny) || bocaCabina) {
           // Sobre la puerta: el muro del dintel, de 2.1 m hasta el techo.
           muro(idPared, lado.p0, lado.p1, HP, H, lado.n, false);
           // Y a los lados del vano: la cara de las jambas que da a esta habitación.
@@ -246,6 +254,24 @@ export function construirGeometria(
         }
       }
     }
+  }
+
+  /**
+   * Las colisiones de los dos pedazos de muro a los lados del vano de una cabina: el muro no tiene grosor (sus caras
+   * están en el mismo plano), así que cada uno es una caja delgada de MEDIO_GROSOR_VANO_CABINA a cada lado del plano.
+   */
+  function jambasCabina(p0: Vector3, p1: Vector3): CajaColision[] {
+    const g = MEDIO_GROSOR_VANO_CABINA;
+    const caja = (ax: number, az: number, bx: number, bz: number): CajaColision => ({
+      minX: Math.min(ax, bx) - (ax === bx ? g : 0),
+      maxX: Math.max(ax, bx) + (ax === bx ? g : 0),
+      minZ: Math.min(az, bz) - (az === bz ? g : 0),
+      maxZ: Math.max(az, bz) + (az === bz ? g : 0),
+    });
+    const t = relleno / C;
+    const a = p0.clone().lerp(p1, t);
+    const b = p1.clone().lerp(p0, t);
+    return [caja(p0.x, p0.z, a.x, a.z), caja(b.x, b.z, p1.x, p1.z)];
   }
 
   /** Construyo las caras interiores del vano (las jambas) y sus colisiones. */

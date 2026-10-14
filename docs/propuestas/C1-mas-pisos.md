@@ -93,3 +93,12 @@ crecer sin bajar la calidad de lo que ya funciona.
   1. la llave bajo la silla del 402, con una pista para que nadie se atasque (C2 §2);
   2. las misiones de solo datos y guion (C2 §4);
   3. lo caro, después de los testers.
+- **2026-10-10.** El creador decidió empezar lo caro: escaleras que se caminan y, después, el ascensor. La condición
+  de los 3 testers se cumple en letra con la ronda 1 (4 compañeros, 2026-10-08), aunque jugaron el Piso 4 de antes
+  del ritmo nuevo y ya conocían el juego. Orden aprobado: arreglar la trampa del Piso 3 → escaleras caminables →
+  monstruo más tenebroso (en código) → ascensor → Piso 2 → Piso 1 → salir del edificio ("Sobreviviste": muy difícil,
+  pero posible).
+- **2026-10-12.** Se preguntó si saltarse el tope con la cabina del ascensor fue decisión del creador: sí, la del
+  2026-10-10 de arriba. El creador lo confirmó y decidió que **el Piso 2 no se programa hasta hablar con los testers**
+  de la ronda 2 (preview de `sprint-4` con `?telemetria=1`). Su diseño queda escrito para revisar:
+  [P2-guion](P2-guion.md).

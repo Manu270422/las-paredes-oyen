@@ -32,7 +32,7 @@ export function celdaAlAzar(ctx: ContextoJuego, minimo: number, maximo: number, 
     const d = aleatorio(minimo, maximo);
     const gx = r.aCelda(j.x + Math.cos(angulo) * d);
     const gy = r.aCelda(j.z + Math.sin(angulo) * d);
-    if (!r.esTransitable(gx, gy) || r.esPuerta(gx, gy)) continue;
+    if (!r.esTransitable(gx, gy) || r.esPuerta(gx, gy) || r.esCabina(gx, gy)) continue;
     const p = { x: r.centro(gx), z: r.centro(gy) };
     if (filtro(p)) return p;
   }

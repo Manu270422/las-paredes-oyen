@@ -15,4 +15,9 @@ export interface AccionesGuion {
    * termina el Piso 4; su resumen sale en una tarjeta breve la primera vez que baja de él.
    */
   despertar(): void;
+  /**
+   * El piso queda completado y la partida sigue AQUÍ, sin moverme ni despertar en otro lado. Así termina el Piso 3:
+   * la reja de abajo se abre y bajo caminando. Su resumen sale la primera vez que salgo de él.
+   */
+  completarPiso(): void;
 }

@@ -8,7 +8,7 @@
 // En el Piso 3 la criatura está despierta desde que llego: la dejo en las paredes y al director quieto, porque
 // aquí se prueban los rastros (y que el pasillo y el 303 se pueden caminar de verdad).
 import { expect, test } from '@playwright/test';
-import { abrirEleccion, elegirYEmpezar, esperarJugando } from './acciones';
+import { abrirEleccion, elegirYEmpezar, esperarJugando, usarEscalerasConFundido } from './acciones';
 import { comprobarMedidas, instalarMedidor, type MedidaRastro } from './medidorRastros';
 
 declare global {
@@ -28,6 +28,7 @@ test('los rastros del Piso 3 están donde dicen los datos, se ven con la lintern
   await abrirEleccion(page);
   await elegirYEmpezar(page, 'Historia');
   await esperarJugando(page);
+  await usarEscalerasConFundido(page);
   await instalarMedidor(page);
 
   const r = await page.evaluate(async () => {

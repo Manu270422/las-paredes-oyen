@@ -5,6 +5,14 @@ import { Vector3 } from 'three';
 import type { ContextoJuego } from './ContextoJuego';
 
 const adelante = new Vector3();
+const cara = new Vector3();
+/**
+ * Dónde pongo su CARA (no sus pies: la cabeza le cuelga casi 40 cm por delante del cuerpo): a 50 cm de mis ojos,
+ * apenas corrida hacia mi mano derecha y un poco más abajo, DENTRO del cono de la linterna, que sale de la mano
+ * (20 cm a la derecha y 17 cm abajo). Antes la ponía por sus pies a 55 cm y 2.02 m abajo: la cabeza quedaba a
+ * 20 cm, tapando la vista, por debajo de los ojos y fuera de la luz (una mancha negra).
+ */
+export const SUSTO = { distancia: 0.5, haciaLaMano: 0.1, bajo: 0.09 } as const;
 
 export function mostrarSusto(ctx: ContextoJuego, origen: 'muerte' | 'final'): void {
   ctx.bus.emit('susto', { origen });
@@ -22,9 +30,18 @@ export function mostrarSusto(ctx: ContextoJuego, origen: 'muerte' | 'final'): vo
   adelante.y = 0;
   adelante.normalize();
   const modelo = ctx.entidad.modelo;
-  modelo.raiz.position.set(camara.position.x + adelante.x * 0.55, camara.position.y - 2.02, camara.position.z + adelante.z * 0.55);
+  // Primero la pose y el giro (mirándome), con los pies en el origen: así mido dónde le queda la cara.
+  modelo.raiz.position.set(0, 0, 0);
   modelo.raiz.rotation.y = Math.atan2(-adelante.x, -adelante.z);
   modelo.forzarPose('susto');
+  modelo.raiz.updateMatrixWorld(true);
+  modelo.cara.getWorldPosition(cara);
+  // Después la muevo para que la cara caiga donde quiero. Mi derecha, en el plano: (−adelante.z, adelante.x).
+  modelo.raiz.position.set(
+    camara.position.x + adelante.x * SUSTO.distancia - adelante.z * SUSTO.haciaLaMano - cara.x,
+    camara.position.y - SUSTO.bajo - cara.y,
+    camara.position.z + adelante.z * SUSTO.distancia + adelante.x * SUSTO.haciaLaMano - cara.z,
+  );
   modelo.fijarVisible(true);
   const linterna = ctx.linterna;
   linterna.encendida = true;

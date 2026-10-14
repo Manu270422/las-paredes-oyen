@@ -30,15 +30,12 @@ import { CONFIG } from '../config/ConfiguracionJuego';
 import type { BibliotecaMateriales, IdMaterial } from '../render/Materiales';
 import { crearGenerador, type GeneradorAleatorio } from '../utilidades/Aleatorio';
 import { encontrarHuecos, marcoDelHueco, type MarcoHueco } from './HuecoEscalera';
+import { BORDE_BOCA, ESCALONES, medidasEscalera } from './EscaleraCaminable';
 import type { Rejilla } from './Rejilla';
 
-/** Contrahuellas por medio piso: 8 de ~17 cm, como en un edificio de verdad. */
-const ESCALONES = 8;
 const GROSOR_DESCANSO = 0.2;
 const GROSOR_RAMPA = 0.15;
 const ALTO_BARANDA = 0.95;
-/** La baranda de la boca va sobre el borde del piso de la escalera (2.5 cm antes del hueco): apoyada, no flotando. */
-const BORDE_BOCA = -0.025;
 /** El pozo baja más allá de lo que se alcanza a ver y sube un piso entero sobre el techo. */
 const FONDO_POZO = -3.2;
 /**
@@ -121,6 +118,8 @@ function texturaEnMundo(geometria: BufferGeometry, escala: number): void {
 export interface OpcionesEscalera {
   rejaAbajo?: boolean;
   escombrosArriba?: boolean;
+  /** El tramo que baja tapiado con ladrillo nuevo, de piso a techo (en vez de la reja): por ahí no se sigue. */
+  tapiadaAbajo?: boolean;
 }
 
 export function construirEscaleras(rejilla: Rejilla, materiales: BibliotecaMateriales, opciones: OpcionesEscalera = {}): Group {
@@ -140,11 +139,9 @@ function construirHueco(m: MarcoHueco, materiales: BibliotecaMateriales, azar: G
   const aMundo = new Matrix4().makeRotationY(m.angulo).setPosition(m.origenX, 0, m.origenZ);
   const piezas = new Piezas(aMundo);
 
-  // Medidas: dos tramos de 1.3 m (o lo que quepa) y el ojo en medio; huellas de ~24 cm y el descanso al fondo.
-  const contrahuella = H / 2 / ESCALONES;
-  const anchoTramo = Math.min(1.3, (A - 0.6) / 2);
-  const huella = Math.min(0.27, (L - 0.9) / (ESCALONES - 1));
-  const inicioDescanso = (ESCALONES - 1) * huella;
+  // Medidas: dos tramos de 1.3 m (o lo que quepa) y el ojo en medio; huellas de ~24 cm y el descanso al fondo. Son
+  // las mismas con las que se camina (EscaleraCaminable): lo que se ve y lo que se pisa no se pueden separar.
+  const { contrahuella, anchoTramo, huella, inicioDescanso } = medidasEscalera(m, H);
   const izquierda = { u0: 0, u1: anchoTramo, baranda: anchoTramo - 0.04 };
   const derecha = { u0: A - anchoTramo, u1: A, baranda: A - anchoTramo + 0.04 };
 
@@ -168,7 +165,9 @@ function construirHueco(m: MarcoHueco, materiales: BibliotecaMateriales, azar: G
   tramo(piezas, medidas, derecha, { vInicio: inicioDescanso, yInicio: -H / 2, sentidoV: -1, sentidoY: -1, extraInicio: 0.1, extraFin: 0 });
   tramo(piezas, medidas, izquierda, { vInicio: inicioDescanso, yInicio: H / 2, sentidoV: -1, sentidoY: 1, extraInicio: 0.1, extraFin: -0.1 });
 
-  const reja = opciones.rejaAbajo !== false ? construirReja(piezas, aMundo, materiales, izquierda.u0 + 0.02, izquierda.baranda - 0.06, 0.09, -contrahuella) : null;
+  const conReja = opciones.rejaAbajo !== false && !opciones.tapiadaAbajo;
+  const reja = conReja ? construirReja(piezas, aMundo, materiales, izquierda.u0 + 0.02, izquierda.baranda - 0.06, 0.09, -contrahuella) : null;
+  if (opciones.tapiadaAbajo) construirTapia(piezas, izquierda.u0, izquierda.u1 - 0.02, 0.09, -contrahuella, H);
   if (opciones.escombrosArriba !== false) {
     construirTablas(piezas, derecha.baranda, A, 0.07);
     construirEscombros(piezas, azar, A, L, H, anchoTramo, medidas);
@@ -398,6 +397,18 @@ function armarEslabones(piezas: Piezas, u: number, y: number, v: number): void {
 }
 
 /** Tablas clavadas de la baranda al muro: alguien cerró el tramo que sube, y no fue con cuidado. */
+/**
+ * La tapia: un muro de ladrillo a lo ancho del tramo, desde el primer escalón hasta la losa del tramo de arriba,
+ * donde iría la reja. Cierra lo mismo que la reja cerrada (ver EscaleraCaminable.cajas). Al pie quedó la mezcla
+ * que se cayó al pegarlos: nadie barrió.
+ */
+function construirTapia(piezas: Piezas, u0: number, u1: number, v: number, piso: number, techo: number): void {
+  const grosor = 0.1;
+  const alto = techo - piso;
+  piezas.caja('ladrillo', u1 - u0, alto, grosor, (u0 + u1) / 2, piso + alto / 2, v);
+  piezas.caja('pisoConcreto', (u1 - u0) * 0.6, 0.04, grosor + 0.05, u0 + (u1 - u0) * 0.4, piso + 0.02, v);
+}
+
 function construirTablas(piezas: Piezas, u0: number, u1: number, v: number): void {
   const giroZ = (angulo: number) => new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), angulo);
   const largo = u1 - u0 + 0.06;

@@ -7,6 +7,8 @@
 //   cerrado con una reja y una cadena, y el que sube al 5, tapado con tablas y escombros. Por ahí no se
 //   pasa (todavía): las celdas 'E' bloquean como un muro, pero se ve y se oye a través de ellas.
 // - Pasillo largo y estrecho: una sola línea de visión, oscuro, sin escapatoria lateral.
+// - Ascensor (la 'A', al sur del pasillo junto a la escalera): muerto hasta abrir la reja de la escalera. Entonces
+//   se pone en marcha solo, y desde ahí es la otra forma de ir y venir: rápida, pero se oye en todo el edificio.
 // - 401 (norte-oeste): la lámpara está encendida... en un edificio sin luz. Nadie sabe por qué.
 // - 403 (norte-este): el estudio del vecino que grababa las paredes.
 // - 402 (sur): cerrado con llave. Todos los muebles cubiertos. El final.
@@ -31,7 +33,7 @@ export const MAPA_PISO_4: DefMapa = {
     '#...#........###...........##..#', // 8
     '#...###P############P########..#', // 9
     '#...........................P..#', // 10
-    '#EEE##########P##############..#', // 11
+    '#EEE#A########P##############..#', // 11  (A: la cabina del ascensor)
     '#EEE####.............########..#', // 12
     '########.............###########', // 13
     '########.............###########', // 14
@@ -55,6 +57,9 @@ export const MAPA_PISO_4: DefMapa = {
     { id: 'dormitorio402', nombre: 'Dormitorio del 402', x0: 8, y0: 17, x1: 13, y1: 18, reverb: 'habitacion', pared: 'papel', piso: 'parque', apartamento: '402' },
     { id: 'cuarto402', nombre: 'Cuarto pequeño del 402', x0: 15, y0: 17, x1: 20, y1: 18, reverb: 'habitacion', pared: 'pintura', piso: 'parque', apartamento: '402' },
     { id: 'servicio', nombre: 'Cuarto de servicio', x0: 29, y0: 8, x1: 30, y1: 12, reverb: 'ducto', pared: 'concreto', piso: 'concreto' },
+    // La cabina del ascensor (la 'A'): una caja de acero de una celda. No es un cuarto de paso: quedarse ahí con las
+    // puertas abiertas cuenta como esconderse, y ella puede entrar.
+    { id: 'ascensor', nombre: 'Ascensor', x0: 5, y0: 11, x1: 5, y1: 11, reverb: 'bano', pared: 'concreto', piso: 'concreto' },
   ],
 
   puertas: [
@@ -84,6 +89,8 @@ export const MAPA_PISO_4: DefMapa = {
     { id: 'lamparaEstudio', x: 24.5, y: 2.2, tipo: 'bombillo', circuito: 'general', estado: 'apagada' },
     { id: 'lampara402', x: 14.5, y: 13.5, tipo: 'bombillo', circuito: 'general', estado: 'rota' },
     { id: 'lamparaServicio', x: 29.9, y: 10.5, tipo: 'bombillo', circuito: 'general', estado: 'apagada', color: 0xd8e4ff },
+    // El tubo de la cabina del ascensor: apagado mientras el ascensor está muerto (ver luzPorBandera del paquete).
+    { id: 'luzAscensor', x: 5.5, y: 11.5, tipo: 'tubo', circuito: 'ascensor', estado: 'apagada', color: 0xe4ecff, intensidad: 1.1 },
   ],
 
   muebles: [

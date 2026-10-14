@@ -56,7 +56,7 @@ No es un clon de: Amnesia (no hay cordura ni escondites mágicos), Outlast (no h
 
 ## 6. La amenaza: "El Inquilino"
 
-- **Cuerpo:** 2.25 m en techos de 2.7 m (vive encorvado), demacrado, hombros desiguales, brazos hasta las rodillas, sin ojos, solo una ranura por boca. Se anima a **12 poses por segundo** mientras el mundo va a 60 FPS: se mueve "mal".
+- **Cuerpo:** 2.25 m en techos de 2.7 m (vive encorvado), demacrado (se le marcan costillas, columna y omóplatos), hombros desiguales, brazos hasta las rodillas con dedos largos de dos falanges y uñas, sin ojos (dos cuencas hundidas). Cerrada, la boca es una ranura; abierta, la mandíbula baja de más y enseña dientes, y en el susto se desencaja. Piel casi negra y mate, con manchas y venas que solo saca la linterna. Se anima a **12 poses por segundo** mientras el mundo va a 60 FPS: se mueve "mal"; a veces gira la cabeza más de lo que un cuello aguanta.
 - **Reglas que el jugador descubre:**
   1. Es ciego. Solo oye.
   2. Dentro de los muros oye **mejor** (los muros casi no lo atenúan).
@@ -92,6 +92,15 @@ No es un clon de: Amnesia (no hay cordura ni escondites mágicos), Outlast (no h
 
 **Piso 4 (vertical slice, implementado):** escalera (zona "segura" con luz roja) → pasillo estrecho de 1.3 m → 401 (lámpara encendida sin electricidad) → 403 (estudio del vecino que grababa las paredes) → cuarto de servicio sin salida con el tablero → 402 cerrado, todo cubierto con sábanas. Entre 401 y 403 hay **3.9 m de muro macizo que no deberían existir**.
 
+**El ascensor (implementado el 2026-10-12, entre el Piso 4 y el 3):** junto a la escalera, al sur del pasillo. Es lo
+contrario de la escalera: la escalera es lenta y callada; el ascensor es rápido y te delata. Llamarlo zumba por los
+muros unos segundos y la campanilla al llegar se oye en todo el piso, también en el piso al que llegas: llegas
+anunciado. Adentro se vibra y se puede mirar alrededor; el piso cambia con las puertas cerradas, sin negro, porque la
+cabina es la misma. Ella no viaja, pero con las puertas abiertas entra: no es un refugio. Justicia: al llegar, las
+puertas no abren si ella está a menos de 4 m. En el Piso 4 está muerto hasta abrir la reja de la escalera: la
+primera bajada es por la escalera y el ascensor es el atajo después (decisión del creador, 2026-10-12). Al abrirse
+la reja se pone en marcha solo, como si alguien lo hubiera llamado desde abajo.
+
 **Siguientes pisos (diseño):**
 - **Piso 3:** los apartamentos se repiten con variaciones (el 301 es el 401 en espejo, pero con los muebles sin cubrir… y alguien comiendo).
 - **"El hueco":** el espacio entre el 401 y el 403, accesible rompiendo el papel de colgar. Un pasillo que no aparece en los planos.
@@ -114,7 +123,7 @@ No es un clon de: Amnesia (no hay cordura ni escondites mágicos), Outlast (no h
 - **Audio 3D HRTF** (binaural) en calidad media/alta; paneo simple en baja.
 - **Oclusión por rejilla**: cuento muros y puertas cerradas entre oyente y fuente → filtro pasa-bajos + atenuación; los muros "reverberan" más.
 - **Reverb por habitación** con convolución: impulsos generados por código (pasillo, sala, cuarto, baño, escalera, ducto metálico) y fundido cruzado al cambiar de cuarto.
-- **Todo sintetizado** (41 sonidos con variantes): pasos por superficie, crujidos por *stick-slip*, golpes, respiración con formantes, susurros con fonemas falsos, zumbido de 60 Hz, tuberías inarmónicas, y la firma de la criatura.
+- **Todo sintetizado** (44 sonidos con variantes): pasos por superficie, crujidos por *stick-slip*, golpes, respiración con formantes, susurros con fonemas falsos, zumbido de 60 Hz, tuberías inarmónicas, y la firma de la criatura.
 - **Audio híbrido**: `public/audio/manifiesto.json` permite reemplazar (o sumar variantes a) cualquier `IdSonido` con una grabación real; si falla, queda la síntesis. Hoy el manifiesto está vacío.
 - **La grabadora como segunda realidad** (`jugador/CapturaGrabadora.ts`): la cinta capta los sonidos reales a < 12 m y la presencia silenciosa de la criatura, con dirección y distancia.
 - **Modo escuchar**: baja ambiente, sube la entidad, reduce la oclusión.
@@ -179,6 +188,17 @@ Ver `02-ARQUITECTURA.md`.
 7. **Apagón**: las lámparas del pasillo revientan una por una **hacia ti**. Al final, en el extremo, algo de pie.
 8. Llave en la mesita del 401, junto al diario → **402**: todo cubierto, una sábana con forma de persona (que a veces ya no está). **Mientras mides, sale del muro a tu espalda y se queda escuchando hasta que la cinta para.**
 9. **Final**: la grabación del 402 trae pasos acercándose al micrófono… luego ya no vienen de la grabadora sino de atrás. La linterna muere. Algo respira en tu nuca. La luz vuelve. Está frente a ti.
+
+## 17b. Piso 3 — lo que nadie quiso oír (implementado 2026-10-09)
+
+1. Llegas por la escalera (luz roja). A los 8 s, tres golpes despacio desde la pared del cuarto de Andrés, en el 302.
+2. La carta del 301: el piso lo cerraron "por las tuberías". La libreta de Andrés en tres partes (301, 303, 302).
+3. Al juntarla, revienta la luz de la escalera, la única del piso. No la ves: lo descubres al volver.
+4. **Grabas la pared del cuarto de Andrés**, frente a sus rayas de estatura. En la cinta, una voz de niño: «Hoy mi
+   mamá me midió». Y con tu ritmo: «Ya casi estoy completo».
+5. Al salir, ella espera en el pasillo, entre la escalera y tú. El pasillo mide una celda: la alejas con la grabadora
+   o la iluminas quieto hasta que se hunda en la pared.
+6. En la escalera, a oscuras: desde abajo, detrás de la reja del Piso 2, tres golpes despacio. Fin de la partida.
 
 ## 18. Hoja de ruta
 

@@ -43,9 +43,18 @@ export function rastroEnTecho(def: DefRastro): boolean {
  * Pongo un rastro en su sitio. Se llama "rastro:<id>". En un muro se pega a la cara como un rótulo; en el
  * piso queda acostado y en el techo, boca abajo, los dos con la parte de ARRIBA del dibujo hacia donde dice `rot`.
  */
+/** Con texturas de 256 (gama baja) pinto a la mitad de resolución: la cuarta parte del trabajo al cargar. */
+function escalaDe(detalle: DetalleTexturas): number {
+  return limitar(detalle.tamano / 512, 0.5, 1);
+}
+
+/** Pinto por adelantado el dibujo de un rastro de un piso al que todavía no llego (queda guardado). */
+export function precalentarRastro(def: DefRastro, detalle: DetalleTexturas): void {
+  texturaRastro(def, escalaDe(detalle), detalle.anisotropia).dispose();
+}
+
 export function ponerRastro(def: DefRastro, detalle: DetalleTexturas): Mesh {
-  // Con texturas de 256 (gama baja) pinto a la mitad de resolución: la cuarta parte del trabajo al cargar.
-  const textura = texturaRastro(def, limitar(detalle.tamano / 512, 0.5, 1), detalle.anisotropia);
+  const textura = texturaRastro(def, escalaDe(detalle), detalle.anisotropia);
   if (def.tipo === 'mano' && def.espejo) {
     textura.repeat.set(-1, 1);
     textura.offset.set(1, 0);

@@ -73,10 +73,16 @@ export function modeloDocumento(tipo: TipoDocumento): Group {
       g.rotation.y = 0.35;
       break;
     }
-    case 'carta':
-      g.add(caja(0.22, 0.004, 0.11, mat('sobre', 0xb8ad94, 0.95), 0, 0.002, 0));
+    case 'carta': {
+      // La carta abierta: el sobre y, encima, la hoja desdoblada. Solo el sobre (café sobre madera oscura) se
+      // perdía en la penumbra; la hoja clara es lo que la linterna encuentra primero.
+      g.add(caja(0.22, 0.004, 0.11, mat('sobre', 0xb8ad94, 0.95), 0, 0.002, -0.05));
+      const hoja = caja(0.19, 0.002, 0.25, mat('cartaAbierta', 0xddd6c3, 0.95), 0.03, 0.005, 0.04);
+      hoja.rotation.y = -0.25;
+      g.add(hoja);
       g.rotation.y = 0.7;
       break;
+    }
   }
   return g;
 }

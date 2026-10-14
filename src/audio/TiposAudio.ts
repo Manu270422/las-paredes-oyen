@@ -42,6 +42,9 @@ export type IdSonido =
   | 'recoger'
   | 'tablero'
   | 'viento'
+  | 'motor_ascensor'
+  | 'campanilla'
+  | 'puertas_ascensor'
   | 'ui';
 
 /** Grupos de mezcla. Cada uno tiene su volumen y reacciona distinto al "escuchar". */

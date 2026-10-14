@@ -26,10 +26,15 @@ export interface PuenteUI {
   abrirDocumento(id: string): void;
 }
 
-/** Lo que un tramo de escalera le pide al juego: llevarme a otro piso. */
+/** Lo que un tramo de escalera (o el ascensor) le pide al juego: llevarme a otro piso. */
 export interface PuenteViaje {
   /** Bajo (o subo) al piso `hacia` (su id en el catálogo) y aparezco en su punto de control `llegada`. */
   cambiarDePiso(hacia: string, llegada: string): void;
+  /**
+   * A mitad de un viaje en ascensor: armo el piso `hacia` sin negro y sigo en el mismo punto de su cabina (idéntica),
+   * con la misma mirada. `alLlegar` corre con el piso nuevo ya armado (su ascensor retoma el viaje).
+   */
+  porAscensor(hacia: string, alLlegar: () => void): void;
 }
 
 export interface ContextoJuego {

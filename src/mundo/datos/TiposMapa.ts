@@ -111,6 +111,8 @@ export interface DefInteractuable {
   aparece?: string;
   /** Apartamento que se mide (tipo medicion). */
   apartamento?: string;
+  /** Lo que dice el indicador al mirarlo (tipo medicion; sin él, "Medir la sala del <apartamento>"). */
+  accion?: string;
   /** Qué se examina (tipo examinable): una clave de `examinables` del paquete del piso. */
   examinable?: string;
 }
@@ -127,7 +129,8 @@ export interface DefMapa {
   /**
    * Filas del mapa: '#' muro, '.' piso, 'P' puerta, 'E' hueco de escalera. Un hueco es un rectángulo con
    * UNA sola boca (el lado que da a celdas transitables); los otros tres lados son muro. Ahí construyo
-   * los tramos que bajan y suben (ver ConstructorEscalera).
+   * los tramos que bajan y suben (ver ConstructorEscalera). 'A' es la cabina de un ascensor: una celda con tres
+   * lados de muro y el cuarto, donde van sus puertas, abierto a una celda de piso (ver mundo/Ascensor.ts).
    */
   rejilla: readonly string[];
   habitaciones: readonly DefHabitacion[];
