@@ -7,6 +7,10 @@
 // - MIENTRAS MIDO, me escucha escuchar: se desliza por los muros hacia mí y
 //   los rasguños se acercan... hasta que paran. El silencio significa que
 //   llegó, que está al otro lado del muro. Medir nunca es seguro.
+// - EL CUARTO SORDO (P2-guion): a través de los colchones no lo oigo, ni
+//   siquiera escuchar (medir ahí no me atrae), y no salgo de un muro
+//   acolchado. Pero no es refugio: si se queda mucho adentro, salgo AFUERA y
+//   entro caminando por la puerta a buscarlo. Adentro solo me delatan las luces.
 import { CONFIG } from '../../config/ConfiguracionJuego';
 import type { ContextoJuego } from '../../nucleo/ContextoJuego';
 import type { Ruido } from '../../nucleo/Eventos';
@@ -32,6 +36,14 @@ const PAUSA_SALIDA = 1.5;
 const LLEGADA_MEDICION = 4;
 /** Tope de esa prisa (m/s): desde la otra punta del piso se oye venir más rápido, pero no aparece de golpe. */
 const VELOCIDAD_MAXIMA_MEDICION = 7;
+/**
+ * Segundos seguidos del jugador en un cuarto acolchado antes de que salga a buscarlo caminando. No lo oigo, pero sé
+ * dónde se esconde. Con menos, cruzar el 202 para grabar y buscar la llave sería una caza segura; con más, el cuarto
+ * sordo sería el refugio que el juego evita (P2-guion, pregunta 2).
+ */
+export const ENTRA_A_BUSCAR = 25;
+/** Hasta qué distancia del jugador busco por dónde salir, fuera de los cuartos acolchados (m). */
+const RADIO_SALIDA_SORDO = 9;
 
 export class EstadoParedes implements EstadoIA {
   readonly nombre = 'paredes' as const;
@@ -40,6 +52,8 @@ export class EstadoParedes implements EstadoIA {
   private atraidaAntes = false;
   /** La velocidad de esta medición: se fija al empezar (recalcularla cada fotograma la frenaba y nunca llegaba). */
   private velocidadMedicion = 0;
+  /** Segundos seguidos que el jugador lleva en un cuarto acolchado. */
+  private enSordo = 0;
 
   entrar(entidad: Entidad): void {
     entidad.desvanecer();
@@ -47,6 +61,7 @@ export class EstadoParedes implements EstadoIA {
     this.temporizadorPista = aleatorio(6, 12);
     this.deriva = null;
     this.atraidaAntes = false;
+    this.enSordo = 0;
   }
 
   actualizar(entidad: Entidad, ctx: ContextoJuego, dt: number): void {
@@ -54,8 +69,10 @@ export class EstadoParedes implements EstadoIA {
     const j = ctx.jugador.posicion;
     const ahora = ctx.programador.ahora;
     const ruidoReciente = memoria.ultimoRuido && ahora - memoria.ultimoRuido.tiempo < 25 ? memoria.ultimoRuido : null;
-    // Después del 401 ya está despierta: la medición la atrae (lo escucha escuchar).
-    const atraidaPorMedicion = ctx.grabadora.midiendo !== null && entidad.puedeManifestarse;
+    // Después del 401 ya está despierta: la medición la atrae (lo escucha escuchar). A través de los colchones, no.
+    const aislado = ctx.nivel.consultaAislamiento(j.x, j.z, entidad.posicion.x, entidad.posicion.z);
+    const atraidaPorMedicion = ctx.grabadora.midiendo !== null && entidad.puedeManifestarse && !aislado;
+    this.enSordo = ctx.nivel.acolchadoEn(j.x, j.z) ? this.enSordo + dt : 0;
     // La medición dura 6 s: el primer rasguño no puede esperar al temporizador normal (6-12 s).
     if (atraidaPorMedicion && !this.atraidaAntes) {
       this.temporizadorPista = Math.min(this.temporizadorPista, aleatorio(0.8, 1.8));
@@ -98,6 +115,10 @@ export class EstadoParedes implements EstadoIA {
 
     // ¿Salgo? Solo si la historia lo permite y no hay otro evento en curso.
     if (!entidad.puedeManifestarse) return;
+    if (this.enSordo > ENTRA_A_BUSCAR && ctx.director.permiteManifestacion) {
+      this.entrarCaminando(entidad, ctx);
+      return;
+    }
     const cercaDelObjetivo = distancia2D(entidad.posicion.x, entidad.posicion.z, objetivo.x, objetivo.z) < 3;
     if (entidad.solicitudAcecho && distancia < 14) {
       // El director quiere presión: salgo detrás del jugador, fuera de su vista.
@@ -122,6 +143,24 @@ export class EstadoParedes implements EstadoIA {
         entidad.cambiarEstado('investigando', ctx);
       }
     }
+  }
+
+  /**
+   * El cuarto sordo no es refugio: salgo del muro afuera (nunca de un muro acolchado: buscarPuntoSalida los salta),
+   * lo más cerca que pueda de él y fuera de su vista, y voy caminando al centro de su cuarto. No lo oigo desde afuera:
+   * voy a donde sé que se esconde. Ya adentro, en el mismo cuarto, lo oigo normal (y llega el encuentro).
+   */
+  private entrarCaminando(entidad: Entidad, ctx: ContextoJuego): void {
+    const j = ctx.jugador.posicion;
+    const cuarto = ctx.nivel.habitacionEn(j.x, j.z);
+    const salida = entidad.buscarPuntoSalida(j.x, j.z, ctx, DISTANCIA_SALIDA, RADIO_SALIDA_SORDO);
+    if (!cuarto || !salida) return;
+    this.enSordo = 0;
+    const C = CONFIG.celda;
+    entidad.manifestar(salida.x, salida.z, ctx);
+    entidad.pausaSalida = PAUSA_SALIDA;
+    entidad.cambiarEstado('investigando', ctx);
+    entidad.irHacia(((cuarto.x0 + cuarto.x1) / 2 + 0.5) * C, ((cuarto.y0 + cuarto.y1) / 2 + 0.5) * C, ctx);
   }
 
   alOir(entidad: Entidad, ctx: ContextoJuego, percibido: number, ruido: Ruido): void {

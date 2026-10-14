@@ -20,7 +20,8 @@ export type IdMaterial =
   | 'tela'
   | 'metal'
   | 'guardaescoba'
-  | 'ladrillo';
+  | 'ladrillo'
+  | 'paredAcolchada';
 
 interface DefMaterial {
   textura: IdTextura | null;
@@ -48,6 +49,8 @@ const DEFINICIONES: Record<IdMaterial, DefMaterial> = {
   guardaescoba: { textura: null, escala: 1, metalico: 0, relieve: 0, color: 0x2a1c14, rugosidad: 0.6 },
   // Una repetición son 5 ladrillos de ancho (24 cm cada uno) y 16 hiladas.
   ladrillo: { textura: 'ladrillo', escala: 1.2, metalico: 0, relieve: 1.2 },
+  // Colchones de pie, uno junto al otro: una repetición son dos colchones de ancho y uno de alto.
+  paredAcolchada: { textura: 'colchon', escala: 2.7, metalico: 0, relieve: 1.6 },
 };
 
 export class BibliotecaMateriales {

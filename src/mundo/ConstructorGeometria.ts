@@ -16,6 +16,7 @@ const MATERIAL_PARED: Record<AcabadoPared, IdMaterial> = {
   papel: 'paredPapel',
   azulejo: 'paredAzulejo',
   concreto: 'paredConcreto',
+  acolchado: 'paredAcolchada',
 };
 
 const MATERIAL_PISO: Record<AcabadoPiso, IdMaterial> = {

@@ -275,6 +275,27 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
 - **Completar sin moverme** (`AccionesGuion.completarPiso`, `FinDePiso.completarPiso`): el piso queda completado y la
   partida sigue donde estoy. Así termina ahora el Piso 3; su tarjeta sale al bajar, como la del 4.
 
+## El cuarto sordo (P2-guion, tanda 2, 2026-10-13)
+
+- **Un acabado de pared nuevo, `acolchado`** (colchones de pie con capitoné y espuma de cartón de huevos arriba:
+  material `paredAcolchada`, receta `colchon`; eco `acolchado`, casi nada). En el Piso 2: la sala, el dormitorio y
+  el cuarto del 202, y el archivo del 201.
+- **La regla vive en un solo lugar:** `mundo/Aislamiento.ts` (`aislaAcolchado`) y `Nivel.consultaAislamiento`. Entre
+  un cuarto acolchado y cualquier otro lugar (también un muro, que no es ningún cuarto) el sonido casi no pasa; dentro
+  del mismo cuarto, normal (si ella entra conmigo, me oye y la oigo). La puerta abierta no cambia nada: lo que aísla
+  son los colchones.
+- **Quién la usa:**
+  - el audio (`MotorAudio.consultaAislamiento` → `FuenteSonido.aplicarOclusion`): lo aislado llega a ×0.03 y solo
+    por debajo de 160 Hz, también en modo escuchar; adentro, el ambiente del edificio baja a ×0.12;
+  - el oído de ella (`Percepcion`): ×0.01, que deja aun el ruido más fuerte en un tercio de su umbral;
+  - los subtítulos de sonidos (`HUD.oyeDesde`): lo que no me llega no sale escrito.
+- **Ella** (`EstadoParedes`, `Entidad.buscarPuntoSalida`): medir en un cuarto acolchado no la atrae; nunca sale de un
+  muro acolchado. **No es refugio:** con el jugador 25 s seguidos en un cuarto acolchado (`ENTRA_A_BUSCAR`) y el
+  director dejándola salir, sale afuera, lo más cerca que pueda y fuera de la vista, y va caminando al centro de ese
+  cuarto, a buscar. Adentro solo la delatan la linterna (9 m) y las lámparas (7 m), que ya parpadeaban con ella cerca.
+  El aviso de la caza sigue siendo justo sin sonido: trae interferencia en la imagen y el sobresalto.
+- Pruebas: `aislamiento.test.ts` y el recorrido `cuartoSordo.spec.ts`.
+
 ## Lo que se lee y lo que se examina
 
 - **Documentos** (`interaccion/objetos/Documento.ts`): abren el lector y **pausan** el mundo (estado `documento`).

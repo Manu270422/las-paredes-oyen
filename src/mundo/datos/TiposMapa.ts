@@ -2,8 +2,12 @@
 // no código: así puedo diseñar pisos nuevos (o hacer un editor) sin tocar
 // la lógica del juego. Todas las posiciones están en unidades de celda.
 
-export type TipoReverb = 'pasillo' | 'sala' | 'habitacion' | 'bano' | 'escalera' | 'ducto';
-export type AcabadoPared = 'pintura' | 'papel' | 'azulejo' | 'concreto';
+export type TipoReverb = 'pasillo' | 'sala' | 'habitacion' | 'bano' | 'escalera' | 'ducto' | 'acolchado';
+/**
+ * 'acolchado': colchones clavados a las paredes (el Piso 2). No es solo cómo se ve: un cuarto acolchado AÍSLA el
+ * sonido en los dos sentidos (ver Nivel.consultaAislamiento): lo de adentro no sale y lo de afuera no entra.
+ */
+export type AcabadoPared = 'pintura' | 'papel' | 'azulejo' | 'concreto' | 'acolchado';
 export type AcabadoPiso = 'granito' | 'parque' | 'azulejo' | 'concreto';
 
 export interface DefHabitacion {

@@ -24,6 +24,7 @@ import { colgarPlaca, pintarRotulo } from './Letreros';
 import { ponerRastro, VigiaRastros } from './Rastros';
 import { TramoEscalera } from '../interaccion/objetos/TramoEscalera';
 import { RejaEscalera } from './RejaEscalera';
+import { aislaAcolchado, esAcolchado } from './Aislamiento';
 import { PozosCaminables } from './PozosCaminables';
 import type { TramoPie } from './EscaleraCaminable';
 import { PoolLuces } from './PoolLuces';
@@ -69,6 +70,18 @@ export class Nivel {
   /** Obstáculos entre dos puntos (para la oclusión del audio y la audición de la criatura). */
   readonly consultaOclusion = (ax: number, az: number, bx: number, bz: number): number =>
     this.rejilla.contarObstaculos(ax, az, bx, bz, this.consultaPuertaCerrada);
+
+  /**
+   * ¿Un cuarto acolchado separa estos dos puntos? Entonces el sonido casi no pasa, en ningún sentido (ver
+   * mundo/Aislamiento.ts). Lo usan el audio, el oído de ella y los subtítulos de sonidos.
+   */
+  readonly consultaAislamiento = (ax: number, az: number, bx: number, bz: number): boolean =>
+    aislaAcolchado(this.habitacionEn(ax, az), this.habitacionEn(bx, bz));
+
+  /** ¿Ese punto está en un cuarto acolchado? */
+  acolchadoEn(x: number, z: number): boolean {
+    return esAcolchado(this.habitacionEn(x, z));
+  }
 
   private readonly puertaPorCelda = new Map<number, Puerta>();
   private readonly habitacionPorCelda: Array<DefHabitacion | null>;

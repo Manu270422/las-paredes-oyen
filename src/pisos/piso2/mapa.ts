@@ -36,18 +36,19 @@ export const MAPA_PISO_2: DefMapa = {
   habitaciones: [
     { id: 'escalera', nombre: 'Escalera', x0: 1, y0: 8, x1: 3, y1: 12, reverb: 'escalera', pared: 'concreto', piso: 'concreto' },
     { id: 'pasillo', nombre: 'Pasillo', x0: 4, y0: 10, x1: 27, y1: 10, reverb: 'pasillo', pared: 'concreto', piso: 'granito', paso: true },
-    // 201: la administración. La sala es la oficina; el cuarto del fondo, el archivo (Hernando empezó a forrarlo).
+    // 201: la administración. La sala es la oficina; el cuarto del fondo, el archivo, ya forrado: ahí empezó Hernando.
     { id: 'oficina201', nombre: 'Oficina de la administración', x0: 5, y0: 5, x1: 12, y1: 8, reverb: 'sala', pared: 'pintura', piso: 'granito', apartamento: '201' },
-    { id: 'archivo201', nombre: 'Archivo del 201', x0: 5, y0: 1, x1: 8, y1: 3, reverb: 'habitacion', pared: 'pintura', piso: 'granito', apartamento: '201' },
+    { id: 'archivo201', nombre: 'Archivo del 201', x0: 5, y0: 1, x1: 8, y1: 3, reverb: 'acolchado', pared: 'acolchado', piso: 'granito', apartamento: '201' },
     { id: 'bano201', nombre: 'Baño del 201', x0: 10, y0: 1, x1: 12, y1: 3, reverb: 'bano', pared: 'azulejo', piso: 'azulejo', apartamento: '201' },
     // 203: sin forrar, como los pisos de arriba. Lo dejaron con prisa.
     { id: 'sala203', nombre: 'Sala del 203', x0: 16, y0: 5, x1: 26, y1: 8, reverb: 'sala', pared: 'papel', piso: 'parque', apartamento: '203' },
     { id: 'cocina203', nombre: 'Cocina del 203', x0: 16, y0: 1, x1: 20, y1: 3, reverb: 'bano', pared: 'azulejo', piso: 'azulejo', apartamento: '203' },
     { id: 'dormitorio203', nombre: 'Dormitorio del 203', x0: 22, y0: 1, x1: 26, y1: 3, reverb: 'habitacion', pared: 'papel', piso: 'parque', apartamento: '203' },
-    // 202: el apartamento de Hernando, debajo del 302. Aquí se graba el cuarto sordo (la sala).
-    { id: 'sala202', nombre: 'Sala del 202', x0: 8, y0: 12, x1: 20, y1: 15, reverb: 'habitacion', pared: 'papel', piso: 'parque', apartamento: '202' },
-    { id: 'dormitorio202', nombre: 'Dormitorio del 202', x0: 8, y0: 17, x1: 13, y1: 18, reverb: 'habitacion', pared: 'papel', piso: 'parque', apartamento: '202' },
-    { id: 'cuarto202', nombre: 'Cuarto pequeño del 202', x0: 15, y0: 17, x1: 20, y1: 18, reverb: 'habitacion', pared: 'papel', piso: 'parque', apartamento: '202' },
+    // 202: el apartamento de Hernando, debajo del 302, forrado entero con colchones: el cuarto sordo. Adentro no se
+    // oye nada de afuera y afuera no se oye nada de adentro (ver mundo/Aislamiento.ts). Aquí se graba (la sala).
+    { id: 'sala202', nombre: 'Sala del 202', x0: 8, y0: 12, x1: 20, y1: 15, reverb: 'acolchado', pared: 'acolchado', piso: 'parque', apartamento: '202' },
+    { id: 'dormitorio202', nombre: 'Dormitorio del 202', x0: 8, y0: 17, x1: 13, y1: 18, reverb: 'acolchado', pared: 'acolchado', piso: 'parque', apartamento: '202' },
+    { id: 'cuarto202', nombre: 'Cuarto pequeño del 202', x0: 15, y0: 17, x1: 20, y1: 18, reverb: 'acolchado', pared: 'acolchado', piso: 'parque', apartamento: '202' },
     // El cuarto de servicio existe pero está tapiado, como en el 3.
     { id: 'servicio', nombre: 'Cuarto de servicio', x0: 29, y0: 8, x1: 30, y1: 12, reverb: 'ducto', pared: 'concreto', piso: 'concreto' },
     // La cabina del ascensor, en la misma celda que la del 3 y la del 4: es la misma cabina.

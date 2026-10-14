@@ -35,6 +35,8 @@ export type DireccionRelativa = (x: number, z: number) => string;
 export class HUD {
   readonly elemento: HTMLDivElement;
   readonly fundido: HTMLDivElement;
+  /** ¿Lo que suena en (x, z) me llega? El juego lo fija con el piso armado (un cuarto acolchado aísla). */
+  oyeDesde: (x: number, z: number) => boolean = () => true;
   private readonly subtitulos = new Subtitulos();
   private readonly objetivo = new AvisoObjetivo();
   private readonly tarjeta = new TarjetaLugar();
@@ -90,7 +92,8 @@ export class HUD {
       if (permitido) this.subtitulos.mostrar(s.texto, s.duracion ?? 3, efecto);
     });
     bus.on('sonido-relevante', (s) => {
-      if (!this.ajustes.valores.subtitulosEfectos || !s.descripcion) return;
+      // Lo que no me llega (un cuarto acolchado lo aísla) tampoco sale escrito: los subtítulos no oyen más que yo.
+      if (!this.ajustes.valores.subtitulosEfectos || !s.descripcion || !this.oyeDesde(s.x, s.z)) return;
       this.subtitulos.mostrar(`[${s.descripcion} ${direccion(s.x, s.z)}]`, 2.6, true);
     });
     bus.on('objetivo', (o) => this.objetivo.mostrar(o.texto, o.nuevo));

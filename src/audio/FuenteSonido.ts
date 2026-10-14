@@ -2,8 +2,13 @@
 //   buffer → filtro (oclusión) → ganancia → panner 3D → bus
 //                                      └→ envío a reverberación
 // La oclusión es clave: un golpe detrás de dos muros suena apagado y grave,
-// así el jugador aprende a "leer" dónde está la criatura sin verla.
+// así el jugador aprende a "leer" dónde está la criatura sin verla. A través de un cuarto acolchado (el cuarto
+// sordo del Piso 2) casi no pasa nada, en ningún sentido.
+import { TRANSMISION_ACOLCHADO } from '../mundo/Aislamiento';
 import type { OpcionesSonido, Posicion3D } from './TiposAudio';
+
+/** A través de un cuarto acolchado solo pasa lo más grave (Hz). */
+const CORTE_AISLADO = 160;
 
 export class FuenteSonido {
   readonly posicion: Posicion3D | null;
@@ -92,11 +97,12 @@ export class FuenteSonido {
    * Aplico la oclusión según cuántos obstáculos hay entre el oyente y la fuente.
    * "reduccion" (0..1) la uso al escuchar con atención: oigo mejor a través de muros.
    */
-  aplicarOclusion(obstaculos: number, reduccion: number): void {
+  aplicarOclusion(obstaculos: number, reduccion: number, aislado = false): void {
     if (!this.posicion) return;
     const n = obstaculos * (1 - reduccion) + (this.dentroPared ? 1.2 * (1 - reduccion * 0.6) : 0);
-    const corte = Math.max(220, 18000 / (1 + n * 6));
-    const atenuacion = Math.pow(0.6, n);
+    // A través de un cuarto acolchado casi no llega nada, ni escuchando con atención: un golpe sordo, muy lejos.
+    const corte = aislado ? CORTE_AISLADO : Math.max(220, 18000 / (1 + n * 6));
+    const atenuacion = Math.pow(0.6, n) * (aislado ? TRANSMISION_ACOLCHADO : 1);
     const t = this.contexto.currentTime;
     this.filtro.frequency.setTargetAtTime(corte, t, 0.08);
     this.ganancia.gain.setTargetAtTime(this.volumenBase * atenuacion, t, 0.08);

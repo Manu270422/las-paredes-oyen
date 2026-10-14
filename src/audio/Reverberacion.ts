@@ -21,6 +21,8 @@ const PRESETS: Record<TipoReverb, PresetReverb> = {
   bano: { duracion: 1.4, amortiguacion: 0.2, mezcla: 0.48 },
   escalera: { duracion: 3.4, amortiguacion: 0.45, mezcla: 0.55 },
   ducto: { duracion: 2.3, amortiguacion: 0.3, mezcla: 0.5, metalico: true },
+  // Colchones en las paredes: casi no hay eco. Mis pasos suenan secos, pegados, como dentro de una almohada.
+  acolchado: { duracion: 0.22, amortiguacion: 0.95, mezcla: 0.04 },
 };
 
 function crearImpulso(contexto: BaseAudioContext, preset: PresetReverb): AudioBuffer {

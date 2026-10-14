@@ -12,6 +12,7 @@ import type { AjustesJugador } from '../config/Ajustes';
 
 /** Función que me dice cuántos obstáculos hay entre el oyente y un punto. */
 export type ConsultaOclusion = (ax: number, az: number, bx: number, bz: number) => number;
+export type ConsultaAislamiento = (ax: number, az: number, bx: number, bz: number) => boolean;
 
 /** Quien quiere enterarse de cada sonido que suena en el mundo (la grabadora, al medir). */
 export type ObservadorSonido = (id: IdSonido, opciones: OpcionesSonido) => void;
@@ -25,6 +26,8 @@ export class MotorAudio {
   readonly contexto: AudioContext;
   readonly biblioteca = new BibliotecaSonidos();
   consultaOclusion: ConsultaOclusion | null = null;
+  /** ¿Un cuarto acolchado separa al oyente de la fuente? (el nivel la pone; sin ella, nada aísla). */
+  consultaAislamiento: ConsultaAislamiento | null = null;
 
   private readonly maestro: GainNode;
   private readonly compresor: DynamicsCompressorNode;
@@ -39,6 +42,8 @@ export class MotorAudio {
   private silencioAmbiente = 1;
   /** Silencio que impone la criatura cuando acecha cerca. Va aparte para no pisar el de los eventos. */
   private silencioEntidad = 1;
+  /** Dentro de un cuarto acolchado, el ambiente del edificio casi no llega (1 = normal). Va aparte de los otros dos. */
+  private silencioAcolchado = 1;
   private temporizadorOclusion = 0;
   private readonly observadores = new Set<ObservadorSonido>();
 
@@ -103,7 +108,7 @@ export class MotorAudio {
     const t = this.contexto.currentTime;
     for (const nombre of BUSES) {
       const escucha = 1 + (MODO_ESCUCHA[nombre] - 1) * this.escucha;
-      const silencio = nombre === 'ambiente' ? this.silencioAmbiente * this.silencioEntidad : 1;
+      const silencio = nombre === 'ambiente' ? this.silencioAmbiente * this.silencioEntidad * this.silencioAcolchado : 1;
       this.buses[nombre].gain.setTargetAtTime(this.volumenBus[nombre] * escucha * silencio, t, transicion);
     }
   }
@@ -134,7 +139,8 @@ export class MotorAudio {
   private aplicarOclusion(fuente: FuenteSonido): void {
     if (!fuente.posicion || !this.consultaOclusion) return;
     const obstaculos = this.consultaOclusion(this.oyente.x, this.oyente.z, fuente.posicion.x, fuente.posicion.z);
-    fuente.aplicarOclusion(obstaculos, this.escucha * 0.5);
+    const aislado = this.consultaAislamiento?.(this.oyente.x, this.oyente.z, fuente.posicion.x, fuente.posicion.z) ?? false;
+    fuente.aplicarOclusion(obstaculos, this.escucha * 0.5, aislado);
   }
 
   /** Copio la posición y orientación de la cámara al oyente de Web Audio. */
@@ -201,6 +207,14 @@ export class MotorAudio {
     if (Math.abs(factor - this.silencioEntidad) < 0.02) return;
     this.silencioEntidad = factor;
     this.refrescarBuses(0.9);
+  }
+
+  /** Estoy en un cuarto acolchado (o salí): el ambiente del edificio se apaga o vuelve, despacio. */
+  fijarAcolchado(adentro: boolean): void {
+    const factor = adentro ? 0.12 : 1;
+    if (factor === this.silencioAcolchado) return;
+    this.silencioAcolchado = factor;
+    this.refrescarBuses(0.8);
   }
 
   detenerTodo(): void {
