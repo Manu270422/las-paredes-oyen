@@ -3,7 +3,8 @@
 //    al 2, cruzando cada descanso. La escalera que sigue bajando está tapiada: empujo contra el ladrillo y no paso.
 // 2) en el 201 leo el libro de quejas; en el 202 grabo el cuarto sordo con la X; la cinta trae la voz de Hernando y
 //    algo de metal: aparece la llave de servicio en el rincón. Con ella, llamo el ascensor, entro y pulso el 1: la
-//    cabina baja, a oscuras se abren las puertas y la partida termina ("Próximamente: Piso 1").
+//    cabina se detiene a mitad de camino con ella encima (aguanto el aire), sigue, a oscuras se abren las puertas y
+//    la partida termina ("Próximamente: Piso 1").
 // Ella y el director quedan quietos: aquí se prueba el camino del piso, no su caza.
 import { expect, test, type Page } from '@playwright/test';
 import { abrirEleccion, elegirYEmpezar, esperarJugando } from './acciones';
@@ -190,12 +191,23 @@ test.describe.serial('El Piso 2 caminando', () => {
       const faseAlLlamar = ascensor.fase;
       await P.caminar([[5.5, 10.6], [5.5, 11.45]], 0.12);
       const boton1 = ascensor.botones.find((b) => b.hacia === 'piso1')!;
+      // A mitad de la bajada la cabina se detiene y ella escucha desde el techo (cabinaDetenida.spec lo prueba a
+      // fondo): cuando se queda quieta, aguanto el aire hasta que se va, como una persona.
+      const encuentros: string[] = [];
+      const dejar = ctx.bus.on('encuentro', (e) => {
+        encuentros.push(e.estado);
+        if (e.estado === 'inicio') P.sostener('KeyQ');
+        else P.soltar('KeyQ');
+      });
       const texto = await window.__usar!(boton1.id);
-      const finPartida = performance.now() + 40_000;
+      const finPartida = performance.now() + 60_000;
       while (J.estado !== 'fin' && performance.now() < finPartida) await P.esperarReal(50);
+      dejar();
+      P.soltar('KeyQ');
       return {
         faseAlLlamar,
         texto,
+        encuentros,
         estado: J.estado,
         titulo: document.querySelector('.fin__titulo')?.textContent ?? null,
         siguiente: document.querySelector('.fin__siguiente')?.textContent ?? null,
@@ -204,6 +216,7 @@ test.describe.serial('El Piso 2 caminando', () => {
     await page.screenshot({ path: info.outputPath('4-fin.png') });
     expect(final.faseAlLlamar, 'llamado, el ascensor llega y abre').toBe('abierto');
     expect(final.texto).toBe('Bajar al Piso 1');
+    expect(final.encuentros, 'a mitad de la bajada, ella escuchó desde el techo y aguanté').toEqual(['inicio', 'superado']);
     expect(final.estado, 'la partida termina').toBe('fin');
     expect(final.titulo).toBe('Piso 2 completado');
     expect(final.siguiente ?? '').toContain('Piso 1');

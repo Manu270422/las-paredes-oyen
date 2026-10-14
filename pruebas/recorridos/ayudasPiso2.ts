@@ -82,6 +82,29 @@ export async function calmar(page: Page): Promise<void> {
 }
 
 /**
+ * Ya en el Piso 2 (en la boca de la escalera): el libro leído, el cuarto sordo grabado y la llave en el bolsillo (tomarla
+ * es un punto de control: se reaparece en la sala del 202). Camino al ascensor, lo llamo, entro y pulso el 1.
+ * Devuelve lo que decía el botón.
+ */
+export async function bajarAlUnoConLaLlave(page: Page): Promise<string | null> {
+  await calmar(page);
+  return page.evaluate(async () => {
+    const { ctx } = window.__juego!;
+    const P = window.__piloto!;
+    for (const b of ['leyo:libro_quejas', 'medido:202', 'cinta:202']) ctx.progreso.marcarSilencioso(b);
+    ctx.progreso.agregarObjeto('llave_servicio');
+    const ascensor = ctx.nivel.ascensor!;
+    await P.caminar([[3.6, 10.5], [5.3, 10.45]], 0.18);
+    await window.__usar!(ascensor.botones[0].id);
+    const limite = performance.now() + 20_000;
+    while (ascensor.fase !== 'abierto' && performance.now() < limite) await P.esperarReal(50);
+    if (ascensor.fase !== 'abierto') throw new Error(`El ascensor no abrió: ${ascensor.fase}.`);
+    await P.caminar([[5.5, 10.6], [5.5, 11.45]], 0.12);
+    return window.__usar!(ascensor.botones.find((b) => b.hacia === 'piso1')!.id);
+  });
+}
+
+/**
  * Desde el Piso 4 recién empezado: con el 4 y el 3 terminados (sus banderas, en silencio), bajo por los escalones del
  * 4 al 3 y del 3 al 2 cruzando cada descanso, y salgo a la boca del Piso 2. Devuelve el piso donde quedé.
  */

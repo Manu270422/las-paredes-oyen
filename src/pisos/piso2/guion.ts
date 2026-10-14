@@ -7,12 +7,13 @@
 // - El final: con la llave, el botón del 1 lleva la cabina hacia abajo. El Piso 1 todavía no existe: cuando la
 //   cabina llega ('ascensor-fin-recorrido'), la imagen se va a negro, las puertas se abren a la portería a oscuras
 //   y la partida termina ("Próximamente: Piso 1").
-// Lo que falta del P2-guion (tandas siguientes): la cabina que se detiene entre pisos con ella encima.
+// - Bajando al 1, la cabina se detiene entre pisos con ella encima (cabinaDetenida.ts): quieto y sin aire.
 // Todo se basa en banderas, así funciona igual al cargar partida.
 import type { AccionesGuion } from '../../narrativa/AccionesGuion';
 import { reproducirCinta } from '../../narrativa/Cinta';
 import type { ContextoJuego } from '../../nucleo/ContextoJuego';
 import type { GuionPiso } from '../TiposPiso';
+import { CabinaDetenida } from './cabinaDetenida';
 
 /** Terminó de sonar la cinta del cuarto sordo: con ella aparece la llave de servicio. */
 export const CINTA_202 = 'cinta:202';
@@ -30,6 +31,8 @@ export const PISTA_CUARTO_SORDO = 'En un cuarto acolchado no la oyes, y ella tam
 export class GuionPiso2 implements GuionPiso {
   private readonly cancelaciones: Array<() => void> = [];
   private enFinal = false;
+  /** El clímax: la cabina que se detiene entre el 2 y el 1 con ella encima. */
+  private readonly cabina = new CabinaDetenida();
 
   constructor(private readonly acciones: AccionesGuion) {}
 
@@ -44,15 +47,18 @@ export class GuionPiso2 implements GuionPiso {
 
   desconectar(): void {
     for (const cancelar of this.cancelaciones.splice(0)) cancelar();
+    this.cabina.reiniciar();
   }
 
   reiniciar(ctx: ContextoJuego): void {
     this.enFinal = false;
+    this.cabina.reiniciar();
     // Medir guarda antes de que suene la cinta: si cargo ahí, la cinta ya "sonó" (y la llave ya está en el rincón).
     if (ctx.progreso.tiene('medido:202') && !ctx.progreso.tiene(CINTA_202)) ctx.progreso.marcarSilencioso(CINTA_202);
   }
 
-  actualizar(_dt: number, ctx: ContextoJuego): void {
+  actualizar(dt: number, ctx: ContextoJuego): void {
+    this.cabina.actualizar(dt, ctx);
     const j = ctx.jugador.posicion;
     if (ctx.progreso.tiene(SORDO_VISTO) || !ctx.nivel.acolchadoEn(j.x, j.z)) return;
     ctx.progreso.marcarSilencioso(SORDO_VISTO);

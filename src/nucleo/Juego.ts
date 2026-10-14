@@ -666,8 +666,8 @@ export class Juego {
 
     // ¿Me atrapó? Regla de justicia: SOLO mata cuando está cazando. La caza
     // siempre tiene aviso (su respiración, la interferencia, el sobresalto) y
-    // siempre tiene una causa que la pantalla de muerte puede explicar.
-    if (this.entidad.fisica && !this.soloMirar && this.entidad.estado === 'cazando' && distanciaEntidad < CONFIG.entidad.distanciaAtrapar) {
+    // siempre tiene una causa que la pantalla de muerte puede explicar. Durante el aviso no atrapa, aunque esté encima.
+    if (this.entidad.fisica && !this.soloMirar && this.entidad.estado === 'cazando' && !this.entidad.avisando && distanciaEntidad < CONFIG.entidad.distanciaAtrapar) {
       this.atrapado();
       return;
     }
