@@ -55,6 +55,13 @@ export class SonidoAscensor {
     ctx.bus.emit('sonido-relevante', { descripcion: 'la campanilla del ascensor', x: puerta.x, z: puerta.z });
   }
 
+  /** Un frenazo de emergencia entre pisos: el metal que roza en el pozo y los cables que se sacuden arriba. */
+  freno(ctx: ContextoJuego): void {
+    const c = this.marco;
+    ctx.audio.reproducir('friccion_muro', { posicion: { x: c.cx, y: 1.8, z: c.cz }, volumen: 0.95, tono: 0.55 });
+    ctx.audio.reproducir('cadena', { posicion: { x: c.cx, y: 3.2, z: c.cz }, volumen: 0.65, tono: 0.7, retraso: 0.15 });
+  }
+
   /** El golpe del freno en un sacudón, desde el piso de la cabina. */
   golpe(ctx: ContextoJuego, volumen = 0.55): void {
     const c = this.marco;

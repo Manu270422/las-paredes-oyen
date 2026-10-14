@@ -91,13 +91,23 @@ describe('El marco de la cabina', () => {
 });
 
 /** Una vista de mentira: anoto lo que el ascensor le pide. */
-function vistaFalsa(): VistaAscensor & { apertura: number; boton: number | null; llamada: boolean; indicador: [string, number, boolean] } {
+function vistaFalsa(): VistaAscensor & {
+  apertura: number;
+  boton: number | null;
+  llamada: boolean;
+  indicador: [string, number, boolean];
+  trampilla: [number, number];
+} {
   return {
     raiz: new Group(),
     apertura: 0,
     boton: null,
     llamada: false,
     indicador: ['', 0, false],
+    trampilla: [0, 0],
+    fijarTrampilla(a, t) {
+      this.trampilla = [a, t];
+    },
     fijarApertura(a) {
       this.apertura = a;
     },
@@ -450,6 +460,22 @@ describe('Los botones que piden algo y el piso que todavía no existe', () => {
     expect(m.ascensor.fase).toBe('viajando');
     m.correr(TIEMPOS_ASCENSOR.viaje / 2);
     expect(m.viajes, 'retoma y, a la mitad, arma el 2').toEqual(['piso2']);
+  });
+
+  it('la trampilla del techo tiembla con algo encima y se calma sola; reventada, cae y cuelga hasta restablecer', () => {
+    const m = montar();
+    m.ascensor.sacudirTrampilla(1);
+    m.correr(0.1);
+    expect(m.ascensor.estadoTrampilla.temblor).toBeGreaterThan(0.5);
+    m.correr(1);
+    expect(m.ascensor.estadoTrampilla.temblor, 'se calma sola').toBe(0);
+    expect(m.vista.trampilla[0], 'cerrada').toBe(0);
+    m.ascensor.reventarTrampilla();
+    m.correr(0.3);
+    expect(m.ascensor.estadoTrampilla.apertura, 'cae en un instante').toBe(1);
+    expect(m.vista.trampilla[0]).toBe(1);
+    m.ascensor.restablecer(m.falso.ctx);
+    expect(m.vista.trampilla, 'al restablecer, cerrada y quieta').toEqual([0, 0]);
   });
 
   it('al llegar conmigo a un piso que no existe, no abre: avisa al guion y se queda cerrado', () => {

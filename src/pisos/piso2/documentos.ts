@@ -28,6 +28,15 @@ export const DOCUMENTOS: Record<string, Documento> = {
       '(Una hoja pegada con cinta junto a la puerta, a máquina. Las llaves que guarda la administración.)\n\n301 · 302 · 303\n401 · 402 · 403\nCuarto de servicio · Terraza · Contadores\nAscensor (servicio)\n\n(La del ascensor está tachada. Al lado, a lápiz: «La tengo yo. Que nadie baje. — H.»)',
     ],
   },
+  carta_203: {
+    id: 'carta_203',
+    titulo: 'Carta del 203, sin enviar',
+    tipo: 'carta',
+    paginas: [
+      'Don Hernando:\n\nDesde que usted forró el 202, lo de arriba se oye más en mi pared. Antes rascaba. Ahora camina, de un lado al otro, como buscando por dónde.\n\nUsted dirá que son las tuberías. Ya no le creo.',
+      'Anoche dijo mi nombre. Con la voz suya, don Hernando. Despacio, como cuando viene a cobrar.\n\nMe voy donde mi hermana. Las llaves se las dejo al portero, que es el único que todavía contesta.\n\n— Rosalba, 203',
+    ],
+  },
   cuaderno_hernando: {
     id: 'cuaderno_hernando',
     titulo: 'Cuaderno de Hernando',

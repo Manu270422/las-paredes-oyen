@@ -30,11 +30,19 @@ export interface VistaAscensor {
   fijarLlamada(encendido: boolean): void;
   /** El botón del panel encendido (el piso al que voy), por su posición en `numeros`; null, ninguno. */
   fijarBoton(indice: number | null): void;
+  /** La trampilla del techo: 0 cerrada, 1 colgando abierta; `temblor` (0..1), lo que tiembla con algo encima. */
+  fijarTrampilla(apertura: number, temblor: number): void;
 }
 
 /** Medidas del panel en metros (ancho a lo largo del muro y alto). */
 const PANEL = { ancho: 0.16, alto: 0.42, grosor: 0.01 } as const;
 const PX_PANEL = { ancho: 128, alto: 336 } as const;
+/**
+ * La trampilla del techo: el lado de la tapa (m), cuánto gira al reventar (rad, casi colgando) y cuánto va corrida del
+ * centro (m), para no quedar debajo del tubo de la cabina (el tubo de una lámpara va siempre a lo largo del eje X del
+ * mundo, por el centro del techo).
+ */
+const TRAMPILLA = { lado: 0.46, giroAbierta: 1.75, corrida: 0.34 } as const;
 /** Las hojas: cuánto se montan sobre el vano por cada lado y su grosor. */
 const HOJA = { solape: 0.012, grosor: 0.025, adentro: 0.035 } as const;
 
@@ -57,6 +65,9 @@ export class ModeloAscensor implements VistaAscensor {
   private readonly indicadores: IndicadorPiso[] = [];
   private readonly luzLlamada: MeshStandardMaterial;
   private readonly luzBotones: MeshStandardMaterial[] = [];
+  /** El eje de la tapa de la trampilla (en un borde): girándolo, la tapa cae hacia adentro de la cabina. */
+  private readonly bisagra = new Group();
+  private readonly alturaTrampilla: number;
 
   /** `numeros`: lo que dice cada botón del panel, del piso más alto al más bajo (igual en todos los pisos). */
   constructor(marco: MarcoCabina, materiales: BibliotecaMateriales, numeros: readonly string[]) {
@@ -141,8 +152,26 @@ export class ModeloAscensor implements VistaAscensor {
     for (const lado of [-1, 1]) plano(tira, H - 2 * r, metal, lado * (A / 2 + tira / 2), H / 2, m - r, Math.PI);
     plano(A, H - HP - r, metal, 0, (HP + H - r) / 2, m - r, Math.PI);
     plano(C - 2 * r, C - 2 * r, metal, 0, H - r, 0, 0, Math.PI / 2);
-    // El piso de caucho negro, gastado en el centro, y el pasamanos del fondo.
     const caucho = materiales.conservado('ascensor:caucho', () => new MeshStandardMaterial({ color: 0x151413, roughness: 0.95, side: DoubleSide }));
+    // La trampilla de servicio en el techo: un marco de caucho negro (se ve el borde contra el acero) y una tapa con
+    // la bisagra a un lado. Tiembla cuando algo pesa encima y revienta hacia adentro (la cabina detenida del Piso 2).
+    const yTrampilla = H - r - 0.012;
+    // Corrida en el eje de la cabina que, en el mundo, se aleja del tubo (el que va a lo largo de Z).
+    const haciaZ = Math.abs(Math.cos(marco.angulo)) > 0.5;
+    const tx = haciaZ ? 0 : TRAMPILLA.corrida;
+    const tz = haciaZ ? -TRAMPILLA.corrida : 0;
+    for (const lado of [-1, 1]) {
+      caja(TRAMPILLA.lado + 0.08, 0.02, 0.04, caucho, tx, yTrampilla, tz + lado * (TRAMPILLA.lado / 2 + 0.02));
+      caja(0.04, 0.02, TRAMPILLA.lado, caucho, tx + lado * (TRAMPILLA.lado / 2 + 0.02), yTrampilla, tz);
+    }
+    this.alturaTrampilla = yTrampilla;
+    this.bisagra.position.set(tx - TRAMPILLA.lado / 2, yTrampilla, tz);
+    const tapa = new Mesh(new BoxGeometry(TRAMPILLA.lado - 0.01, 0.014, TRAMPILLA.lado - 0.01), metal);
+    tapa.position.set(TRAMPILLA.lado / 2, 0, 0);
+    tapa.castShadow = true;
+    this.bisagra.add(tapa);
+    this.raiz.add(this.bisagra);
+    // El piso de caucho negro, gastado en el centro, y el pasamanos del fondo.
     plano(C - 2 * r, C - 2 * r, caucho, 0, 0.006, 0, 0, -Math.PI / 2);
     const pasamanos = new Mesh(new CylinderGeometry(0.018, 0.018, C - 0.24, 10), metal);
     pasamanos.rotation.z = Math.PI / 2;
@@ -190,5 +219,13 @@ export class ModeloAscensor implements VistaAscensor {
 
   fijarBoton(indice: number | null): void {
     this.luzBotones.forEach((luz, i) => (luz.emissiveIntensity = i === indice ? 2.2 : 0));
+  }
+
+  fijarTrampilla(apertura: number, temblor: number): void {
+    const a = Math.max(0, Math.min(1, apertura));
+    // Abierta, cuelga casi vertical; con algo encima, la tapa vibra contra su marco (unos milímetros, unos grados).
+    const vibra = temblor > 0 ? (Math.random() - 0.5) * temblor : 0;
+    this.bisagra.rotation.z = -a * TRAMPILLA.giroAbierta + vibra * 0.05;
+    this.bisagra.position.y = this.alturaTrampilla + vibra * 0.008;
   }
 }

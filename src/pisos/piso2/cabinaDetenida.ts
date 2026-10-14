@@ -4,7 +4,8 @@
 //
 // Las reglas del encuentro son las del resto del juego (ia/EncuentroSinCuerpo: se arrastra, se queda quieta, gracia,
 // duración según la dificultad, y no escucha hasta que tengo el aire). Aquí está lo que se oye, lo que se lee y el
-// orden. La luz de la cabina parpadea todo el rato que está encima: es la señal de siempre ("está cerca").
+// orden. La trampilla del techo tiembla con cada golpe y cada rasguño (se ve dónde está) y revienta si cae adentro.
+// La luz de la cabina parpadea todo el rato que está encima: es la señal de siempre ("está cerca").
 // Pasa una sola vez: superarla marca CABINA_SUPERADA. Morir aquí devuelve al 202 con la llave en el bolsillo (el punto
 // de control de la llave) y, al volver a bajar, pasa otra vez.
 import { EncuentroSinCuerpo, type ResultadoEncuentro } from '../../ia/EncuentroSinCuerpo';
@@ -79,6 +80,7 @@ export class CabinaDetenida {
     if (this.hastaRasguno <= 0) {
       this.hastaRasguno = aleatorio(...RASGUNO_CADA);
       this.sonarEncima(ctx, 'rasguno', 0.7, aleatorio(-0.45, 0.45), this.rascoAntes ? '' : TEXTOS_CABINA.arrastra);
+      ctx.nivel.ascensor?.sacudirTrampilla(0.55);
       this.rascoAntes = true;
     }
   }
@@ -101,6 +103,7 @@ export class CabinaDetenida {
     const c = ctx.nivel.ascensor?.marco;
     if (!c) return;
     this.sonarEncima(ctx, 'golpe', 1, 0, TEXTOS_CABINA.golpe);
+    ctx.nivel.ascensor?.sacudirTrampilla(1);
     ctx.jugador.efectos.agregarTrauma(0.35);
     ctx.jugador.sobresaltar(0.5);
     ctx.bus.emit('pista', { id: 'cabinaDetenida', texto: TEXTOS_CABINA.pista });
@@ -126,7 +129,10 @@ export class CabinaDetenida {
   private seVa(ctx: ContextoJuego): void {
     ctx.progreso.marcar(CABINA_SUPERADA);
     this.sonarEncima(ctx, 'rasguno', 0.5, 0.3, '');
-    ctx.programador.despues(0.7, () => this.sonarEncima(ctx, 'golpe', 0.45, 0, ''));
+    ctx.programador.despues(0.7, () => {
+      this.sonarEncima(ctx, 'golpe', 0.45, 0, '');
+      ctx.nivel.ascensor?.sacudirTrampilla(0.8);
+    });
     ctx.bus.emit('subtitulo', { texto: TEXTOS_CABINA.seVa, duracion: 3, tipo: 'efecto' });
     ctx.programador.despues(SIGUE_TRAS_IRSE, () => ctx.nivel.ascensor?.reanudar(ctx));
   }
@@ -139,6 +145,7 @@ export class CabinaDetenida {
     const c = ctx.nivel.ascensor?.marco;
     if (!c) return;
     this.sonarEncima(ctx, 'golpe', 1, 0, '');
+    ctx.nivel.ascensor?.reventarTrampilla();
     ctx.bus.emit('subtitulo', { texto: TEXTOS_CABINA.trampilla, duracion: 2.5, tipo: 'efecto' });
     ctx.bus.emit('interferencia', { intensidad: 0.8, duracion: 0.6 });
     const e = ctx.entidad;

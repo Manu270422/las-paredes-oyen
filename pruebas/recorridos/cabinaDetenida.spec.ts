@@ -43,6 +43,29 @@ test('me adelanto a aguantar: no escucha hasta que recupero el aire; quieto y si
   test.setTimeout(300_000);
   const errores: string[] = [];
   await prepararse(page, errores);
+  // Frena pasada la mitad del viaje; cae encima: me adelanto a aguantar el aire y miro la trampilla del techo.
+  const a = await page.evaluate(async () => {
+    const J = window.__juego!;
+    const { ctx } = J;
+    const P = window.__piloto!;
+    const lista = window.__cabina!;
+    const limite = performance.now() + 20_000;
+    while (ctx.nivel.ascensor!.fase !== 'detenido' && performance.now() < limite) await P.esperarReal(20);
+    const fase = ctx.nivel.ascensor!.fase;
+    const finCaida = performance.now() + 5_000;
+    while (!lista.some((x) => x.que === 'algo cae sobre el techo de la cabina') && performance.now() < finCaida) await P.esperarReal(20);
+    P.sostener('KeyQ');
+    (window as unknown as { __inicioAguante: number }).__inicioAguante = ctx.programador.ahora;
+    ctx.jugador.pitch = 1.45;
+    let temblor = 0;
+    const finMirar = performance.now() + 700;
+    while (performance.now() < finMirar) {
+      temblor = Math.max(temblor, ctx.nivel.ascensor!.estadoTrampilla.temblor);
+      await P.esperarReal(16);
+    }
+    return { fase, cayo: lista.some((x) => x.que === 'algo cae sobre el techo de la cabina'), temblor };
+  });
+  await page.screenshot({ path: info.outputPath('la-trampilla-tiembla.png') });
   const r = await page.evaluate(async () => {
     const J = window.__juego!;
     const { ctx } = J;
@@ -54,17 +77,12 @@ test('me adelanto a aguantar: no escucha hasta que recupero el aire; quieto y si
       while (!hay(que) && performance.now() < fin) await P.esperarReal(20);
       return hay(que);
     };
-    // Frena pasada la mitad del viaje.
-    const limite = performance.now() + 20_000;
-    while (ctx.nivel.ascensor!.fase !== 'detenido' && performance.now() < limite) await P.esperarReal(20);
-    const fase = ctx.nivel.ascensor!.fase;
-    // Cae encima: me adelanto y aguanto el aire 3 s (antes de que se quede a escuchar).
-    const cayo = await esperar('algo cae sobre el techo de la cabina', 5_000);
-    P.sostener('KeyQ');
-    const inicioAguante = ctx.programador.ahora;
+    // Sigo aguantando hasta completar 3 s (antes de que se quede a escuchar).
+    const inicioAguante = (window as unknown as { __inicioAguante: number }).__inicioAguante;
     while (ctx.programador.ahora < inicioAguante + 3) await P.esperarReal(20);
     const escuchoMientrasAguantaba = hay('encuentro:inicio');
     P.soltar('KeyQ');
+    ctx.jugador.pitch = 0;
     // Suelto: recupero el aire y entonces se queda quieta a escuchar. Ahí aguanto hasta que se va.
     const empezo = await esperar('encuentro:inicio', 15_000);
     const aireAlEmpezar = ctx.jugador.respiracion.aire;
@@ -76,8 +94,6 @@ test('me adelanto a aguantar: no escucha hasta que recupero el aire; quieto y si
     const finPartida = performance.now() + 30_000;
     while (J.estado !== 'fin' && performance.now() < finPartida) await P.esperarReal(50);
     return {
-      fase,
-      cayo,
       escuchoMientrasAguantaba,
       empezo,
       aireAlEmpezar,
@@ -89,8 +105,9 @@ test('me adelanto a aguantar: no escucha hasta que recupero el aire; quieto y si
     };
   });
   await page.screenshot({ path: info.outputPath('fin.png') });
-  expect(r.fase, 'la cabina frenó entre pisos').toBe('detenido');
-  expect(r.cayo, 'algo cayó sobre el techo').toBe(true);
+  expect(a.fase, 'la cabina frenó entre pisos').toBe('detenido');
+  expect(a.cayo, 'algo cayó sobre el techo').toBe(true);
+  expect(a.temblor, 'la trampilla del techo tiembla con ella encima').toBeGreaterThan(0.3);
   expect(r.escuchoMientrasAguantaba, 'mientras me adelantaba a aguantar, no se puso a escuchar').toBe(false);
   expect(r.empezo, 'cuando recuperé el aire, se quedó a escuchar').toBe(true);
   expect(r.aireAlEmpezar, 'con el aire casi lleno').toBeGreaterThanOrEqual(0.95);
@@ -126,7 +143,8 @@ test('aguanto el aire pero doy un paso mientras escucha: cae adentro con su avis
     const tFallo = ctx.programador.ahora;
     await P.esperarReal(50);
     const E = ctx.entidad;
-    const alCaer = { fisica: E.fisica, avisando: E.avisando, estado: E.estado, adentro: ctx.nivel.ascensor!.adentro(ctx) };
+    await P.esperarReal(250);
+    const alCaer = { fisica: E.fisica, avisando: E.avisando, estado: E.estado, trampilla: ctx.nivel.ascensor!.estadoTrampilla.apertura };
     const finMuerte = performance.now() + 15_000;
     while (J.estado === 'jugando' && performance.now() < finMuerte) await P.esperarReal(10);
     const avisoDuro = ctx.programador.ahora - tFallo;
@@ -141,6 +159,7 @@ test('aguanto el aire pero doy un paso mientras escucha: cae adentro con su avis
   });
   await page.screenshot({ path: info.outputPath('muerte.png') });
   expect(r.trampilla, 'revienta la trampilla').toBe(true);
+  expect(r.alCaer.trampilla, 'y se ve: la tapa cuelga abierta').toBe(1);
   expect(r.alCaer.fisica, 'cae adentro, con cuerpo').toBe(true);
   expect(r.alCaer.estado).toBe('cazando');
   expect(r.alCaer.avisando, 'empieza con el aviso').toBe(true);
