@@ -16,6 +16,7 @@
 //   parpadea (la señal de siempre: está cerca). Si no se va en unos segundos, la mando a las paredes.
 // - Con las puertas abiertas, la cabina es un cuarto más: ella puede entrar. No es un refugio.
 // - Un botón del panel puede pedir algo (la llave de servicio, haber estado en ese piso): sin eso no se enciende.
+// - Un guion puede detener la cabina entre pisos y soltarla después (detener / reanudar): el Piso 2 lo hace.
 // - Un botón puede llevar a un piso que todavía no existe: la cabina baja hasta el último que existe y, al llegar,
 //   no abre; avisa ('ascensor-fin-recorrido') y lo que pasa ahí es del guion de ese piso (el final de lo que hay).
 //
@@ -23,11 +24,10 @@
 // 9 fases y sus reglas de justicia se leen juntas. El sensor de la puerta, que ella no viaje, la retención al llegar y
 // que abierta no sea refugio dependen de lo mismo (la apertura, el piso elegido, el motor), y repartirlas en varios
 // archivos obligaría a saltar entre ellos para entender una muerte. Lo que no es la máquina ya vive aparte:
-// MarcoCabina (geometría), ModeloAscensor (lo que se ve), BotonAscensor (los botones) y EnlacesAscensor (validar los
-// paquetes). Casi un cuarto son comentarios y líneas en blanco. Si crece, lo primero que sale a su archivo es el
-// sonido (motor, puertas, campanilla y sacudón), que no decide nada.
+// MarcoCabina (geometría), ModeloAscensor (lo que se ve), BotonAscensor (los botones), EnlacesAscensor (validar los
+// paquetes) y, desde el 2026-10-14, SonidoAscensor (motor, puertas, campanilla y golpes: no decide nada). Casi un
+// cuarto son comentarios y líneas en blanco.
 import { CONFIG } from '../config/ConfiguracionJuego';
-import type { FuenteSonido } from '../audio/FuenteSonido';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
 import type { DefAscensor, ParadaAscensor } from '../pisos/TiposPiso';
 import { pisoAntesDe, pisoPorId } from '../pisos/catalogo';
@@ -38,6 +38,7 @@ import { MEDIO_GROSOR_VANO_CABINA } from './ConstructorGeometria';
 import type { Lampara } from './Lampara';
 import { DISPOSICION_CABINA, type MarcoCabina } from './MarcoCabina';
 import { alturaBoton, U_BOTONES, type VistaAscensor } from './ModeloAscensor';
+import { CADA_RUIDO_MOTOR, SonidoAscensor } from './SonidoAscensor';
 
 /** Los tiempos del ascensor, en segundos. */
 export const TIEMPOS_ASCENSOR = {
@@ -52,7 +53,7 @@ export const TIEMPOS_ASCENSOR = {
   /** El viaje entre dos pisos. El piso cambia a la mitad. */
   viaje: 6,
   /** Cada cuánto el motor hace ruido para ella mientras viene o viaja. */
-  ruidoMotor: 1.5,
+  ruidoMotor: CADA_RUIDO_MOTOR,
   /** Lo más que retengo las puertas por ella antes de mandarla a las paredes. */
   retencionMaxima: 6,
 } as const;
@@ -65,12 +66,10 @@ const DISTANCIA_SENSOR = 1.1;
 const DISTANCIA_GOLPE = 3;
 /** Abiertas al menos esto (de 0 a 1), las puertas ya no tapan: se ve, se oye y se pasa. */
 const ABIERTAS_DEL_TODO = 0.6;
-/** Cuánto le suena a ella (0..1): el motor por los muros, y la campanilla, fuerte. */
-const RUIDO = { motor: 0.3, campanilla: 0.6 } as const;
 /** El temblor de la cabina (trauma mínimo mientras viaja: la sacudida es su cuadrado). */
 const VIBRACION = 0.34;
 
-export type FaseAscensor = 'muerto' | 'lejos' | 'viniendo' | 'aqui' | 'abriendo' | 'abierto' | 'cerrando' | 'viajando' | 'reteniendo';
+export type FaseAscensor = 'muerto' | 'lejos' | 'viniendo' | 'aqui' | 'abriendo' | 'abierto' | 'cerrando' | 'viajando' | 'detenido' | 'reteniendo';
 
 /**
  * Lo que marca el botón de un piso en el panel: el `numero` de su ascensor; si el piso todavía no existe, el que
@@ -93,13 +92,15 @@ export class Ascensor implements MandoAscensor {
   /** 0 cerradas, 1 abiertas del todo. */
   apertura = 0;
   private tiempo = 0;
-  private hastaRuido = 0;
   /** El piso que elegí en el panel (mientras cierra y viaja). */
   private destino: string | null = null;
   private cambiado = false;
   /** 1 sube, -1 baja, 0 quieto. */
   private flecha = 0;
-  private motor: FuenteSonido | null = null;
+  /** Cuánto llevaba de viaje cuando un guion me detuvo entre pisos (para seguir desde ahí). */
+  private tiempoAlDetener = 0;
+  /** Lo que suena (motor, puertas, campanilla, golpes): la máquina decide cuándo. */
+  private readonly sonido: SonidoAscensor;
 
   constructor(
     private readonly def: DefAscensor,
@@ -108,6 +109,7 @@ export class Ascensor implements MandoAscensor {
     private readonly numeros: readonly string[],
     private readonly lampara: Lampara | null,
   ) {
+    this.sonido = new SonidoAscensor(marco);
     const { llamar, panel } = DISPOSICION_CABINA;
     // La zona del botón de llamar va un poco hacia el pasillo: si asomara al otro lado del muro, se enfocaría desde adentro.
     const p = marco.aMundo(llamar.u + 0.065, llamar.v);
@@ -118,6 +120,17 @@ export class Ascensor implements MandoAscensor {
       const y = alturaBoton(this.numeros.indexOf(this.numeroDe(parada.hacia)), this.numeros.length);
       this.botones.push(new BotonAscensor(`ascensor:${def.numero}:${parada.hacia}`, parada.hacia, parada.texto, { x: q.x, y, z: q.z }, this, celda));
     }
+  }
+
+  /** El piso al que viaja la cabina ahora (solo mientras viaja), o null. Un guion lo mira para su momento. */
+  get viajandoHacia(): string | null {
+    return this.fase === 'viajando' ? this.destino : null;
+  }
+
+  /** Cuánto lleva del viaje (0 al partir, 1 al llegar). */
+  get avanceViaje(): number {
+    if (this.fase === 'detenido') return this.tiempoAlDetener / TIEMPOS_ASCENSOR.viaje;
+    return this.fase === 'viajando' ? this.tiempo / TIEMPOS_ASCENSOR.viaje : 0;
   }
 
   /** El número del botón de ese piso en mi panel. */
@@ -215,7 +228,7 @@ export class Ascensor implements MandoAscensor {
     this.tiempo += dt;
     switch (this.fase) {
       case 'viniendo':
-        this.sonarMotor(dt, ctx);
+        this.sonido.motorParaElla(dt, ctx, this.frente());
         if (this.tiempo >= TIEMPOS_ASCENSOR.llamada) this.llegar(ctx, false);
         break;
       case 'abriendo':
@@ -273,13 +286,12 @@ export class Ascensor implements MandoAscensor {
 
   private venir(ctx: ContextoJuego): void {
     this.cambiarFase('viniendo');
-    this.hastaRuido = 0;
     // Viene desde el piso de la primera parada: el indicador marca ese piso y la flecha hacia este.
     const desde = this.def.paradas[0] ? this.numeroDe(this.def.paradas[0].hacia) : this.def.numero;
     this.flecha = Number(desde) < Number(this.def.numero) ? 1 : -1;
     this.vista.fijarLlamada(true);
     this.vista.fijarIndicador(desde, this.flecha, true);
-    this.arrancarMotor(ctx, true);
+    this.sonido.arrancarMotor(ctx, true);
     const c = this.marco;
     ctx.bus.emit('sonido-relevante', { descripcion: 'el ascensor, moviéndose por el pozo', x: c.cx, z: c.cz });
   }
@@ -287,12 +299,12 @@ export class Ascensor implements MandoAscensor {
   private abrir(ctx: ContextoJuego): void {
     if (this.fase !== 'cerrando') this.olvidarDestino();
     this.cambiarFase('abriendo');
-    this.sonarPuertas(ctx);
+    this.sonido.puertas(ctx, this.puerta());
   }
 
   private cerrar(ctx: ContextoJuego): void {
     this.cambiarFase('cerrando');
-    this.sonarPuertas(ctx);
+    this.sonido.puertas(ctx, this.puerta());
   }
 
   private olvidarDestino(): void {
@@ -313,7 +325,6 @@ export class Ascensor implements MandoAscensor {
   private partir(ctx: ContextoJuego): void {
     this.cambiarFase('viajando');
     this.cambiado = false;
-    this.hastaRuido = 0;
     this.flecha = Number(this.numeroDe(this.destino ?? '')) > Number(this.def.numero) ? 1 : -1;
     this.vista.fijarIndicador(this.def.numero, this.flecha, true);
     ctx.director.bloquear(TIEMPOS_ASCENSOR.viaje + 3);
@@ -328,7 +339,7 @@ export class Ascensor implements MandoAscensor {
       e.cambiarEstado('paredes', ctx);
     }
     this.sacudon(ctx, 0.3);
-    this.arrancarMotor(ctx, false);
+    this.sonido.arrancarMotor(ctx, false);
   }
 
   private viajar(dt: number, ctx: ContextoJuego): void {
@@ -340,7 +351,7 @@ export class Ascensor implements MandoAscensor {
       return;
     }
     // Ya en el piso nuevo: el motor se oye por sus muros (ella sabe que viene alguien).
-    if (this.cambiado) this.sonarMotor(dt, ctx);
+    if (this.cambiado) this.sonido.motorParaElla(dt, ctx, this.frente());
     if (this.tiempo >= TIEMPOS_ASCENSOR.viaje) this.llegar(ctx, true);
   }
 
@@ -355,7 +366,7 @@ export class Ascensor implements MandoAscensor {
     if (!armar || armar === ctx.piso.id) return;
     const transcurrido = this.tiempo;
     const flecha = this.flecha;
-    this.detenerMotor();
+    this.sonido.detenerMotor();
     ctx.viaje.porAscensor(armar, () => ctx.nivel.ascensor?.recibir(ctx, transcurrido, flecha, destino));
   }
 
@@ -370,27 +381,22 @@ export class Ascensor implements MandoAscensor {
     this.destino = destino === ctx.piso.id ? null : destino;
     this.apertura = 0;
     this.flecha = flecha;
-    this.hastaRuido = 0;
     this.vista.fijarApertura(0);
     this.vista.fijarIndicador(this.def.numero, flecha, true);
     // El botón encendido es el mismo que encendí en la otra cabina.
     this.vista.fijarBoton(this.numeros.indexOf(this.numeroDe(destino)));
     ctx.director.bloquear(TIEMPOS_ASCENSOR.viaje - transcurrido + 3);
     this.sacudon(ctx, 0.3);
-    this.arrancarMotor(ctx, false);
+    this.sonido.arrancarMotor(ctx, false);
   }
 
   /** Llegó: frena, suena la campanilla (fuerte) y abre, salvo que yo venga adentro y ella esté cerca. */
   private llegar(ctx: ContextoJuego, conmigo: boolean): void {
-    this.detenerMotor();
+    this.sonido.detenerMotor();
     this.flecha = 0;
     this.vista.fijarLlamada(false);
     this.vista.fijarIndicador(this.def.numero, 0, true);
-    const p = this.puerta();
-    ctx.audio.reproducir('campanilla', { posicion: { x: p.x, y: 2.3, z: p.z }, volumen: 1, reverb: 0.5 });
-    const f = this.frente();
-    ctx.bus.emit('ruido', { x: f.x, z: f.z, intensidad: RUIDO.campanilla, origen: 'entorno', causa: 'maquina' });
-    ctx.bus.emit('sonido-relevante', { descripcion: 'la campanilla del ascensor', x: p.x, z: p.z });
+    this.sonido.campanilla(ctx, this.puerta(), this.frente());
     if (!conmigo) {
       this.abrir(ctx);
       return;
@@ -422,34 +428,35 @@ export class Ascensor implements MandoAscensor {
   /** Un golpe de la cabina: la cámara se sacude, suena el freno y la luz titila. */
   private sacudon(ctx: ContextoJuego, fuerza: number): void {
     ctx.jugador.efectos.agregarTrauma(fuerza);
-    const c = this.marco;
-    ctx.audio.reproducir('golpe', { posicion: { x: c.cx, y: 0.2, z: c.cz }, volumen: 0.55, tono: 0.55 });
+    this.sonido.golpe(ctx);
     this.lampara?.interferir(0.35);
   }
 
-  private arrancarMotor(ctx: ContextoJuego, dentroPared: boolean): void {
-    this.detenerMotor();
-    const c = this.marco;
-    this.motor = ctx.audio.reproducir('motor_ascensor', { posicion: { x: c.cx, y: 1.4, z: c.cz }, dentroPared, bucle: true, volumen: dentroPared ? 0.9 : 0.7 });
+  // --- Lo que pide un guion ----------------------------------------------------------------------------------------
+
+  /**
+   * La cabina frena de golpe entre dos pisos (un momento escrito: el Piso 2). Las puertas siguen cerradas, el motor
+   * se apaga y la luz enloquece. Solo mientras viaja; sigue con reanudar. Devuelve si se detuvo.
+   */
+  detener(ctx: ContextoJuego): boolean {
+    if (this.fase !== 'viajando') return false;
+    this.tiempoAlDetener = this.tiempo;
+    this.cambiarFase('detenido');
+    this.sonido.detenerMotor();
+    this.sacudon(ctx, 0.7);
+    this.sonido.golpe(ctx, 1);
+    this.lampara?.interferir(2.5);
+    return true;
   }
 
-  private detenerMotor(): void {
-    this.motor?.detener(0.4);
-    this.motor = null;
-  }
-
-  /** El motor, para ella: un ruido por los muros cada tanto. */
-  private sonarMotor(dt: number, ctx: ContextoJuego): void {
-    this.hastaRuido -= dt;
-    if (this.hastaRuido > 0) return;
-    this.hastaRuido = TIEMPOS_ASCENSOR.ruidoMotor;
-    const f = this.frente();
-    ctx.bus.emit('ruido', { x: f.x, z: f.z, intensidad: RUIDO.motor, origen: 'entorno', causa: 'maquina', pared: true });
-  }
-
-  private sonarPuertas(ctx: ContextoJuego): void {
-    const p = this.puerta();
-    ctx.audio.reproducir('puertas_ascensor', { posicion: { x: p.x, y: 1.2, z: p.z }, volumen: 0.8 });
+  /** Sigo el viaje desde donde me detuvieron, con un sacudón y el motor otra vez. */
+  reanudar(ctx: ContextoJuego): void {
+    if (this.fase !== 'detenido') return;
+    this.cambiarFase('viajando');
+    this.tiempo = this.tiempoAlDetener;
+    this.sacudon(ctx, 0.35);
+    this.sonido.arrancarMotor(ctx, false);
+    ctx.director.bloquear(TIEMPOS_ASCENSOR.viaje - this.tiempo + 3);
   }
 
   // --- Cargar y la historia ---------------------------------------------------------------------------------------
@@ -461,7 +468,7 @@ export class Ascensor implements MandoAscensor {
 
   /** Al armar el piso o cargar: cerrado, en otro piso (o muerto), en silencio. */
   restablecer(ctx: ContextoJuego): void {
-    this.detenerMotor();
+    this.sonido.detenerMotor();
     this.cambiarFase(this.vivo(ctx) ? 'lejos' : 'muerto');
     this.apertura = 0;
     this.destino = null;

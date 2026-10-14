@@ -429,6 +429,29 @@ describe('Los botones que piden algo y el piso que todavía no existe', () => {
     expect(m.viajes).toEqual(['piso2']);
   });
 
+  it('un guion la detiene entre pisos: quieta no cambia de piso ni avanza; al soltarla sigue desde donde quedó', () => {
+    const m = montar(PISO_3.ascensor!, [], ['llave_servicio']);
+    expect(m.ascensor.detener(m.falso.ctx), 'parada, no hay viaje que detener').toBe(false);
+    abiertoConmigo(m);
+    m.ascensor.pulsar(al1(m), m.falso.ctx);
+    m.correr(TIEMPOS_ASCENSOR.puertas + 0.1);
+    m.correr(1);
+    expect(m.ascensor.viajandoHacia).toBe('piso1');
+    const avance = m.ascensor.avanceViaje;
+    expect(m.ascensor.detener(m.falso.ctx)).toBe(true);
+    expect(m.ascensor.fase).toBe('detenido');
+    expect(m.ascensor.viajandoHacia, 'detenida no viaja').toBeNull();
+    expect(m.ascensor.cajaColision(), 'las puertas siguen cerradas').not.toBeNull();
+    m.correr(10);
+    expect(m.ascensor.fase).toBe('detenido');
+    expect(m.viajes, 'detenida no cambia de piso').toEqual([]);
+    expect(m.ascensor.avanceViaje).toBeCloseTo(avance, 2);
+    m.ascensor.reanudar(m.falso.ctx);
+    expect(m.ascensor.fase).toBe('viajando');
+    m.correr(TIEMPOS_ASCENSOR.viaje / 2);
+    expect(m.viajes, 'retoma y, a la mitad, arma el 2').toEqual(['piso2']);
+  });
+
   it('al llegar conmigo a un piso que no existe, no abre: avisa al guion y se queda cerrado', () => {
     const m = montar();
     entrar(m);

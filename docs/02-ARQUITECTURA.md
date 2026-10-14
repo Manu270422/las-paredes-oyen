@@ -296,6 +296,29 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
   El aviso de la caza sigue siendo justo sin sonido: trae interferencia en la imagen y el sobresalto.
 - Pruebas: `aislamiento.test.ts` y el recorrido `cuartoSordo.spec.ts`.
 
+## La cabina que se detiene (P2-guion, tanda 3, 2026-10-14)
+
+- **El sonido del ascensor salió de la máquina** (`mundo/SonidoAscensor.ts`: motor, ruido para ella, puertas,
+  campanilla y golpes), como pedía la cabecera de `Ascensor.ts` antes de agregarle algo. Mismos sonidos y valores:
+  lo comprueba `ascensor.test.ts` sin cambios.
+- **Un guion puede detener la cabina entre pisos** (`Ascensor.detener` / `reanudar`, fase `detenido`): puertas
+  cerradas, motor apagado, sin vibración, y al soltarla sigue desde el mismo punto del viaje. El guion mira
+  `viajandoHacia` y `avanceViaje`.
+- **Un encuentro sin cuerpo** (`ia/EncuentroSinCuerpo.ts`): ella escucha desde un punto fijo donde no se la ve (el
+  techo). Son las reglas del encuentro de `EstadoInvestigando`: mientras se arrastra, su ruido tapa mi respiración y
+  solo lo fuerte (`umbralCaza`) me delata; quieta, la gracia y la duración de la dificultad, y cualquier ruido mío
+  que le llegue me delata. **La justicia del aire:** no se pone a escuchar mientras aguanto ni con menos de 0.95 de
+  aire (con miedo máximo el aire alcanza para el encuentro más largo por 0.35 s); tope de 9 s.
+- **Mientras avisa, no atrapa** (`Entidad.avisando`, que marca `EstadoCazando`; `Juego` lo respeta al atrapar). Antes,
+  una caza que empezaba a menos de 0.85 m mataba sin el aviso que promete la regla de justicia. En el juego normal
+  casi no pasaba; cayendo dentro de la cabina, pasaba siempre.
+- **La escena** (`pisos/piso2/cabinaDetenida.ts`): frena pasado el 55 % del viaje al 1, algo cae sobre el techo, se
+  arrastra, se queda a escuchar (la luz de la cabina titila todo el rato). Superada: trepa por el pozo, se marca
+  `cabina:superada` y la cabina sigue al final. Fallida: revienta la trampilla, cae adentro (`Entidad.caerDesde`) y
+  caza con la causa que me delató; reaparezco en el 202 con la llave.
+- Pruebas: `cabinaDetenida.test.ts`, `ascensor.test.ts` (detener y reanudar) y el recorrido `cabinaDetenida.spec.ts`
+  (los dos caminos, cada uno en su partida).
+
 ## Lo que se lee y lo que se examina
 
 - **Documentos** (`interaccion/objetos/Documento.ts`): abren el lector y **pausan** el mundo (estado `documento`).

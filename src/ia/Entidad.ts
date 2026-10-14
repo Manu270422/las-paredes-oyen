@@ -59,6 +59,11 @@ export class Entidad {
   enEncuentro = false;
   /** Segundos que me quedo escuchando justo después de salir del muro (lo consume Investigando). */
   pausaSalida = 0;
+  /**
+   * Estoy dando el aviso de la caza (me enderezo, giro, jadeo): mientras tanto NO atrapo, aunque esté encima (lo marca
+   * el estado Cazando). Así la regla "toda caza avisa" vale también cuando la caza empieza pegada al jugador.
+   */
+  avisando = false;
 
   private camino: Celda[] = [];
   private indiceCamino = 0;
@@ -107,6 +112,7 @@ export class Entidad {
     this.imitador.detener();
     this.enEncuentro = false;
     this.pausaSalida = 0;
+    this.avisando = false;
     this.desvanecer();
     this.firma.detener(ctx);
     this.cambiarEstado('paredes', ctx);
@@ -146,6 +152,11 @@ export class Entidad {
     this.camino = [];
     ctx.audio.reproducir('crujido_madera', { bus: 'entidad', posicion: { x, y: 1.4, z }, volumen: 0.8, tono: 0.7 });
     ctx.audio.reproducir('respira_entidad', { bus: 'entidad', posicion: { x, y: 2, z }, volumen: 0.6, retraso: 0.6 });
+  }
+
+  /** Recién manifestada, me ven caer desde `altura` metros (el techo de la cabina): el cuerpo baja solo a mis pies. */
+  caerDesde(altura: number): void {
+    this.modelo.raiz.position.y = altura;
   }
 
   /** Vuelvo a las paredes: pierdo el cuerpo. */

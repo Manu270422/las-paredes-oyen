@@ -11,7 +11,8 @@ import type { EstadoIA } from '../TiposIA';
 
 // El aviso (ctx.dificultad.avisoCaza): se endereza, gira hacia mí y jadea, y RECIÉN ENTONCES corre. Es lo que
 // exige la regla de justicia: sin él, una caza que empieza a 3 m es una muerte sin oportunidad (1.3 s en las
-// pruebas). Ninguna dificultad lo baja de 0.5 s (lo prueba dificultad.test.ts).
+// pruebas). Ninguna dificultad lo baja de 0.5 s (lo prueba dificultad.test.ts). Mientras dura, NO atrapa aunque esté
+// encima (entidad.avisando): una caza que empieza pegada al jugador, como cuando cae dentro de la cabina, también avisa.
 
 export class EstadoCazando implements EstadoIA {
   readonly nombre = 'cazando' as const;
@@ -22,6 +23,7 @@ export class EstadoCazando implements EstadoIA {
   entrar(entidad: Entidad, ctx: ContextoJuego): void {
     this.recalcular = 0;
     this.arranque = ctx.dificultad.avisoCaza;
+    entidad.avisando = true;
     this.ultimoContacto = ctx.programador.ahora;
     entidad.pose = 'quieto';
     entidad.velocidadActual = 0;
@@ -37,6 +39,7 @@ export class EstadoCazando implements EstadoIA {
     const ahora = ctx.programador.ahora;
     if (this.arranque > 0) {
       this.arranque -= dt;
+      if (this.arranque <= 0) entidad.avisando = false;
       this.ultimoContacto = ahora;
       entidad.pose = 'quieto';
       entidad.velocidadActual = 0;
@@ -67,6 +70,10 @@ export class EstadoCazando implements EstadoIA {
     }
     // Si la persecución se alarga sin contacto, me rindo por ahora.
     if (ahora - this.ultimoContacto > 9) entidad.cambiarEstado('retirada', ctx);
+  }
+
+  salir(entidad: Entidad): void {
+    entidad.avisando = false;
   }
 
   alOir(_entidad: Entidad, ctx: ContextoJuego, percibido: number, ruido: Ruido): void {

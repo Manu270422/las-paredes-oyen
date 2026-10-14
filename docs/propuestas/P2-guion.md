@@ -69,7 +69,7 @@ Objetivos (borrador): bajar → averiguar quién lo tapó todo → encontrar la 
 |---|---|---|
 | 1 | Bajar al 2 y terminarlo: la reja del 3 se abre sola, el mapa, la tapia, el libro de quejas, la lista de llaves, el cuaderno de Hernando, grabar el 202, la llave y el botón «1» con un final simple | Hecha el 2026-10-13 (ver la bitácora) |
 | 2 | El cuarto sordo de verdad: muros acolchados (se ven y bloquean el sonido en los dos sentidos), ella entra caminando, las luces la delatan | Hecha el 2026-10-13 (ver la bitácora y 02-ARQUITECTURA) |
-| 3 | La cabina se detiene entre el 2 y el 1 con ella encima (quieto y sin aire); morir ahí devuelve al 202 con la llave | Pendiente |
+| 3 | La cabina se detiene entre el 2 y el 1 con ella encima (quieto y sin aire); morir ahí devuelve al 202 con la llave | Hecha el 2026-10-14 (ver la bitácora y 02-ARQUITECTURA) |
 | 4 | Pulido: la radio del pasillo, rastros, sonidos propios, revisar textos con el creador | Pendiente |
 
 **Cambio respecto del borrador:** la llave de servicio no está a la vista desde el principio. Aparece en el rincón de
@@ -84,6 +84,16 @@ objetivos queda: averiguar (libro de quejas) → grabar el cuarto sordo → la l
 - Sale a buscar a los 25 s seguidos adentro (y solo cuando el director la deja salir). Grabar y oír la cinta ya
   lleva unos 20 s: lo normal es que entre mientras busco la llave.
 - La puerta abierta no deja pasar el sonido (lo que aísla son los colchones: Hernando forró también las puertas).
+
+**Decisiones de la tanda 3 que el creador puede cambiar:**
+- La cabina frena pasado el 55 % del viaje: ya no se puede volver, y la caída al Piso 1 queda "debajo".
+- Son las reglas de cualquier encuentro (misma duración y misma gracia por dificultad). La diferencia es que, mientras
+  ella se arrastra, su ruido tapa hasta un jadeo, y no se pone a escuchar hasta que el jugador suelta el aire y lo
+  recupera (si se adelantó a aguantar, no lo castiga).
+- Si te oye, revienta la trampilla y cae adentro: el aviso de caza de siempre (0.8 s en Normal) y la muerte. Se
+  reaparece en la sala del 202 con la llave (punto de control de la llave). En Pesadilla, como siempre, desde cero.
+- No hay un modelo de trampilla en el techo: se oye y se lee, y ella cae desde arriba. Si al jugarlo hace falta
+  verla, es una pieza para la tanda 4.
 
 **Mientras el Piso 1 no exista:** el botón «1» lleva la cabina hasta el 2 y su guion cierra la partida (a negro, las
 puertas se abren a la portería a oscuras, "Próximamente: Piso 1"). Funciona igual si se pulsa desde el 3 o el 4 con la
