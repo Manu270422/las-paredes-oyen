@@ -311,6 +311,8 @@ export class Juego {
   /** Engancho lo que depende del piso armado: la oclusión del sonido, el anuncio de lugares y el guion. */
   private conectarPiso(): void {
     this.audio.consultaOclusion = this.nivel.consultaOclusion;
+    this.audio.consultaAislamiento = this.nivel.consultaAislamiento;
+    this.ui.hud.oyeDesde = (x, z) => !this.nivel.consultaAislamiento(this.jugador.posicion.x, this.jugador.posicion.z, x, z);
     this.cancelarAnuncioLugares = conectarAnuncioLugares(this.bus, this.piso, this.nivel, this.progreso);
     this.guion = this.piso.guion?.(this.accionesGuion) ?? null;
     this.guion?.conectar(this.ctx);

@@ -16,7 +16,8 @@ export type IdTextura =
   | 'madera'
   | 'tela'
   | 'metal'
-  | 'ladrillo';
+  | 'ladrillo'
+  | 'colchon';
 
 // --- Pequeñas ayudas para escribir las recetas con menos ruido visual ---
 const frac = (x: number) => x - Math.floor(x);
@@ -118,6 +119,47 @@ export const RECETAS: Record<IdTextura, RecetaTextura> = {
       const bisel = Math.min(1, (Math.min(jx, jy) - 1) * 2);
       const k = 0.82 + tono * 0.22 + grano * 0.12 - quemado * 0.3;
       pintarPx(px, 168 * k, 82 * k - quemado * 10, 52 * k, 0.5 + bisel * 0.3 + grano * 0.2, 0.85);
+    },
+  },
+
+  // Colchones de pie clavados a la pared (el 202 de Hernando): tela de rayas desteñida, los botones del capitoné
+  // hundidos, la costura entre un colchón y otro, manchas de años. Arriba, hasta el techo, espuma de cartón de huevos.
+  // Una repetición (2.7 m) son dos colchones de 1.35 m de ancho y 1.94 m de alto (hasta v = 0.72).
+  colchon: {
+    semilla: 61,
+    fuerzaNormal: 3.2,
+    pintar(u, v, r, px) {
+      const mancha = fbm(r, u, v, 5, 3);
+      const sucio = Math.max(0, mancha - 0.52) * 1.4;
+      if (v > 0.72) {
+        // La espuma: bultos en filas, amarillenta, más oscura donde le cayó agua.
+        const bulto = 0.5 + 0.5 * Math.sin(u * Math.PI * 2 * 24) * Math.sin(v * Math.PI * 2 * 12);
+        const k = 0.62 + bulto * 0.32 - sucio * 0.5;
+        pintarPx(px, 138 * k, 128 * k, 92 * k, bulto * 0.9, 1);
+        return;
+      }
+      const lu = frac(u * 2);
+      const lv = v / 0.72;
+      // La costura entre colchones y el borde de abajo y de arriba (unos 2 cm): una sombra hundida.
+      const costura = Math.min(lu * 1.35, (1 - lu) * 1.35, lv * 1.94, (1 - lv) * 1.94) < 0.02;
+      if (costura) {
+        pintarPx(px, 34, 30, 26, -0.8, 1);
+        return;
+      }
+      // Los botones del capitoné (3 × 5 por colchón): la tela se hunde hacia cada uno.
+      const cu = (Math.floor(lu * 3) + 0.5) / 3;
+      const cv = (Math.floor(lv * 5) + 0.5) / 5;
+      const d = Math.hypot((lu - cu) * 1.35, (lv - cv) * 1.94);
+      const hundido = Math.exp(-(d * d) / 0.006);
+      const boton = d < 0.018;
+      const raya = Math.sin(lu * Math.PI * 2 * 22) > 0.55 ? 1 : 0;
+      const grano = fbm(r, u + 1.3, v + 0.4, 3, 40);
+      let k = 0.8 + grano * 0.2 - hundido * 0.25 - sucio * 0.45;
+      if (boton) k *= 0.55;
+      const cr = raya ? 112 : 176;
+      const cg = raya ? 120 : 164;
+      const cb = raya ? 128 : 132;
+      pintarPx(px, cr * k + sucio * 18, cg * k + sucio * 8, cb * k, 0.7 - hundido * 0.6 + grano * 0.15, 1);
     },
   },
 

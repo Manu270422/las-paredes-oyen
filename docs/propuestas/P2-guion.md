@@ -68,7 +68,7 @@ Objetivos (borrador): bajar → averiguar quién lo tapó todo → encontrar la 
 | Tanda | Qué | Estado |
 |---|---|---|
 | 1 | Bajar al 2 y terminarlo: la reja del 3 se abre sola, el mapa, la tapia, el libro de quejas, la lista de llaves, el cuaderno de Hernando, grabar el 202, la llave y el botón «1» con un final simple | Hecha el 2026-10-13 (ver la bitácora) |
-| 2 | El cuarto sordo de verdad: muros acolchados (se ven y bloquean el sonido en los dos sentidos), ella entra caminando, las luces la delatan | Pendiente |
+| 2 | El cuarto sordo de verdad: muros acolchados (se ven y bloquean el sonido en los dos sentidos), ella entra caminando, las luces la delatan | Hecha el 2026-10-13 (ver la bitácora y 02-ARQUITECTURA) |
 | 3 | La cabina se detiene entre el 2 y el 1 con ella encima (quieto y sin aire); morir ahí devuelve al 202 con la llave | Pendiente |
 | 4 | Pulido: la radio del pasillo, rastros, sonidos propios, revisar textos con el creador | Pendiente |
 
@@ -76,6 +76,14 @@ Objetivos (borrador): bajar → averiguar quién lo tapó todo → encontrar la 
 la sala cuando termina la cinta del cuarto sordo (la cinta trae "algo de metal que cae entre los colchones"). Si
 estuviera a la vista, se podía tomar y bajar sin grabar, y el piso se saltaba su momento central. El orden de los
 objetivos queda: averiguar (libro de quejas) → grabar el cuarto sordo → la llave → bajar al 1.
+
+**Decisiones de la tanda 2 que el creador puede cambiar:**
+- Si ella entra al MISMO cuarto acolchado, se oye (y me oye): lo que aíslan los colchones es entre un cuarto y otro.
+  Si el cuarto también apagara sus pasos adentro, la única pista sería la luz, y con el aviso de la caza en silencio
+  el encuentro se vuelve más difícil de leer. Se puede probar más duro si al jugarlo se siente fácil.
+- Sale a buscar a los 25 s seguidos adentro (y solo cuando el director la deja salir). Grabar y oír la cinta ya
+  lleva unos 20 s: lo normal es que entre mientras busco la llave.
+- La puerta abierta no deja pasar el sonido (lo que aísla son los colchones: Hernando forró también las puertas).
 
 **Mientras el Piso 1 no exista:** el botón «1» lleva la cabina hasta el 2 y su guion cierra la partida (a negro, las
 puertas se abren a la portería a oscuras, "Próximamente: Piso 1"). Funciona igual si se pulsa desde el 3 o el 4 con la

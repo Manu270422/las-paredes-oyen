@@ -273,6 +273,8 @@ export class Entidad {
         if (!r.esTransitable(gx, gy) || r.esPuerta(gx, gy) || r.esCabina(gx, gy)) continue;
         const cx = r.centro(gx);
         const cz = r.centro(gy);
+        // De un muro acolchado no salgo: los colchones no me dejan (al cuarto sordo se entra por la puerta).
+        if (ctx.nivel.acolchadoEn(cx, cz)) continue;
         if (distancia2D(cx, cz, j.x, j.z) < distanciaMinima) continue;
         if (puntoEnVista(ctx, cx, 1.2, cz)) continue;
         const d = distancia2D(cx, cz, x, z);

@@ -5,8 +5,11 @@
 //    las paredes le llevan el sonido. Por eso oye mejor desde adentro.
 // 3) Excepción que rompe la regla: si estoy muy cerca, me siente aunque
 //    no haga ruido (eso se maneja en los estados, con el radio de presencia).
+// 4) Los colchones rompen la regla 2: entre un cuarto acolchado y cualquier otro lugar (también los muros) casi no
+//    pasa nada. Dentro del mismo cuarto acolchado, oigo normal.
 import type { Ruido } from '../nucleo/Eventos';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
+import { OIDO_ACOLCHADO } from '../mundo/Aislamiento';
 import { distancia2D } from '../utilidades/Matematicas';
 
 export class Percepcion {
@@ -15,7 +18,8 @@ export class Percepcion {
     const distancia = distancia2D(x, z, ruido.x, ruido.z);
     if (distancia > 30) return 0;
     const obstaculos = ctx.nivel.consultaOclusion(ruido.x, ruido.z, x, z);
-    const transmision = Math.pow(dentroDeParedes ? 0.82 : 0.45, obstaculos);
+    const aislado = ctx.nivel.consultaAislamiento(ruido.x, ruido.z, x, z);
+    const transmision = aislado ? OIDO_ACOLCHADO : Math.pow(dentroDeParedes ? 0.82 : 0.45, obstaculos);
     return (ruido.intensidad * transmision) / (1 + distancia * 0.22);
   }
 }
