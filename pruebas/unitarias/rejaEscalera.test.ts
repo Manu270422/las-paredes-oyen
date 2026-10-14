@@ -43,6 +43,17 @@ describe('RejaEscalera', () => {
     expect(malla(g, 'reja-cadena').position.y).toBeCloseTo(-1.1);
   });
 
+  it('sola (sin llave, el final del Piso 3): lo mismo pero sin el sonido de la llave', () => {
+    const falso = crearContextoFalso();
+    const reja = new RejaEscalera(armarReja());
+    const alTerminar = vi.fn();
+    reja.abrir(alTerminar, true);
+    for (let i = 0; i < 100; i++) reja.actualizar(0.05, falso.ctx as ContextoJuego);
+    expect(falso.sonidos).toEqual(['cerradura', 'cadena', 'candado', 'puerta_crujido']);
+    expect(alTerminar).toHaveBeenCalledTimes(1);
+    expect(reja.abierta).toBe(true);
+  });
+
   it('a medio abrir, las hojas todavía no se movieron y el candado va cayendo', () => {
     const falso = crearContextoFalso();
     const g = armarReja();

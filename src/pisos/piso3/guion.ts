@@ -5,7 +5,8 @@
 //   ponerlas juntas. Con ella revienta la única luz del piso: la emergencia de la escalera.
 // - Grabar la pared del cuarto de Andrés (medido:302) y su cinta.
 // - Al volver al pasillo, ella está de pie entre la escalera y yo.
-// - En la escalera, a oscuras: tres golpes desde el Piso 2, y la partida termina.
+// - En la escalera, a oscuras: tres golpes desde el Piso 2 y, después, la reja de abajo se abre sola (P2-guion,
+//   momento 1: "para que sepas que oyó", alguien te abrió). El piso queda completado y se baja caminando.
 // Todo se basa en banderas, así funciona igual al cargar partida.
 import { CONFIG } from '../../config/ConfiguracionJuego';
 import type { AccionesGuion } from '../../narrativa/AccionesGuion';
@@ -31,12 +32,22 @@ export const REFLEXION_LIBRETA = 'Las hojas son del mismo cuaderno. La última p
 export const CINTA_302 = 'cinta:302';
 /** Empezó el final, en la escalera. */
 export const FINAL_PISO_3 = 'final:piso3';
-/** Lo último que se oye en el piso. */
+/** Lo que se oye desde abajo al empezar el final. */
 export const GOLPES_FINALES = 'Abajo, detrás de la reja, alguien golpea tres veces. Despacio. Para que sepas que oyó.';
+/** La reja del tramo que baja se abrió sola (la marca el final; con ella el tramo deja pasar, ver el paquete). */
+export const REJA_ABAJO = 'reja:piso2';
+/** El subtítulo de lo que suena cuando la reja se abre sola. */
+export const REJA_SOLA = '[El candado cae. La reja de abajo se abre sola]';
+/**
+ * El último objetivo del piso: nunca se marca aquí (se cumple bajando). Si vuelvo a subir, sigue diciendo qué falta.
+ */
+export const BAJAR_AL_2 = 'bajo:piso2';
 /** Segundos de juego (no de lectura: leyendo no corre) entre cerrar la última parte y la reflexión. */
 const PAUSA_REFLEXION = 1.2;
 /** Segundos desde llegar hasta los tres golpes de bienvenida. */
 const GOLPE_LLEGADA = 8;
+/** Segundos sin el director después de que la reja se abre: bajar no debería empezar con una caza. */
+const CALMA_PARA_BAJAR = 25;
 /** La pared de las rayas, en el dormitorio del 302 (celdas): de ahí salen los golpes. */
 const PARED_ANDRES = { x: 11.5, y: 17 };
 
@@ -89,7 +100,8 @@ export class GuionPiso3 implements GuionPiso {
     if (p.tiene(CINTA_302) && !p.tiene('pasillo:302') && ctx.memoria.habitacionActual === 'pasillo' && ctx.entidad.estado === 'paredes') {
       this.esperarEnElPasillo(ctx);
     }
-    if (p.tiene(CINTA_302) && !this.enFinal && ctx.memoria.habitacionActual === 'escalera') this.final(ctx);
+    // El final pasa una sola vez: si vuelvo a subir desde el Piso 2, la reja ya está abierta y no se repite.
+    if (p.tiene(CINTA_302) && !this.enFinal && !p.tiene(FINAL_PISO_3) && ctx.memoria.habitacionActual === 'escalera') this.final(ctx);
   }
 
   /** Si ya están leídas las tres partes y la libreta no está cerrada, la cierro. */
@@ -157,7 +169,11 @@ export class GuionPiso3 implements GuionPiso {
     ctx.bus.emit('pista', { id: 'pasillo302', texto: 'Está entre tú y la escalera. Deja la grabadora ({senuelo}) lejos de ella, o ilumínala quieto hasta que se vaya.' });
   }
 
-  /** En la escalera, a oscuras: tres golpes desde abajo, detrás de la reja del Piso 2. Y la partida termina. */
+  /**
+   * En la escalera, a oscuras: tres golpes desde abajo, detrás de la reja del Piso 2. Después la reja se abre sola
+   * (el tramo la abre al marcar REJA_ABAJO: candado, cadena y hojas, sin llave). El piso queda completado, vuelvo a
+   * moverme y ella vuelve, pero con unos segundos de calma para bajar.
+   */
   private final(ctx: ContextoJuego): void {
     this.enFinal = true;
     ctx.progreso.marcar(FINAL_PISO_3);
@@ -172,10 +188,14 @@ export class GuionPiso3 implements GuionPiso {
       [
         ...[1.2, 2.1, 3.0].map((t) => [t, () => ctx.audio.reproducir('golpe', { bus: 'entidad', posicion: abajo, volumen: 0.9 })] as [number, () => void]),
         [3.6, () => ctx.bus.emit('subtitulo', { texto: GOLPES_FINALES, duracion: 5, tipo: 'efecto' })],
-        [8.2, () => this.acciones.fundido(true, 1.5)],
-        [10.2, () => {
+        [8.2, () => ctx.progreso.marcar(REJA_ABAJO)],
+        [9.1, () => ctx.bus.emit('subtitulo', { texto: REJA_SOLA, duracion: 3.5, tipo: 'efecto' })],
+        [11.8, () => {
           this.acciones.fijarSoloMirar(false);
-          this.acciones.terminarPartida();
+          this.acciones.completarPiso();
+          ctx.director.activo = true;
+          ctx.director.bloquear(CALMA_PARA_BAJAR);
+          ctx.entidad.puedeManifestarse = true;
         }],
       ],
       'final',

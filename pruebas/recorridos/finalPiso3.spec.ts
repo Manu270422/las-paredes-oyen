@@ -2,7 +2,8 @@
 // 1) bajo desde el Piso 4; con la libreta completa revienta la luz de la escalera; camino al dormitorio del 302,
 //    grabo la pared del cuarto de Andrés con la X y suena su cinta;
 // 2) al volver al pasillo ella espera entre la escalera y yo; iluminada, quieto y callado, se retira; llego a la
-//    escalera a oscuras: tres golpes desde abajo y la pantalla "Piso 3 completado" con el Piso 2 por venir.
+//    escalera a oscuras: tres golpes desde abajo y la reja de abajo se abre sola (P2-guion). El piso queda
+//    completado, la partida sigue y, al bajar, sobre el negro sale la tarjeta "Piso 3 superado": llego al Piso 2.
 // La libreta se camina en libretaPiso3.spec.ts: aquí se marca leída para llegar rápido a lo nuevo, y SIN la carta
 // del 301, que es opcional (el camino que antes trababa el piso).
 import { expect, test, type Page } from '@playwright/test';
@@ -140,7 +141,7 @@ test.describe.serial('Final del Piso 3', () => {
     expect(r.estado).toBe('jugando');
   });
 
-  test('en el pasillo espera; iluminada y quieto se retira; en la escalera, el final y la pantalla del Piso 3', async () => {
+  test('en el pasillo espera; iluminada y quieto se retira; en la escalera, la reja de abajo se abre sola y bajo al Piso 2', async () => {
     const r = await page.evaluate(async () => {
       const J = window.__juego!;
       const P = window.__piloto!;
@@ -175,16 +176,38 @@ test.describe.serial('Final del Piso 3', () => {
       const finEscalera = performance.now() + 8000;
       while (!ctx.progreso.tiene('final:piso3') && performance.now() < finEscalera) await P.esperarReal(16);
       P.soltar('KeyW');
-      const finPantalla = performance.now() + 25_000;
-      while (J.estado !== 'fin' && performance.now() < finPantalla) await P.esperarReal(50);
+      // La reja se abre sola: espero a que termine (la bandera del tramo) y a volver a moverme.
+      const interno = J as unknown as { soloMirar: boolean; finDePiso: { exportar(): Array<{ piso: string }> } };
+      const finReja = performance.now() + 25_000;
+      while (!(ctx.progreso.tiene('abierta:bajada') && !interno.soloMirar) && performance.now() < finReja) await P.esperarReal(50);
+      const trasLaReja = {
+        estado: J.estado,
+        completados: interno.finDePiso.exportar().map((p) => p.piso),
+        objetivo: ctx.progreso.objetivoActual()?.texto ?? null,
+        rejaSola: subs.some((s) => s.includes('La reja de abajo se abre sola')),
+      };
+      // Bajo (con fundido, como el resto de esta prueba): la tarjeta del piso completado sale sobre el negro.
+      const tarjetas: string[] = [];
+      ctx.bus.on('tarjeta', (t) => tarjetas.push(t.titulo));
+      E.puedeManifestarse = false;
+      await P.caminar([[2.2, 10.45]]);
+      const tramo = ctx.nivel.interactuables.find((i) => i.id === 'bajada')!;
+      P.mirarA(tramo.objeto.position.x, tramo.objeto.position.y, tramo.objeto.position.z);
+      await P.esperarJuego(0.3);
+      const textoTramo = J.interaccion.enfocado ? J.interaccion.enfocado.texto(ctx) : null;
+      await P.pulsar('KeyE');
+      const finViaje = performance.now() + 20_000;
+      while (!(J.estado === 'jugando' && J.ctx.piso.id === 'piso2') && performance.now() < finViaje) await P.esperarReal(50);
       return {
         alSalir,
         estados,
-        final: ctx.progreso.tiene('final:piso3'),
+        final: ctx.progreso.tiene('final:piso3') || J.ctx.piso.id === 'piso2',
         golpesFinales: subs.some((s) => s.includes('Abajo, detrás de la reja')),
-        estado: J.estado,
-        titulo: document.querySelector('.fin__titulo')?.textContent ?? null,
-        siguiente: document.querySelector('.fin__siguiente')?.textContent ?? null,
+        trasLaReja,
+        textoTramo,
+        tarjetas,
+        piso: J.ctx.piso.id,
+        objetivoAbajo: J.ctx.progreso.objetivoActual()?.id ?? null,
       };
     });
     expect(r.alSalir.estado, 'al salir al pasillo, ella espera acechando').toBe('acechando');
@@ -194,8 +217,13 @@ test.describe.serial('Final del Piso 3', () => {
     expect(r.estados, 'se retira y se hunde en la pared').toEqual(expect.arrayContaining(['retirada', 'paredes']));
     expect(r.final, 'en la escalera empieza el final').toBe(true);
     expect(r.golpesFinales, 'tres golpes desde abajo').toBe(true);
-    expect(r.estado, 'la partida termina').toBe('fin');
-    expect(r.titulo).toBe('Piso 3 completado');
-    expect(r.siguiente ?? '').toContain('Piso 2');
+    expect(r.trasLaReja.rejaSola, 'el subtítulo de la reja que se abre sola').toBe(true);
+    expect(r.trasLaReja.estado, 'la partida NO termina').toBe('jugando');
+    expect(r.trasLaReja.completados, 'el Piso 3 queda completado').toContain('piso3');
+    expect(r.trasLaReja.objetivo).toBe('Baja al Piso 2');
+    expect(r.textoTramo, 'el tramo ya no pide nada').toBe('Bajar al Piso 2');
+    expect(r.piso, 'bajé al Piso 2').toBe('piso2');
+    expect(r.tarjetas, 'sobre el negro, la tarjeta del piso completado').toContain('Piso 3 superado');
+    expect(r.objetivoAbajo, 'abajo, lo primero es averiguar').toBe('averiguar');
   });
 });

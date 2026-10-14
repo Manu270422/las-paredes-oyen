@@ -41,7 +41,8 @@ LasParedesOyen/
    ├─ narrativa/               Progreso, acciones del guion, tipos de documento/objetivo/cinta, explicaciones de muerte
    ├─ pisos/                   Catálogo de pisos y la forma de un paquete (TiposPiso)
    │  ├─ piso4/                El Piso 4: mapa, objetivos, documentos, cintas, guion y secuencia final
-   │  └─ piso3/                El Piso 3: mapa, documentos, examinables y guion (la libreta de Andrés)
+   │  ├─ piso3/                El Piso 3: mapa, documentos, examinables y guion (la libreta de Andrés)
+   │  └─ piso2/                El Piso 2: mapa, documentos, cinta y guion (Hernando y el cuarto sordo)
    ├─ telemetria/              Telemetría LOCAL de playtesting: recolector, almacén, resumen, reacción, vigilancia, ?telemetria=1
    ├─ guardado/                Sistema de guardado versionado
    ├─ ui/                      Gestor de UI, íconos, navegación con mando
@@ -255,6 +256,24 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
   ida y vuelta, nada adentro de la cabina). Lo prueban `ascensor.test.ts` y, caminando, `ascensor.spec.ts`.
 - `Ascensor.ts` pasa de 250 líneas (~445, casi un cuarto comentarios y blancos) a propósito: es una sola máquina de
   estados y sus reglas de justicia comparten estado; el porqué está en su cabecera. Si crece, el sonido sale primero.
+
+## Lo que trajo el Piso 2 (P2-guion, tanda 1, 2026-10-13)
+
+- **Botones que piden algo.** Una `ParadaAscensor` puede tener `requiere` y `cerrada`: sin eso, el botón dice por qué
+  y las puertas siguen abiertas. Los botones que se repiten en varios pisos viven en `pisos/paradasAscensor.ts` (el
+  panel es uno solo): al 2, `visitado:piso2`; al 1, `objeto:llave_servicio`.
+- **`visitado:<piso>`** (`narrativa/Requisito.ts`): se cumple si ya estuve en ese piso (`Progreso.visitado`: el que
+  juego o uno que dejé). Así, la primera bajada a un piso es siempre por la escalera.
+- **Un piso que todavía no existe.** Una parada puede llevar al `siguiente` de un piso aunque no esté en el catálogo
+  (con `numero` para su botón; `EnlacesAscensor` lo valida). La cabina viaja hasta el último piso que existe
+  (`pisoAntesDe`) y, al llegar conmigo, no abre: emite `ascensor-fin-recorrido` y lo que pasa es del guion de ese
+  piso (el Piso 2 cierra la partida). Cuando exista el Piso 1, esa parada será un viaje normal.
+- **Escalera tapiada** (`opcionesEscalera.tapiadaAbajo`): un muro de ladrillo nuevo (material `ladrillo`, receta
+  procedural) donde iría la reja. `PozosCaminables` lo cuenta como tramo tapado para siempre (ni yo ni ella).
+- **La reja que se abre sola** (`DefEscaleraPiso.seAbreCon`): al marcarse esa bandera, `TramoEscalera.alBandera` la
+  abre sin llave (`RejaEscalera.abrir(…, true)`: no suena la llave). Al cargar, abierta si la bandera ya está.
+- **Completar sin moverme** (`AccionesGuion.completarPiso`, `FinDePiso.completarPiso`): el piso queda completado y la
+  partida sigue donde estoy. Así termina ahora el Piso 3; su tarjeta sale al bajar, como la del 4.
 
 ## Lo que se lee y lo que se examina
 

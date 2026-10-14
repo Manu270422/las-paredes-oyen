@@ -17,6 +17,7 @@ import { crearContextoFalso } from './contextoFalso';
 const C = CONFIG.celda;
 const PISO_4 = pisoPorId('piso4')!;
 const PISO_3 = pisoPorId('piso3')!;
+const PISO_2 = pisoPorId('piso2')!;
 
 describe('Los ascensores del catálogo', () => {
   it('están bien puestos y enlazados (misma celda, mismo panel, ida y vuelta)', () => {
@@ -24,10 +25,8 @@ describe('Los ascensores del catálogo', () => {
     expect(problemas).toEqual([]);
   });
 
-  it('el Piso 4 y el Piso 3 tienen ascensor, y el panel es idéntico en los dos', () => {
-    expect(PISO_4.ascensor && PISO_3.ascensor).toBeTruthy();
-    expect(numerosDelPanel(PISO_4.ascensor!)).toEqual(['4', '3']);
-    expect(numerosDelPanel(PISO_3.ascensor!)).toEqual(['4', '3']);
+  it('el Piso 4, el 3 y el 2 tienen ascensor, y el panel es idéntico en los tres (con el 1, que todavía no existe)', () => {
+    for (const piso of [PISO_4, PISO_3, PISO_2]) expect(numerosDelPanel(piso.ascensor!), piso.id).toEqual(['4', '3', '2', '1']);
   });
 
   it('la validación encuentra un ascensor mal puesto', () => {
@@ -127,7 +126,7 @@ interface Montaje {
   correr(segundos: number): void;
 }
 
-function montar(def: DefAscensor = PISO_3.ascensor!, banderas: string[] = [], inventario: string[] = []): Montaje {
+function montar(def: DefAscensor = PISO_3.ascensor!, banderas: string[] = [], inventario: string[] = [], visitados: string[] = []): Montaje {
   const rejilla = new Rejilla(PISO_3.mapa.rejilla);
   const marco = new MarcoCabina(def.x, def.y, rejilla);
   const vista = vistaFalsa();
@@ -156,7 +155,11 @@ function montar(def: DefAscensor = PISO_3.ascensor!, banderas: string[] = [], in
       if (e === 'paredes') this.fisica = false;
     },
   };
-  const progreso = { tiene: (b: string) => banderas.includes(b), tieneObjeto: (o: string) => inventario.includes(o) };
+  const progreso = {
+    tiene: (b: string) => banderas.includes(b),
+    tieneObjeto: (o: string) => inventario.includes(o),
+    visitado: (p: string) => p === 'piso3' || visitados.includes(p),
+  };
   const falso = crearContextoFalso({
     piso: PISO_3,
     jugador,
@@ -352,7 +355,7 @@ describe('La máquina del ascensor', () => {
     m.entidad.fisica = true;
     m.entidad.posicion.x = m.marco.cx + 2;
     m.entidad.posicion.z = 10.5 * C;
-    m.ascensor.recibir(m.falso.ctx, TIEMPOS_ASCENSOR.viaje / 2, -1);
+    m.ascensor.recibir(m.falso.ctx, TIEMPOS_ASCENSOR.viaje / 2, -1, 'piso3');
     expect(m.vista.indicador).toEqual(['3', -1, true]);
     expect(m.vista.boton, 'el botón del 3 encendido (abajo en el panel)').toBe(1);
     m.correr(TIEMPOS_ASCENSOR.viaje / 2 + 0.1);
@@ -375,9 +378,77 @@ describe('La máquina del ascensor', () => {
     m.entidad.fisica = true;
     m.entidad.posicion.x = m.marco.cx + DISTANCIA_JUSTICIA + 1;
     m.entidad.posicion.z = 10.5 * C;
-    m.ascensor.recibir(m.falso.ctx, TIEMPOS_ASCENSOR.viaje / 2, 1);
+    m.ascensor.recibir(m.falso.ctx, TIEMPOS_ASCENSOR.viaje / 2, 1, 'piso3');
     m.correr(TIEMPOS_ASCENSOR.viaje / 2 + 0.2);
     expect(m.ascensor.fase).toBe('abriendo');
     expect(m.entidad.estados).toEqual([]);
+  });
+});
+
+describe('Los botones que piden algo y el piso que todavía no existe', () => {
+  const abiertoConmigo = (m: Montaje) => {
+    llamar(m);
+    m.correr(TIEMPOS_ASCENSOR.llamada + TIEMPOS_ASCENSOR.puertas + 0.5);
+    entrar(m);
+  };
+  // En el Piso 3, el panel tiene: [llamar, al 4, al 2, al 1].
+  const al2 = (m: Montaje) => m.ascensor.botones[2];
+  const al1 = (m: Montaje) => m.ascensor.botones[3];
+
+  it('sin lo que piden, los botones del 2 y del 1 no se encienden: dicen por qué y las puertas siguen abiertas', () => {
+    const m = montar();
+    abiertoConmigo(m);
+    m.ascensor.pulsar(al2(m), m.falso.ctx);
+    expect(m.subtitulos).toContain('El botón del 2 no se enciende.');
+    m.correr(1);
+    expect(m.ascensor.fase).toBe('abierto');
+    m.ascensor.pulsar(al1(m), m.falso.ctx);
+    expect(m.subtitulos.at(-1)).toContain('llave de servicio');
+    m.correr(1);
+    expect(m.ascensor.fase).toBe('abierto');
+    expect(m.viajes).toEqual([]);
+  });
+
+  it('después de haber estado en el 2, su botón funciona', () => {
+    const m = montar(PISO_3.ascensor!, [], [], ['piso2']);
+    abiertoConmigo(m);
+    m.ascensor.pulsar(al2(m), m.falso.ctx);
+    m.correr(TIEMPOS_ASCENSOR.puertas + 0.1);
+    expect(m.ascensor.fase).toBe('viajando');
+    m.correr(TIEMPOS_ASCENSOR.viaje / 2);
+    expect(m.viajes).toEqual(['piso2']);
+  });
+
+  it('con la llave, el del 1 baja: como el 1 no existe, a la mitad arma el 2 (el último que existe) y sigue', () => {
+    const m = montar(PISO_3.ascensor!, [], ['llave_servicio']);
+    abiertoConmigo(m);
+    m.ascensor.pulsar(al1(m), m.falso.ctx);
+    m.correr(TIEMPOS_ASCENSOR.puertas + 0.1);
+    expect(m.ascensor.fase).toBe('viajando');
+    m.correr(TIEMPOS_ASCENSOR.viaje / 2);
+    expect(m.viajes).toEqual(['piso2']);
+  });
+
+  it('al llegar conmigo a un piso que no existe, no abre: avisa al guion y se queda cerrado', () => {
+    const m = montar();
+    entrar(m);
+    const avisos: string[] = [];
+    m.falso.bus.on('ascensor-fin-recorrido', ({ hacia }) => avisos.push(hacia));
+    m.ascensor.recibir(m.falso.ctx, TIEMPOS_ASCENSOR.viaje / 2, -1, 'piso1');
+    expect(m.vista.boton, 'el botón del 1 encendido (el último del panel)').toBe(3);
+    m.correr(TIEMPOS_ASCENSOR.viaje / 2 + 0.2);
+    expect(avisos).toEqual(['piso1']);
+    expect(m.falso.sonidos).toContain('campanilla');
+    m.correr(3);
+    expect(m.ascensor.fase, 'sigue cerrado').toBe('aqui');
+    expect(m.ascensor.apertura).toBe(0);
+  });
+
+  it('la validación acepta una parada a un piso por hacer solo si es el siguiente de alguno y dice su número', () => {
+    const paradas = PISO_2.ascensor!.paradas.filter((p) => p.hacia !== 'piso1');
+    const sinNumero: PaquetePiso = { ...PISO_2, ascensor: { ...PISO_2.ascensor!, paradas: [...paradas, { hacia: 'piso1', texto: 'x' }] } };
+    expect(problemasDeAscensor(sinNumero, PISOS).some((p) => p.includes('no dice qué número'))).toBe(true);
+    const aNingunLado: PaquetePiso = { ...PISO_2, ascensor: { ...PISO_2.ascensor!, paradas: [...paradas, { hacia: 'piso0', numero: '0', texto: 'x' }] } };
+    expect(problemasDeAscensor(aNingunLado, PISOS).some((p) => p.includes('ni es el siguiente'))).toBe(true);
   });
 });

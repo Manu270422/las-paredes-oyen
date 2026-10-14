@@ -78,13 +78,28 @@ export interface DefEscaleraPiso {
   readonly requiere?: string;
   /** El subtítulo al intentar pasar sin la bandera. Solo si hay `requiere`. */
   readonly cerrada?: string;
+  /**
+   * La reja de este tramo se abre SOLA cuando se marca esta bandera (nadie gira una llave: el candado cede y la
+   * cadena cae). Así termina el Piso 3: alguien abrió desde abajo.
+   */
+  readonly seAbreCon?: string;
 }
 
 /** Un piso al que lleva el ascensor: lo que dice su botón en el panel de la cabina ("Bajar al Piso 3"). */
 export interface ParadaAscensor {
-  /** El id del piso (clave del catálogo). Ese piso tiene su cabina en la misma celda: la cabina es la misma. */
+  /**
+   * El id del piso (clave del catálogo). Ese piso tiene su cabina en la misma celda: la cabina es la misma.
+   * Puede ser el `siguiente` de un piso que todavía no existe: la cabina baja hasta el último piso que sí existe
+   * y su guion decide qué pasa al llegar (el final de lo que hay). Entonces el botón necesita su `numero`.
+   */
   readonly hacia: string;
   readonly texto: string;
+  /** Desde qué bandera responde este botón (ver narrativa/Requisito: "objeto:" mira el bolsillo, "visitado:" los pisos). */
+  readonly requiere?: string;
+  /** Lo que se dice al pulsarlo sin `requiere`. */
+  readonly cerrada?: string;
+  /** El número del botón, solo si `hacia` todavía no está en el catálogo (si está, es el de su ascensor). */
+  readonly numero?: string;
 }
 
 /**
@@ -259,8 +274,11 @@ export interface PaquetePiso {
   readonly ascensor?: DefAscensor;
   /** Banderas que se marcan en silencio al llegar a este piso, antes de ponerEnPunto (para que el director ya las vea). */
   readonly banderasAlLlegar?: readonly string[];
-  /** Qué hay en los tramos de la escalera: por defecto reja abajo y escombros arriba. */
-  readonly opcionesEscalera?: { readonly rejaAbajo?: boolean; readonly escombrosArriba?: boolean };
+  /**
+   * Qué hay en los tramos de la escalera: por defecto reja abajo y escombros arriba. `tapiadaAbajo`: el tramo que
+   * baja cerrado con ladrillo (en vez de la reja), para siempre.
+   */
+  readonly opcionesEscalera?: { readonly rejaAbajo?: boolean; readonly escombrosArriba?: boolean; readonly tapiadaAbajo?: boolean };
   /** El guion del piso (opcional): recibe lo que puede pedirle al juego (fundidos, susto, final). */
   readonly guion?: (acciones: AccionesGuion) => GuionPiso;
   /**

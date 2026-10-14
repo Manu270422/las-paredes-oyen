@@ -1,12 +1,16 @@
 // Aquí reviso que el ascensor de cada piso esté bien puesto y bien enlazado: que su cabina sea la única 'A' de la
 // rejilla, con tres lados de muro y una boca hacia el pasillo; que su lámpara esté adentro; que cada parada lleve a
 // un piso del catálogo con su cabina EN LA MISMA CELDA y con el mismo panel (la cabina es una sola: el piso cambia
-// con las puertas cerradas y nadie debe notar la diferencia), y que desde allá se pueda volver.
+// con las puertas cerradas y nadie debe notar la diferencia), y que desde allá se pueda volver. Una parada también
+// puede llevar al piso siguiente que todavía no existe (el final de lo que hay), con el número de su botón.
 // Lo usan las pruebas sobre todo el catálogo: un ascensor roto se descubre antes de jugar, no a mitad de un viaje.
 import { bocaDeCabina } from '../mundo/MarcoCabina';
 import { Rejilla } from '../mundo/Rejilla';
 import { numerosDelPanel } from '../mundo/Ascensor';
 import type { PaquetePiso } from './TiposPiso';
+
+/** El número que marca el indicador del ascensor de ese piso ("?" si no tiene). */
+const otroNumero = (piso: PaquetePiso): string => piso.ascensor?.numero ?? '?';
 
 /** Lo que está mal en el ascensor de `piso`, contra los pisos que existen (vacío si todo está bien). */
 export function problemasDeAscensor(piso: PaquetePiso, pisos: readonly PaquetePiso[]): string[] {
@@ -49,8 +53,13 @@ export function problemasDeAscensor(piso: PaquetePiso, pisos: readonly PaquetePi
       continue;
     }
     if (!destino) {
-      problemas.push(`${donde}: lleva a "${parada.hacia}", que no está en el catálogo`);
+      // Un piso por hacer: vale si algún piso del catálogo lo anuncia como el siguiente, y el botón dice su número.
+      if (!pisos.some((p) => p.siguiente?.id === parada.hacia)) problemas.push(`${donde}: lleva a "${parada.hacia}", que no está en el catálogo ni es el siguiente de ningún piso`);
+      else if (!parada.numero || Number.isNaN(Number(parada.numero))) problemas.push(`${donde}: "${parada.hacia}" todavía no existe y su botón no dice qué número es`);
       continue;
+    }
+    if (parada.numero !== undefined && parada.numero !== otroNumero(destino)) {
+      problemas.push(`${donde}: el botón de "${parada.hacia}" dice ${parada.numero}, pero su ascensor marca ${otroNumero(destino)}`);
     }
     const otro = destino.ascensor;
     if (!otro) {

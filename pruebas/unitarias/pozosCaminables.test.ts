@@ -8,6 +8,7 @@ import { PozosCaminables } from '../../src/mundo/PozosCaminables';
 import type { RejaEscalera } from '../../src/mundo/RejaEscalera';
 import { Rejilla } from '../../src/mundo/Rejilla';
 import { Navegacion } from '../../src/ia/Navegacion';
+import { PISO_2 } from '../../src/pisos/piso2';
 import { PISO_3 } from '../../src/pisos/piso3';
 import { PISO_4 } from '../../src/pisos/piso4';
 
@@ -68,7 +69,8 @@ describe('Escaleras que se caminan del Piso 4', () => {
 
 describe('Escaleras que se caminan del Piso 3', () => {
   const rejilla = new Rejilla(PISO_3.mapa.rejilla);
-  const pozos = new PozosCaminables(rejilla, PISO_3, [rejaFalsa(false)]);
+  const reja = rejaFalsa(false);
+  const pozos = new PozosCaminables(rejilla, PISO_3, [reja]);
 
   it('el tramo que sube está abierto y lleva al Piso 4; subiendo, llego bajando a su descanso de abajo', () => {
     const entrada = en(3.5, 11.07);
@@ -80,13 +82,38 @@ describe('Escaleras que se caminan del Piso 3', () => {
     expect(cruce?.sigue).toBe('bajando');
   });
 
-  it('el que baja (al Piso 2, que no existe todavía) queda cerrado aunque haya reja: nadie la abre', () => {
+  it('el que baja (al Piso 2) queda cerrado mientras la reja no se abra; abierta, se pasa y lleva al Piso 2', () => {
+    const entrada = en(1.5, 11.07);
+    expect(puntoDentro(entrada.x, entrada.z, pozos.cajas('piso', entrada.x, entrada.z))).toBe(true);
+    expect(pozos.pisableCriatura(1, 11, 'baja')).toBe(false);
+    (reja as { abierta: boolean }).abierta = true;
+    expect(puntoDentro(entrada.x, entrada.z, pozos.cajas('piso', entrada.x, entrada.z))).toBe(false);
+    const p = en(2.8, 12.65);
+    expect(pozos.cruce('bajando', p.x, p.z)?.def.hacia).toBe('piso2');
+    (reja as { abierta: boolean }).abierta = false;
+  });
+
+  it('al llegar desde el Piso 4, la escalera es la que vuelve a él', () => {
+    expect(pozos.llegadaDesde('piso4')).not.toBeNull();
+  });
+});
+
+describe('Escaleras que se caminan del Piso 2', () => {
+  const rejilla = new Rejilla(PISO_2.mapa.rejilla);
+  // Aunque hubiera una reja cerca, el tramo tapiado no la usa: el ladrillo cierra para siempre.
+  const pozos = new PozosCaminables(rejilla, PISO_2, [rejaFalsa(true)]);
+
+  it('el tramo que baja está tapiado: ni yo ni ella pasamos, nunca', () => {
     const entrada = en(1.5, 11.07);
     expect(puntoDentro(entrada.x, entrada.z, pozos.cajas('piso', entrada.x, entrada.z))).toBe(true);
     expect(pozos.pisableCriatura(1, 11, 'baja')).toBe(false);
   });
 
-  it('al llegar desde el Piso 4, la escalera es la que vuelve a él', () => {
-    expect(pozos.llegadaDesde('piso4')).not.toBeNull();
+  it('el que sube está abierto y lleva al Piso 3; al llegar desde el 3, la escalera es la que vuelve a él', () => {
+    const entrada = en(3.5, 11.07);
+    expect(puntoDentro(entrada.x, entrada.z, pozos.cajas('piso', entrada.x, entrada.z))).toBe(false);
+    const p = en(2.2, 12.65);
+    expect(pozos.cruce('subiendo', p.x, p.z)?.def.hacia).toBe('piso3');
+    expect(pozos.llegadaDesde('piso3')).not.toBeNull();
   });
 });

@@ -3,11 +3,13 @@
 // llegar: 'llego:piso3' se marca en silencio antes de ponerEnPunto(), y el director arranca de inmediato.
 // Aquí se junta la libreta de Andrés (el cuaderno del 302 y las hojas que le arrancaron, en el 301 y el 303).
 // El guion completo (propuesta P3-guion): el golpe al llegar, el apagón al juntar la libreta, grabar la pared del
-// cuarto de Andrés, ella en el pasillo al volver y el final en la escalera. El ascensor sube al 4 desde el principio.
+// cuarto de Andrés, ella en el pasillo al volver y el final en la escalera: la reja de abajo se abre sola y se baja
+// caminando al Piso 2. El ascensor sube al 4 desde el principio; al 2, solo después de haber bajado por la escalera.
+import { PARADA_AL_1, PARADA_AL_2 } from '../paradasAscensor';
 import type { PaquetePiso } from '../TiposPiso';
 import { DOCUMENTOS } from './documentos';
 import { EXAMINABLES } from './examinables';
-import { CINTA_302, FINAL_PISO_3, GuionPiso3, LIBRETA_COMPLETA, PISO_AVERIGUADO } from './guion';
+import { BAJAR_AL_2, CINTA_302, GuionPiso3, LIBRETA_COMPLETA, PISO_AVERIGUADO, REJA_ABAJO } from './guion';
 import { TRANSCRIPCIONES } from './transcripciones';
 import { MAPA_PISO_3 } from './mapa';
 
@@ -24,8 +26,10 @@ export const PISO_3: PaquetePiso = {
     { id: 'averiguar', texto: 'Averigua por qué cerraron este piso', bandera: PISO_AVERIGUADO },
     { id: 'juntar', texto: 'Junta las hojas del cuaderno de Andrés, el niño del 302', bandera: LIBRETA_COMPLETA },
     { id: 'grabar', texto: 'Graba la pared del cuarto de Andrés: la X está en el dormitorio del 302', bandera: 'medido:302' },
-    // 'huir' se cumple al empezar el final, en la escalera: su texto es lo último que se lee en el piso.
-    { id: 'huir', texto: 'Vuelve a la escalera', bandera: FINAL_PISO_3 },
+    // 'huir' se cumple cuando, ya en la escalera, la reja de abajo termina de abrirse sola (el final).
+    { id: 'huir', texto: 'Vuelve a la escalera', bandera: REJA_ABAJO },
+    // 'bajar' no se cumple aquí: se baja. Si vuelvo a subir desde el 2, es lo que el piso me recuerda.
+    { id: 'bajar', texto: 'Baja al Piso 2', bandera: BAJAR_AL_2 },
   ],
   documentos: DOCUMENTOS,
   transcripciones: TRANSCRIPCIONES,
@@ -99,9 +103,31 @@ export const PISO_3: PaquetePiso = {
   // La reja de abajo (Piso 2, todavía cerrado) sí se muestra.
   opcionesEscalera: { rejaAbajo: true, escombrosArriba: false },
   // El tramo que sube está a la derecha de la boca (celda x 3); el de la izquierda (x 1) baja, con su reja al Piso 2.
-  escaleras: [{ id: 'subida', hacia: 'piso4', llegada: 'escalera', x: 3.5, y: 10.5, texto: 'Subir al Piso 4' }],
-  // El ascensor funciona desde que llego (es el mismo que en el 4: misma celda, misma cabina). Por ahora solo sube.
-  ascensor: { x: 5, y: 11, numero: '3', paradas: [{ hacia: 'piso4', texto: 'Subir al Piso 4' }], lampara: 'luzAscensor' },
+  // La reja no tiene llave: se abre sola en el final (REJA_ABAJO), y hasta entonces se puede revisar.
+  escaleras: [
+    { id: 'subida', hacia: 'piso4', llegada: 'escalera', x: 3.5, y: 10.5, texto: 'Subir al Piso 4' },
+    {
+      id: 'bajada',
+      hacia: 'piso2',
+      llegada: 'escalera',
+      x: 1.5,
+      y: 10.5,
+      texto: 'Bajar al Piso 2',
+      requiere: REJA_ABAJO,
+      cerrada: 'La cadena está dada vuelta con candado. Abajo no se ve nada.',
+      seAbreCon: REJA_ABAJO,
+    },
+  ],
+  // El ascensor funciona desde que llego (es el mismo que en el 4: misma celda, misma cabina). Al 2 no baja hasta que
+  // haya llegado ahí por la escalera (la primera bajada es caminando, como del 4 al 3); al 1, solo con la llave de
+  // servicio que está en el 2 (PARADA_AL_1 es la misma en los tres pisos: el panel es uno).
+  ascensor: {
+    x: 5,
+    y: 11,
+    numero: '3',
+    paradas: [{ hacia: 'piso4', texto: 'Subir al Piso 4' }, PARADA_AL_2, PARADA_AL_1],
+    lampara: 'luzAscensor',
+  },
   siguiente: { id: 'piso2', nombre: 'Piso 2' },
   guion: (acciones) => new GuionPiso3(acciones),
   menu: {

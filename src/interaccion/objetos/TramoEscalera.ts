@@ -6,7 +6,8 @@
 // Un tramo puede estar cerrado (la reja con cadena): hasta que exista su bandera, suena la cerradura y lo
 // digo con un subtítulo. Sacudir una reja hace ruido: la criatura lo oye como una puerta. Si tiene su reja
 // enlazada, con la llave la primera vez la ABRO (candado, cadena, chirrido: ver RejaEscalera) y queda abierta
-// para siempre (bandera "abierta:<id>"); desde ahí, E baja.
+// para siempre (bandera "abierta:<id>"); desde ahí, E baja. Si el paquete dice `seAbreCon`, mi reja también se
+// abre sola cuando se marca esa bandera (el final del Piso 3: alguien abrió desde abajo).
 //
 // Lo normal es que la escalera se camine (EscaleraCaminable): entonces no viajo con E. Solo respondo mientras mi
 // reja esté cerrada (revisarla, o abrirla con la llave); abierta, se baja caminando. Con el ajuste "Escaleras con
@@ -98,9 +99,16 @@ export class TramoEscalera implements Interactuable {
     if (ctx.ajustes.valores.escalerasConFundido) ctx.viaje.cambiarDePiso(hacia, llegada);
   }
 
-  /** Al cargar o al armar el piso: mi reja, abierta si ya la abrí. */
+  /** Al cargar o al armar el piso: mi reja, abierta si ya la abrí (o si ya pasó lo que la abre sola). */
   restablecer(ctx: ContextoJuego): void {
-    this.reja?.fijar(ctx.progreso.tiene(this.banderaAbierta));
+    const { seAbreCon } = this.def;
+    this.reja?.fijar(ctx.progreso.tiene(this.banderaAbierta) || (!!seAbreCon && ctx.progreso.tiene(seAbreCon)));
+  }
+
+  /** Si mi reja se abre sola con esta bandera, la abro: sin llave, el candado cede y la cadena cae. */
+  alBandera(nombre: string, ctx: ContextoJuego): void {
+    if (!this.reja || nombre !== this.def.seAbreCon) return;
+    this.reja.abrir(() => ctx.progreso.marcar(this.banderaAbierta), true);
   }
 
   /** Suena la cadena, lo digo con un subtítulo y hace ruido (la criatura lo oye como una puerta). No viajo. */

@@ -15,7 +15,8 @@ export type IdTextura =
   | 'yeso'
   | 'madera'
   | 'tela'
-  | 'metal';
+  | 'metal'
+  | 'ladrillo';
 
 // --- Pequeñas ayudas para escribir las recetas con menos ruido visual ---
 const frac = (x: number) => x - Math.floor(x);
@@ -83,6 +84,40 @@ export const RECETAS: Record<IdTextura, RecetaTextura> = {
       cg = cg * k - anillo * 38 - costura * 28;
       cb = cb * k - anillo * 30 - costura * 22;
       pintarPx(px, cr, cg, cb, flor * 0.2 - costura * 0.5 + (mancha > 0.58 ? 0.1 : 0), 0.9);
+    },
+  },
+
+  // Ladrillo tolete NUEVO (el que tapió la escalera del Piso 2): naranja limpio, cada uno un poco distinto, en
+  // trabado, y la mezcla gris que nadie alisó, chorreada por las juntas. Tiene que verse reciente contra lo viejo.
+  ladrillo: {
+    semilla: 53,
+    fuerzaNormal: 3.4,
+    pintar(u, v, r, px) {
+      const filas = 16;
+      const columnas = 5;
+      const iy = Math.floor(v * filas);
+      // Trabado: cada fila corrida media pieza.
+      const desfase = iy % 2 === 0 ? 0 : 0.5;
+      const ix = Math.floor(u * columnas + desfase);
+      const fx = frac(u * columnas + desfase);
+      const fy = frac(v * filas);
+      // Distancia a la junta, en "anchos de junta" (~1 cm en los dos sentidos): menos de 1 es mezcla.
+      const jx = Math.min(fx, 1 - fx) / 0.045;
+      const jy = Math.min(fy, 1 - fy) / 0.14;
+      const mezcla = fbm(r, u, v, 4, 16);
+      // La mezcla rebosa la junta donde quien la puso no la limpió.
+      const rebose = (mezcla - 0.5) * 0.8;
+      if (jx < 1 + rebose || jy < 1 + rebose) {
+        const k = 0.75 + mezcla * 0.35;
+        pintarPx(px, 118 * k, 114 * k, 106 * k, -0.4 + mezcla * 0.2, 0.95);
+        return;
+      }
+      const tono = hash(ix, iy);
+      const grano = fbm(r, u + 2.1, v + 0.7, 3, 48);
+      const quemado = sat((tono - 0.8) * 4);
+      const bisel = Math.min(1, (Math.min(jx, jy) - 1) * 2);
+      const k = 0.82 + tono * 0.22 + grano * 0.12 - quemado * 0.3;
+      pintarPx(px, 168 * k, 82 * k - quemado * 10, 52 * k, 0.5 + bisel * 0.3 + grano * 0.2, 0.85);
     },
   },
 

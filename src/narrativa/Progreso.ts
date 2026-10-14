@@ -40,6 +40,8 @@ export class Progreso {
   private objetivoAnterior: string | null = null;
   /** Las banderas y documentos de los pisos que no estoy jugando, por id de piso. */
   private otros = new Map<string, DatosPisoVisitado>();
+  /** El piso que se juega (lo fija `usarPiso`, al empezar, al cargar y al cambiar de piso). */
+  private pisoId = '';
 
   constructor(
     private readonly bus: BusEventos<MapaEventos>,
@@ -133,8 +135,14 @@ export class Progreso {
     this.objetivoAnterior = this.objetivoActual()?.id ?? null;
   }
 
+  /** ¿Ya estuve en ese piso? El que juego cuenta, y los que dejé (su progreso queda guardado aunque esté vacío). */
+  visitado(id: string): boolean {
+    return id === this.pisoId || this.otros.has(id);
+  }
+
   /** Juego en otro piso sin cambiar las banderas (al cargar una partida de ese piso, antes de importarla). */
   usarPiso(piso: PisoDeProgreso): void {
+    this.pisoId = piso.id;
     this.objetivos = piso.objetivos;
     this.reglas = piso.reglas;
     this.objetivoAnterior = this.objetivoActual()?.id ?? null;

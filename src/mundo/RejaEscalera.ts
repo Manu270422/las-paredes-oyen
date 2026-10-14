@@ -6,7 +6,8 @@
 //   1.20 s  la cadena se desliza entre los barrotes y cae
 //   2.10 s  las dos hojas se abren con un chirrido largo
 //   3.40 s  abierta
-// Abierta se queda abierta: al cargar la partida, la pongo así sin animación.
+// Abierta se queda abierta: al cargar la partida, la pongo así sin animación. También puede abrirse SOLA (sin la
+// llave: el final del Piso 3): lo mismo, pero sin el sonido de la llave.
 import type { Group, Object3D } from 'three';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
 
@@ -53,11 +54,15 @@ export class RejaEscalera {
     return { x: p.x, y: p.y, z: p.z };
   }
 
-  /** Empiezo a abrirla. Al terminar, llamo `alTerminar` (quien me abre marca su bandera). */
-  abrir(alTerminar: () => void): void {
+  /**
+   * Empiezo a abrirla. Al terminar, llamo `alTerminar` (quien me abre marca su bandera). `sola`: nadie gira una
+   * llave; el candado cede desde el otro lado (no suena la llave, el resto igual).
+   */
+  abrir(alTerminar: () => void, sola = false): void {
     if (this.abierta || this.abriendo) return;
     this.tiempo = 0;
     this.hechos.clear();
+    if (sola) this.hechos.add('giro');
     this.alTerminar = alTerminar;
   }
 

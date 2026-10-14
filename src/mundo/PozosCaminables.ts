@@ -44,7 +44,8 @@ export class PozosCaminables {
     rejas: readonly RejaEscalera[],
   ) {
     const C = CONFIG.celda;
-    const rejaAbajo = piso.opcionesEscalera?.rejaAbajo !== false;
+    const tapiadaAbajo = piso.opcionesEscalera?.tapiadaAbajo === true;
+    const rejaAbajo = piso.opcionesEscalera?.rejaAbajo !== false && !tapiadaAbajo;
     const escombrosArriba = piso.opcionesEscalera?.escombrosArriba !== false;
     for (const hueco of encontrarHuecos(rejilla)) {
       const escalera = new EscaleraCaminable(marcoDelHueco(hueco, C), CONFIG.alturaTecho);
@@ -62,7 +63,8 @@ export class PozosCaminables {
         escalera,
         tramos: {
           // Una reja que ningún tramo abre (abajo no hay piso todavía) queda cerrada para siempre.
-          baja: { def: baja, reja: rejaAbajo ? reja : null, tapado: rejaAbajo && (!reja || !baja) },
+          // Tapiado con ladrillo: cerrado para siempre, aunque el piso de abajo exista.
+          baja: { def: baja, reja: rejaAbajo ? reja : null, tapado: tapiadaAbajo || (rejaAbajo && (!reja || !baja)) },
           sube: { def: defDe('sube'), reja: null, tapado: escombrosArriba },
         },
       });

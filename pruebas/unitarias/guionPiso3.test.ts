@@ -15,6 +15,8 @@ import {
   PARTES_LIBRETA,
   PISO_AVERIGUADO,
   REFLEXION_LIBRETA,
+  REJA_ABAJO,
+  REJA_SOLA,
 } from '../../src/pisos/piso3/guion';
 import { crearContextoFalso } from './contextoFalso';
 
@@ -83,6 +85,7 @@ function armar(leidos: readonly string[] = [], otras: readonly string[] = []) {
     fijarSoloMirar: (a: boolean) => acciones.push(`soloMirar:${a}`),
     terminarPartida: anotar('terminar'),
     despertar: anotar('despertar'),
+    completarPiso: anotar('completar'),
   });
   guion.conectar(ctx);
   guion.reiniciar(ctx);
@@ -221,17 +224,30 @@ describe('El guion del Piso 3 (P3-guion)', () => {
     expect(progreso.tiene('pasillo:302')).toBe(true);
   });
 
-  it('en la escalera después de la cinta: solo mirar, tres golpes desde abajo, fundido y fin de la partida', () => {
-    const { progreso, acciones, subtitulos, memoria, jugar, correrAgendado } = armar([...PARTES_LIBRETA], ['medido:302', CINTA_302, 'golpe:llegada']);
+  it('en la escalera después de la cinta: solo mirar, tres golpes desde abajo, la reja se abre sola y el piso queda completado (la partida sigue)', () => {
+    const { ctx, progreso, acciones, subtitulos, memoria, entidad, jugar, correrAgendado } = armar([...PARTES_LIBRETA], ['medido:302', CINTA_302, 'golpe:llegada']);
     memoria.habitacionActual = 'escalera';
     jugar(0.2);
     expect(progreso.tiene(FINAL_PISO_3)).toBe(true);
     expect(acciones).toEqual(['soloMirar:true']);
+    expect(ctx.director.activo, 'durante el final, sin director').toBe(false);
     correrAgendado();
     expect(subtitulos).toContain(GOLPES_FINALES);
-    expect(acciones).toEqual(['soloMirar:true', 'fundido', 'soloMirar:false', 'terminar']);
+    expect(subtitulos).toContain(REJA_SOLA);
+    expect(progreso.tiene(REJA_ABAJO), 'la bandera que abre la reja del tramo que baja').toBe(true);
+    expect(acciones).toEqual(['soloMirar:true', 'soloMirar:false', 'completar']);
+    expect(ctx.director.activo, 'ella vuelve, con unos segundos de calma para bajar').toBe(true);
+    expect(entidad.puedeManifestarse).toBe(true);
+    expect(progreso.objetivoActual()?.texto).toBe('Baja al Piso 2');
     jugar(5);
-    expect(acciones.filter((a) => a === 'terminar'), 'una sola vez').toHaveLength(1);
+    expect(acciones.filter((a) => a === 'completar'), 'una sola vez').toHaveLength(1);
+  });
+
+  it('si vuelvo a subir desde el Piso 2, el final no se repite', () => {
+    const { acciones, memoria, jugar } = armar([...PARTES_LIBRETA], ['medido:302', CINTA_302, 'golpe:llegada', FINAL_PISO_3, REJA_ABAJO, 'abierta:bajada']);
+    memoria.habitacionActual = 'escalera';
+    jugar(2);
+    expect(acciones).toEqual([]);
   });
 
   it('en la escalera sin la cinta no pasa nada (es donde se llega al piso)', () => {

@@ -127,6 +127,7 @@ export class Juego {
     fijarSoloMirar: (activo) => (this.soloMirar = activo),
     terminarPartida: () => this.finDePiso.terminarPartida(this.ctx),
     despertar: () => this.finDePiso.despertar(this.ctx),
+    completarPiso: () => this.finDePiso.completarPiso(this.ctx),
   };
   private readonly lienzo: HTMLCanvasElement;
   private readonly raizUI: HTMLElement;

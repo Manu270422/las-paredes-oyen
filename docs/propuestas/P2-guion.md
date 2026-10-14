@@ -1,7 +1,12 @@
-# P2 — Diseño del Piso 2 (propuesta, sin programar)
+# P2 — Diseño del Piso 2 (aprobado, en construcción)
 
-> 2026-10-12. Lo pidió el creador para revisarlo. **No se programa hasta que él hable con los testers del Piso 4 y
-> el 3** (decisión del 2026-10-12). Respeta lo que ya existe: el Piso 3 termina con tres golpes desde abajo, detrás de
+> **Decidido por el creador el 2026-10-13:** se programa ya, antes que lo de Android (sabiendo que la Play Store pasa
+> del 31 de octubre), sin esperar a los testers de la ronda 2 ("quédate con mis opiniones": él lo jugó). Respuestas a
+> las preguntas de abajo: (1) **sí, Hernando**; (2) el cuarto sordo **no es refugio**: ella entra caminando y adentro
+> solo la delatan las luces; (3) y (4) **el ascensor es el único camino al Piso 1, y la cabina se detiene entre pisos
+> con ella encima**; si muere ahí, reaparece en el 202 con la llave. (5) Duración: 12–18 minutos.
+>
+> 2026-10-12. Lo pidió el creador para revisarlo. Respeta lo que ya existe: el Piso 3 termina con tres golpes desde abajo, detrás de
 > la reja del Piso 2, y el orden aprobado es Piso 2 → Piso 1 → salir del edificio con "Sobreviviste".
 > Principio de C1: **variar antes que multiplicar**. El Piso 2 cambia una regla, no agrega diez.
 
@@ -57,6 +62,24 @@ Objetivos (borrador): bajar → averiguar quién lo tapó todo → encontrar la 
 | Escalera tapiada | Opción de la escalera | Bajo | Bajo |
 
 **Costo total estimado: 2–3 semanas** con pruebas caminando (mapa, textos, guion, sonidos, las cuatro piezas).
+
+## Construcción (por tandas, cada una con su commit y su recorrido caminando)
+
+| Tanda | Qué | Estado |
+|---|---|---|
+| 1 | Bajar al 2 y terminarlo: la reja del 3 se abre sola, el mapa, la tapia, el libro de quejas, la lista de llaves, el cuaderno de Hernando, grabar el 202, la llave y el botón «1» con un final simple | Hecha el 2026-10-13 (ver la bitácora) |
+| 2 | El cuarto sordo de verdad: muros acolchados (se ven y bloquean el sonido en los dos sentidos), ella entra caminando, las luces la delatan | Pendiente |
+| 3 | La cabina se detiene entre el 2 y el 1 con ella encima (quieto y sin aire); morir ahí devuelve al 202 con la llave | Pendiente |
+| 4 | Pulido: la radio del pasillo, rastros, sonidos propios, revisar textos con el creador | Pendiente |
+
+**Cambio respecto del borrador:** la llave de servicio no está a la vista desde el principio. Aparece en el rincón de
+la sala cuando termina la cinta del cuarto sordo (la cinta trae "algo de metal que cae entre los colchones"). Si
+estuviera a la vista, se podía tomar y bajar sin grabar, y el piso se saltaba su momento central. El orden de los
+objetivos queda: averiguar (libro de quejas) → grabar el cuarto sordo → la llave → bajar al 1.
+
+**Mientras el Piso 1 no exista:** el botón «1» lleva la cabina hasta el 2 y su guion cierra la partida (a negro, las
+puertas se abren a la portería a oscuras, "Próximamente: Piso 1"). Funciona igual si se pulsa desde el 3 o el 4 con la
+llave: la cabina pasa al 2 a mitad del viaje.
 
 ## Riesgos y preguntas para el creador
 
