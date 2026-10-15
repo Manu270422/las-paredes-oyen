@@ -1,6 +1,7 @@
 // Aquí está el final de la partida. Dice sin ambigüedad lo que pasó ("Piso 3 completado"), las estadísticas
 // de la partida en voz baja, una línea por piso si fueron varios, qué sigue y cómo volver a jugar. Sin
 // fanfarria: el silencio es parte del final.
+import { CREDITOS } from '../../config/Creditos';
 import { crearBoton } from '../componentes/Boton';
 import type { PuenteTelemetria } from '../PuenteTelemetria';
 import { reloj } from '../../utilidades/Reloj';
@@ -49,6 +50,8 @@ export class PantallaFin extends Pantalla {
   private readonly lista: HTMLUListElement;
   private readonly pisos: HTMLUListElement;
   private readonly siguiente: HTMLParagraphElement;
+  /** Los créditos: solo al final del juego (cuando no hay piso siguiente). */
+  private readonly creditos: HTMLParagraphElement;
   private readonly exportar: HTMLButtonElement;
 
   constructor(
@@ -68,6 +71,8 @@ export class PantallaFin extends Pantalla {
     this.pisos.className = 'fin__pisos';
     this.siguiente = document.createElement('p');
     this.siguiente.className = 'subtitulo-juego fin__siguiente';
+    this.creditos = document.createElement('p');
+    this.creditos.className = 'fin__creditos';
     const acciones = document.createElement('div');
     acciones.className = 'fin__acciones';
     // Si esta partida fue una sesión de prueba, dejo exportarla aquí mismo.
@@ -79,12 +84,14 @@ export class PantallaFin extends Pantalla {
       crearBoton('Jugar otra vez', jugarOtraVez, { clase: 'boton--contorno' }),
       this.exportar,
     );
-    this.elemento.append(this.titulo, frase, this.lista, this.pisos, this.siguiente, acciones);
+    this.elemento.append(this.titulo, frase, this.lista, this.pisos, this.siguiente, this.creditos, acciones);
     this.alVolver = menu;
   }
 
   fijarEstadisticas(e: EstadisticasFin): void {
-    this.titulo.textContent = `${e.piso} completado`;
+    // Sin piso siguiente es el final del juego: salí del edificio.
+    const finDelJuego = e.siguiente === null;
+    this.titulo.textContent = finDelJuego ? 'Sobreviviste' : `${e.piso} completado`;
     this.exportar.hidden = !this.telemetria.activa();
     this.exportar.textContent = 'Exportar registro de la prueba';
     // Los totales de la partida. El mejor tiempo no va aquí: es de cada piso y va en su línea, solo si lo batí.
@@ -117,6 +124,9 @@ export class PantallaFin extends Pantalla {
     );
     // Qué sigue, dicho con honestidad: si el próximo piso todavía no existe, se dice.
     const s = e.siguiente;
-    this.siguiente.textContent = s === null ? 'Por ahora, la historia termina aquí' : s.disponible ? `Sigue: ${s.nombre}` : `Próximamente: ${s.nombre}`;
+    this.siguiente.hidden = finDelJuego;
+    this.siguiente.textContent = s === null ? '' : s.disponible ? `Sigue: ${s.nombre}` : `Próximamente: ${s.nombre}`;
+    this.creditos.hidden = !finDelJuego;
+    this.creditos.textContent = `${CREDITOS.titulo} · un juego de ${CREDITOS.autor}. ${CREDITOS.ayudaIA}`;
   }
 }

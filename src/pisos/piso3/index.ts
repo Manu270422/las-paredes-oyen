@@ -5,7 +5,7 @@
 // El guion completo (propuesta P3-guion): el golpe al llegar, el apagón al juntar la libreta, grabar la pared del
 // cuarto de Andrés, ella en el pasillo al volver y el final en la escalera: la reja de abajo se abre sola y se baja
 // caminando al Piso 2. El ascensor sube al 4 desde el principio; al 2, solo después de haber bajado por la escalera.
-import { PARADA_AL_1, PARADA_AL_2 } from '../paradasAscensor';
+import { PARADA_AL_1_DESDE_ARRIBA, PARADA_AL_2 } from '../paradasAscensor';
 import type { PaquetePiso } from '../TiposPiso';
 import { DOCUMENTOS } from './documentos';
 import { EXAMINABLES } from './examinables';
@@ -119,13 +119,13 @@ export const PISO_3: PaquetePiso = {
     },
   ],
   // El ascensor funciona desde que llego (es el mismo que en el 4: misma celda, misma cabina). Al 2 no baja hasta que
-  // haya llegado ahí por la escalera (la primera bajada es caminando, como del 4 al 3); al 1, solo con la llave de
-  // servicio que está en el 2 (PARADA_AL_1 es la misma en los tres pisos: el panel es uno).
+  // haya llegado ahí por la escalera (la primera bajada es caminando, como del 4 al 3); al 1, desde aquí no (se baja
+  // desde el 2, con la cabina detenida: ver pisos/paradasAscensor.ts).
   ascensor: {
     x: 5,
     y: 11,
     numero: '3',
-    paradas: [{ hacia: 'piso4', texto: 'Subir al Piso 4' }, PARADA_AL_2, PARADA_AL_1],
+    paradas: [{ hacia: 'piso4', texto: 'Subir al Piso 4' }, PARADA_AL_2, PARADA_AL_1_DESDE_ARRIBA],
     lampara: 'luzAscensor',
   },
   siguiente: { id: 'piso2', nombre: 'Piso 2' },

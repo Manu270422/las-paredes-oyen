@@ -15,14 +15,24 @@ export const PARADA_AL_2: ParadaAscensor = {
 };
 
 /**
- * Al Piso 1, que todavía no existe: la cabina baja hasta el 2 y su guion cierra la partida (P2-guion: el ascensor
- * es el único camino abajo, porque la escalera del 2 está tapiada). El botón tiene cerradura: pide la llave de
- * servicio del 202, que viaja en el bolsillo (por eso funciona igual desde el 3 o el 4).
+ * Al Piso 1, desde el 2: el único camino abajo (la escalera del 2 está tapiada). El botón tiene cerradura: pide la
+ * llave de servicio del 202. Bajando, la cabina se detiene entre pisos con ella encima (el clímax del Piso 2).
  */
 export const PARADA_AL_1: ParadaAscensor = {
   hacia: 'piso1',
-  numero: '1',
   texto: 'Bajar al Piso 1',
   requiere: 'objeto:llave_servicio',
   cerrada: 'El botón del 1 tiene una cerradura. Hace falta una llave de servicio.',
+};
+
+/**
+ * Al Piso 1, desde el 3 y el 4: no se enciende. La bajada al 1 es la del 2 (la cabina detenida no se salta) y del 1
+ * no se vuelve a subir (allá el ascensor se queda sin corriente), así que "haber estado en el 1" no se cumple nunca
+ * desde aquí arriba.
+ */
+export const PARADA_AL_1_DESDE_ARRIBA: ParadaAscensor = {
+  hacia: 'piso1',
+  texto: 'Bajar al Piso 1',
+  requiere: 'visitado:piso1',
+  cerrada: 'El botón del 1 no se enciende desde este piso.',
 };

@@ -1,11 +1,11 @@
-// El guion del Piso 2 (P2-guion, tanda 1) sin navegador: grabar el cuarto sordo trae su cinta y con ella la llave;
-// una partida guardada al medir carga con la cinta ya sonada; y cuando la cabina llega al piso que todavía no existe,
-// la partida termina una sola vez (a negro, las puertas, la pantalla final).
+// El guion del Piso 2 (P2-guion) sin navegador: grabar el cuarto sordo trae su cinta y con ella la llave, y una
+// partida guardada al medir carga con la cinta ya sonada. La cabina detenida (que completa el piso) se prueba en
+// cabinaDetenida.test.ts y, caminando, en cabinaDetenida.spec y piso1.spec.
 import { describe, expect, it } from 'vitest';
 import { Progreso } from '../../src/narrativa/Progreso';
 import type { ContextoJuego } from '../../src/nucleo/ContextoJuego';
 import { PISO_2 } from '../../src/pisos/piso2';
-import { CINTA_202, FINAL_PISO_2, GuionPiso2, PUERTAS_ABAJO } from '../../src/pisos/piso2/guion';
+import { CINTA_202, GuionPiso2 } from '../../src/pisos/piso2/guion';
 import { crearContextoFalso } from './contextoFalso';
 
 function armar(banderas: readonly string[] = []) {
@@ -58,18 +58,5 @@ describe('El guion del Piso 2 (P2-guion, tanda 1)', () => {
   it('una partida guardada al medir (antes de la cinta) carga con la cinta ya sonada, en silencio', () => {
     const { progreso } = armar(['leyo:libro_quejas', 'medido:202']);
     expect(progreso.tiene(CINTA_202)).toBe(true);
-  });
-
-  it('cuando la cabina llega al piso que no existe: solo mirar, a negro, las puertas y la partida termina (una vez)', () => {
-    const { progreso, acciones, subtitulos, entidad, correrAgendado, bus } = armar(['leyo:libro_quejas', 'medido:202', CINTA_202]);
-    bus.emit('ascensor-fin-recorrido', { hacia: 'piso1' });
-    expect(progreso.tiene(FINAL_PISO_2)).toBe(true);
-    expect(entidad.estado, 'ella a las paredes').toBe('paredes');
-    correrAgendado();
-    expect(subtitulos).toContain(PUERTAS_ABAJO);
-    expect(acciones).toEqual(['soloMirar:true', 'fundido:true', 'soloMirar:false', 'terminar']);
-    bus.emit('ascensor-fin-recorrido', { hacia: 'piso1' });
-    correrAgendado();
-    expect(acciones.filter((a) => a === 'terminar'), 'una sola vez').toHaveLength(1);
   });
 });

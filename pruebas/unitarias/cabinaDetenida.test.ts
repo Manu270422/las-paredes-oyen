@@ -104,7 +104,7 @@ function armarEscena(banderas: string[] = []) {
   const agendado: Array<() => void> = [];
   const ascensor = {
     viajandoHacia: 'piso1' as string | null,
-    avanceViaje: 0.3,
+    avanceViaje: 0.1,
     marco: { cx: 6.5, cz: 14.3 },
     pedidos: [] as string[],
     detener() {
@@ -154,19 +154,20 @@ function armarEscena(banderas: string[] = []) {
   const subtitulos: string[] = [];
   falso.bus.on('subtitulo', (s) => subtitulos.push(s.texto));
   falso.bus.on('sonido-relevante', (s) => subtitulos.push(s.descripcion));
-  const escena = new CabinaDetenida();
+  const superadas: number[] = [];
+  const escena = new CabinaDetenida(() => superadas.push(1));
   const jugar = (segundos: number) => {
     for (let t = 0; t < segundos; t += 0.05) escena.actualizar(0.05, falso.ctx);
   };
   const correrAgendado = () => agendado.splice(0).forEach((f) => f());
-  return { escena, ascensor, entidad, marcadas, subtitulos, falso, jugar, correrAgendado, ctx: falso.ctx };
+  return { escena, ascensor, entidad, marcadas, subtitulos, falso, jugar, correrAgendado, superadas, ctx: falso.ctx };
 }
 
 describe('La cabina se detiene entre el 2 y el 1 (P2-guion, momento 7)', () => {
-  it('frena pasada la mitad del viaje al 1, no antes, y ella queda fuera del director', () => {
+  it('frena antes de la mitad del viaje al 1 (ahí la cabina arma el 1), no al partir, y ella queda fuera del director', () => {
     const m = armarEscena();
     m.jugar(0.2);
-    expect(m.ascensor.pedidos, 'al 30 % del viaje, nada').toEqual([]);
+    expect(m.ascensor.pedidos, 'al partir, nada').toEqual([]);
     m.ascensor.avanceViaje = AVANCE_PARA_FRENAR;
     m.jugar(0.1);
     expect(m.ascensor.pedidos).toEqual(['detener']);
@@ -198,6 +199,7 @@ describe('La cabina se detiene entre el 2 y el 1 (P2-guion, momento 7)', () => {
     m.jugar(ACERCARSE_MINIMO + 3.5);
     expect(m.ascensor.trampilla, 'y cada rasguño la hace temblar').toContain('0.55');
     expect(m.marcadas.has(CABINA_SUPERADA)).toBe(true);
+    expect(m.superadas, 'avisa una vez: el guion completa el piso').toEqual([1]);
     expect(m.subtitulos).toContain(TEXTOS_CABINA.seVa);
     m.correrAgendado();
     expect(m.ascensor.pedidos).toEqual(['detener', 'reanudar']);

@@ -14,6 +14,7 @@ import { Recogible } from '../interaccion/objetos/Recogible';
 import { Examinable } from '../interaccion/objetos/Examinable';
 import { PuntoMedicion } from '../interaccion/objetos/PuntoMedicion';
 import { Tablero } from '../interaccion/objetos/Tablero';
+import { PuertaPrincipal } from '../interaccion/objetos/PuertaPrincipal';
 import { Radio } from '../interaccion/objetos/Radio';
 import { construirGeometria } from './ConstructorGeometria';
 import { construirEscaleras, type OpcionesEscalera } from './ConstructorEscalera';
@@ -48,6 +49,8 @@ export class Nivel {
   /** Las escaleras que se caminan: lo que se pisa en un tramo, lo que frena y cuándo se cruza a otro piso. */
   readonly escaleras: PozosCaminables;
   radio: Radio | null = null;
+  /** Las puertas principales (la salida del edificio): sus cerraduras tardan, y las actualizo cada fotograma. */
+  readonly salidas: PuertaPrincipal[] = [];
   /** Avisa la primera vez que el jugador ve cada rastro del piso (para la telemetría). */
   readonly vigiaRastros: VigiaRastros;
 
@@ -175,6 +178,12 @@ export class Nivel {
           this.radio = new Radio(d);
           objeto = this.radio;
           break;
+        case 'salida': {
+          const salida = new PuertaPrincipal(d);
+          this.salidas.push(salida);
+          objeto = salida;
+          break;
+        }
       }
       this.interactuables.push(objeto);
       this.grupo.add(objeto.objeto);
@@ -299,6 +308,7 @@ export class Nivel {
     if (ctx) this.radio?.actualizar(dt, ctx);
     if (ctx) this.vigiaRastros.actualizar(dt, ctx);
     if (ctx) for (const reja of this.rejas) reja.actualizar(dt, ctx);
+    if (ctx) for (const salida of this.salidas) salida.actualizar(dt, ctx);
     if (ctx) this.ascensor?.actualizar(dt, ctx);
   }
 

@@ -30,6 +30,16 @@ se camina, el ascensor y el Piso 3.
 | H12 | El ascensor se entiende como un atajo que hace ruido | `ascensor-llamado`, `piso-cambiado` con `por: "cabina"`, muertes con `motivo: "maquina"`; entrevista (14) | Nadie lo usa, o alguien muere por él y no sabe por qué |
 | H13 | El Piso 3 se termina sin trabarse | Banderas `averiguo:piso3`, `imitacion:piso3`, `medido:302`, `final:piso3` y el tiempo entre ellas | Alguien pasa más de 10 min sin cambiar de objetivo y sin saber qué hacer |
 
+**Ronda 3 (sitio principal desde 2026-10-14, etiqueta `ronda3`): además**, el Piso 2 completo. El enlace es el
+principal con `?telemetria=1`. **No se fusiona nada a `main` mientras dure la ronda** (el Piso 1 se construye en
+`sprint-5`): si no, cada uno juega una versión distinta. `entorno.compilacion` dice cuál jugó cada uno.
+
+| # | Hipótesis | Cómo la medimos | Se cae si… |
+|---|---|---|---|
+| H14 | El cuarto sordo se entiende: adentro no la oyes y ella no te oye, y el peligro es que entre caminando | Bandera `sordo:visto`; tiempo en la sala del 202; muertes en el 202 con su `motivo`; entrevista (preguntas 18 y 19) | Alguien muere en el 202 y dice "no sé de dónde salió", o nadie nota que adentro no se oye nada |
+| H15 | La cabina detenida se supera quieto y aguantando el aire, y morir ahí se entiende | Eventos `encuentro` (inicio, superado, fallido) en el Piso 2; muertes con su `motivo`; bandera `cabina:superada` y cuántos intentos | La mayoría muere 3 veces o más en la cabina, o alguien nunca aguanta el aire ahí |
+| H16 | El Piso 2 se termina sin trabarse | Banderas `leyo:libro_quejas`, `medido:202`, `cinta:202`, `objeto:llave_servicio`, `cabina:superada` y el tiempo entre ellas | Alguien pasa más de 10 min sin cambiar de objetivo y sin saber qué hacer |
+
 ---
 
 ## 2. Preparación
@@ -179,7 +189,15 @@ Nivel 2 o 3 = pulsar **F9** (en PC). En celular, anotar la hora del reloj en la 
 | 19 | Juntó la libreta (revienta la luz de la escalera) | H13 | sí / no | | | ¿leyó la carta del 301? |
 | 20 | Grabó la pared del cuarto de Andrés y oyó su cinta | H8, H13 | sí / no | | | |
 | 21 | Ella lo esperaba en el pasillo: cómo pasó | H13 | sí / no | | | ¿grabadora? ¿la iluminó quieto? ¿murió? |
-| 22 | El final del Piso 3 (golpes desde abajo) y la pantalla final | — | sí / no | | | |
+| 22 | El final del Piso 3 (golpes desde abajo) | — | sí / no | | | |
+| **Ronda 3** | | | | | | |
+| 23 | La reja de abajo se abrió sola y bajó al Piso 2 | H16 | sí / no | | | ¿entendió que podía bajar? ¿vio la tarjeta "Piso 3 superado"? |
+| 24 | Vio la escalera tapiada y leyó el libro de quejas | H16 | sí / no | | | ¿leyó la lista de llaves? ¿el cuaderno de Hernando? |
+| 25 | Entró al cuarto acolchado (202) | H14 | sí / no | | | ¿notó el silencio? ¿leyó la pista? |
+| 26 | Ella entró caminando al 202 | H14 | sí / no | | | ¿la vio venir por la luz que parpadeaba? ¿se quedó quieto? ¿murió? |
+| 27 | Grabó el cuarto sordo, oyó la cinta y encontró la llave en el rincón | H16 | sí / no | | | ¿fue al rincón por lo que sonó en la cinta? |
+| 28 | La cabina se detuvo con ella encima | H15 | sí / no · intentos: | | | ¿aguantó el aire cuando se quedó quieta? ¿miró la trampilla? ¿murió? ¿entendió por qué? |
+| 29 | Terminó el Piso 2 y vio la pantalla final | — | sí / no | | | |
 
 ### 4.5 Conducta observada (sí / no / no aplica)
 
@@ -280,6 +298,13 @@ Hacerla **justo al terminar**, con las luces aún bajas. Preguntas abiertas, en 
 16. En el Piso 3, ¿hubo un momento en que no supiste qué hacer? ¿Qué te sacó de ahí? *(H13)*
 17. En la pantalla final, ¿qué entendiste de los tiempos de cada piso? *(El mejor tiempo ahora es de cada piso y
     solo aparece cuando se bate: comprobar que no confunda.)*
+
+**Ronda 3 (el Piso 2):**
+
+18. En el apartamento de los colchones, ¿qué notaste? ¿Te sentías más seguro o menos? ¿Por qué? *(H14)*
+19. Si ella entró a ese apartamento: ¿cómo te diste cuenta? *(H14: la luz que parpadea es la única pista.)*
+20. En el ascensor detenido, ¿qué pensaste que tenías que hacer? Si moriste ahí, ¿entendiste por qué? *(H15)*
+21. ¿Hubo un momento en el Piso 2 en que no supiste qué hacer? ¿Qué te sacó de ahí? *(H16)*
 
 ---
 

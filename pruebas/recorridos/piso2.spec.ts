@@ -3,8 +3,8 @@
 //    al 2, cruzando cada descanso. La escalera que sigue bajando está tapiada: empujo contra el ladrillo y no paso.
 // 2) en el 201 leo el libro de quejas; en el 202 grabo el cuarto sordo con la X; la cinta trae la voz de Hernando y
 //    algo de metal: aparece la llave de servicio en el rincón. Con ella, llamo el ascensor, entro y pulso el 1: la
-//    cabina se detiene a mitad de camino con ella encima (aguanto el aire), sigue, a oscuras se abren las puertas y
-//    la partida termina ("Próximamente: Piso 1").
+//    cabina se detiene a mitad de camino con ella encima (aguanto el aire): el Piso 2 queda completado ("Piso 2
+//    superado", sobre el negro) y la cabina sigue al Piso 1.
 // Ella y el director quedan quietos: aquí se prueba el camino del piso, no su caza.
 import { expect, test, type Page } from '@playwright/test';
 import { abrirEleccion, elegirYEmpezar, esperarJugando } from './acciones';
@@ -102,7 +102,7 @@ test.describe.serial('El Piso 2 caminando', () => {
     expect(tapia.piso).toBe('piso2');
   });
 
-  test('libro de quejas, el cuarto sordo, la llave en el rincón y el ascensor al 1: fin de la partida', async ({}, info) => {
+  test('libro de quejas, el cuarto sordo, la llave en el rincón y el ascensor al 1: el piso completado y la cabina llega al 1', async ({}, info) => {
     await calmar(page);
     const oficina = await page.evaluate(async () => {
       const J = window.__juego!;
@@ -199,26 +199,22 @@ test.describe.serial('El Piso 2 caminando', () => {
         if (e.estado === 'inicio') P.sostener('KeyQ');
         else P.soltar('KeyQ');
       });
+      const tarjetas: string[] = [];
+      const dejarTarjetas = ctx.bus.on('tarjeta', (t) => tarjetas.push(t.titulo));
       const texto = await window.__usar!(boton1.id);
-      const finPartida = performance.now() + 60_000;
-      while (J.estado !== 'fin' && performance.now() < finPartida) await P.esperarReal(50);
+      const finViaje = performance.now() + 60_000;
+      while (!(J.estado === 'jugando' && J.ctx.piso.id === 'piso1') && performance.now() < finViaje) await P.esperarReal(50);
       dejar();
+      dejarTarjetas();
       P.soltar('KeyQ');
-      return {
-        faseAlLlamar,
-        texto,
-        encuentros,
-        estado: J.estado,
-        titulo: document.querySelector('.fin__titulo')?.textContent ?? null,
-        siguiente: document.querySelector('.fin__siguiente')?.textContent ?? null,
-      };
+      return { faseAlLlamar, texto, encuentros, tarjetas, piso: J.ctx.piso.id, estado: J.estado };
     });
-    await page.screenshot({ path: info.outputPath('4-fin.png') });
+    await page.screenshot({ path: info.outputPath('4-llegando-al-piso-1.png') });
     expect(final.faseAlLlamar, 'llamado, el ascensor llega y abre').toBe('abierto');
     expect(final.texto).toBe('Bajar al Piso 1');
     expect(final.encuentros, 'a mitad de la bajada, ella escuchó desde el techo y aguanté').toEqual(['inicio', 'superado']);
-    expect(final.estado, 'la partida termina').toBe('fin');
-    expect(final.titulo).toBe('Piso 2 completado');
-    expect(final.siguiente ?? '').toContain('Piso 1');
+    expect(final.tarjetas, 'superada la cabina, el Piso 2 queda completado').toContain('Piso 2 superado');
+    expect(final.piso, 'y la cabina sigue al Piso 1').toBe('piso1');
+    expect(final.estado).toBe('jugando');
   });
 });

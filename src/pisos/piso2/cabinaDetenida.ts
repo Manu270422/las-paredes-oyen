@@ -6,7 +6,7 @@
 // duración según la dificultad, y no escucha hasta que tengo el aire). Aquí está lo que se oye, lo que se lee y el
 // orden. La trampilla del techo tiembla con cada golpe y cada rasguño (se ve dónde está) y revienta si cae adentro.
 // La luz de la cabina parpadea todo el rato que está encima: es la señal de siempre ("está cerca").
-// Pasa una sola vez: superarla marca CABINA_SUPERADA. Morir aquí devuelve al 202 con la llave en el bolsillo (el punto
+// Pasa una sola vez: superarla marca CABINA_SUPERADA, el piso queda completado y la cabina sigue al Piso 1. Morir aquí devuelve al 202 con la llave en el bolsillo (el punto
 // de control de la llave) y, al volver a bajar, pasa otra vez.
 import { EncuentroSinCuerpo, type ResultadoEncuentro } from '../../ia/EncuentroSinCuerpo';
 import type { ContextoJuego } from '../../nucleo/ContextoJuego';
@@ -16,8 +16,11 @@ import { PARADA_AL_1 } from '../paradasAscensor';
 
 /** Ya pasó: aguanté y se fue. No se repite (la cabina sigue hasta abajo). */
 export const CABINA_SUPERADA = 'cabina:superada';
-/** A qué parte del viaje frena la cabina (0 al partir, 1 al llegar): pasada la mitad, cuando ya no hay vuelta. */
-export const AVANCE_PARA_FRENAR = 0.55;
+/**
+ * A qué parte del viaje frena la cabina (0 al partir, 1 al llegar). Tiene que ser ANTES de la mitad: ahí la cabina
+ * arma el piso de destino (el 1) y este guion, el del 2, ya no estaría.
+ */
+export const AVANCE_PARA_FRENAR = 0.3;
 /** Segundos entre el frenazo y el golpe en el techo. */
 const GOLPE_EN_EL_TECHO = 0.9;
 /** A qué altura suena lo de encima (el techo de la cabina), en metros. */
@@ -43,6 +46,9 @@ export const TEXTOS_CABINA = {
 } as const;
 
 export class CabinaDetenida {
+  /** `alSuperar`: aguanté y se fue (el guion del piso lo da por completado antes de que la cabina siga). */
+  constructor(private readonly alSuperar: (ctx: ContextoJuego) => void = () => undefined) {}
+
   private encuentro: EncuentroSinCuerpo | null = null;
   /** Ya frené en este intento (hasta que muera o cargue). */
   private activa = false;
@@ -128,6 +134,7 @@ export class CabinaDetenida {
   /** Aguanté: trepa por el pozo, hacia arriba, y la cabina sigue bajando. */
   private seVa(ctx: ContextoJuego): void {
     ctx.progreso.marcar(CABINA_SUPERADA);
+    this.alSuperar(ctx);
     this.sonarEncima(ctx, 'rasguno', 0.5, 0.3, '');
     ctx.programador.despues(0.7, () => {
       this.sonarEncima(ctx, 'golpe', 0.45, 0, '');

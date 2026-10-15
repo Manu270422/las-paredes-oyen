@@ -111,11 +111,6 @@ export interface MapaEventos {
    * otro piso: zumba por los muros y tarda), 'abre' (ya estaba aquí) o 'nada' (ya venía o ya estaba abierto).
    */
   'ascensor-llamado': { piso: string; respuesta: 'muerto' | 'viene' | 'abre' | 'nada' };
-  /**
-   * La cabina llegó, conmigo adentro, a un piso que todavía no existe (`hacia`: su id). Las puertas no se abren: lo
-   * que pasa ahí es del guion del último piso que existe (el final de lo que hay).
-   */
-  'ascensor-fin-recorrido': { hacia: string };
 }
 
 /** Cómo llego a otro piso (ver 'piso-cambiado'). */

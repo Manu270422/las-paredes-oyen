@@ -1,7 +1,7 @@
 // Aquí está el Piso 4 del Edificio Almendros armado como paquete. Todo el piso vive en esta carpeta:
 // el mapa, los objetivos, los documentos, las cintas y el guion. Ningún archivo del motor nombra sus
 // apartamentos ni sus banderas (lo vigilan motorSinPisos y motorSinContenido).
-import { PARADA_AL_1, PARADA_AL_2 } from '../paradasAscensor';
+import { PARADA_AL_1_DESDE_ARRIBA, PARADA_AL_2 } from '../paradasAscensor';
 import type { PaquetePiso } from '../TiposPiso';
 import { DOCUMENTOS } from './documentos';
 import { GuionPiso4 } from './guion';
@@ -135,7 +135,7 @@ export const PISO_4: PaquetePiso = {
     y: 11,
     numero: '4',
     // Al 2 y al 1, lo mismo que pide el panel en todos los pisos (ver pisos/paradasAscensor.ts).
-    paradas: [{ hacia: 'piso3', texto: 'Bajar al Piso 3' }, PARADA_AL_2, PARADA_AL_1],
+    paradas: [{ hacia: 'piso3', texto: 'Bajar al Piso 3' }, PARADA_AL_2, PARADA_AL_1_DESDE_ARRIBA],
     requiere: 'abierta:bajada',
     muerto: 'El botón no se enciende. El ascensor está muerto, como todo el edificio.',
     lampara: 'luzAscensor',

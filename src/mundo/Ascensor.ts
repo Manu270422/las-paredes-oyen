@@ -18,8 +18,6 @@
 // - Un botón del panel puede pedir algo (la llave de servicio, haber estado en ese piso): sin eso no se enciende.
 // - Un guion puede detener la cabina entre pisos y soltarla después (detener / reanudar): el Piso 2 lo hace. Y
 //   puede sacudir la trampilla del techo (algo pesa encima) o reventarla (cae adentro): la tapa la dibuja el modelo.
-// - Un botón puede llevar a un piso que todavía no existe: la cabina baja hasta el último que existe y, al llegar,
-//   no abre; avisa ('ascensor-fin-recorrido') y lo que pasa ahí es del guion de ese piso (el final de lo que hay).
 //
 // Por qué este archivo pasa de 250 líneas (anotado el 2026-10-12, a pedido del creador): es UNA máquina de estados de
 // 9 fases y sus reglas de justicia se leen juntas. El sensor de la puerta, que ella no viaje, la retención al llegar y
@@ -30,8 +28,8 @@
 // cuarto son comentarios y líneas en blanco.
 import { CONFIG } from '../config/ConfiguracionJuego';
 import type { ContextoJuego } from '../nucleo/ContextoJuego';
-import type { DefAscensor, ParadaAscensor } from '../pisos/TiposPiso';
-import { pisoAntesDe, pisoPorId } from '../pisos/catalogo';
+import type { DefAscensor } from '../pisos/TiposPiso';
+import { pisoPorId } from '../pisos/catalogo';
 import { cumpleRequisito } from '../narrativa/Requisito';
 import { BotonAscensor, type MandoAscensor } from '../interaccion/objetos/BotonAscensor';
 import type { CajaColision } from './Colisiones';
@@ -72,17 +70,14 @@ const VIBRACION = 0.34;
 
 export type FaseAscensor = 'muerto' | 'lejos' | 'viniendo' | 'aqui' | 'abriendo' | 'abierto' | 'cerrando' | 'viajando' | 'detenido' | 'reteniendo';
 
-/**
- * Lo que marca el botón de un piso en el panel: el `numero` de su ascensor; si el piso todavía no existe, el que
- * declara su parada en `paradas` ("?" si ninguno lo dice).
- */
-function numeroDe(piso: string, paradas: readonly ParadaAscensor[] = []): string {
-  return pisoPorId(piso)?.ascensor?.numero ?? paradas.find((p) => p.hacia === piso)?.numero ?? '?';
+/** Lo que marca el botón de un piso en el panel: el `numero` de su ascensor ("?" si ese piso no tiene). */
+function numeroDe(piso: string): string {
+  return pisoPorId(piso)?.ascensor?.numero ?? '?';
 }
 
 /** Los números del panel, del más alto al más bajo: el de este piso y los de sus paradas (iguales en todos los pisos). */
 export function numerosDelPanel(def: DefAscensor): string[] {
-  const todos = new Set([def.numero, ...def.paradas.map((p) => numeroDe(p.hacia, def.paradas))]);
+  const todos = new Set([def.numero, ...def.paradas.map((p) => numeroDe(p.hacia))]);
   return [...todos].sort((a, b) => Number(b) - Number(a));
 }
 
@@ -122,7 +117,7 @@ export class Ascensor implements MandoAscensor {
     const q = marco.aMundo(U_BOTONES, panel.v - 0.03);
     const celda = { gx: marco.gx, gy: marco.gy };
     for (const parada of def.paradas) {
-      const y = alturaBoton(this.numeros.indexOf(this.numeroDe(parada.hacia)), this.numeros.length);
+      const y = alturaBoton(this.numeros.indexOf(numeroDe(parada.hacia)), this.numeros.length);
       this.botones.push(new BotonAscensor(`ascensor:${def.numero}:${parada.hacia}`, parada.hacia, parada.texto, { x: q.x, y, z: q.z }, this, celda));
     }
   }
@@ -136,11 +131,6 @@ export class Ascensor implements MandoAscensor {
   get avanceViaje(): number {
     if (this.fase === 'detenido') return this.tiempoAlDetener / TIEMPOS_ASCENSOR.viaje;
     return this.fase === 'viajando' ? this.tiempo / TIEMPOS_ASCENSOR.viaje : 0;
-  }
-
-  /** El número del botón de ese piso en mi panel. */
-  private numeroDe(piso: string): string {
-    return numeroDe(piso, this.def.paradas);
   }
 
   /** ¿Estoy dentro de la cabina? */
@@ -223,7 +213,7 @@ export class Ascensor implements MandoAscensor {
       return;
     }
     this.destino = hacia;
-    this.vista.fijarBoton(this.numeros.indexOf(this.numeroDe(hacia)));
+    this.vista.fijarBoton(this.numeros.indexOf(numeroDe(hacia)));
     this.cerrar(ctx);
   }
 
@@ -293,7 +283,7 @@ export class Ascensor implements MandoAscensor {
   private venir(ctx: ContextoJuego): void {
     this.cambiarFase('viniendo');
     // Viene desde el piso de la primera parada: el indicador marca ese piso y la flecha hacia este.
-    const desde = this.def.paradas[0] ? this.numeroDe(this.def.paradas[0].hacia) : this.def.numero;
+    const desde = this.def.paradas[0] ? numeroDe(this.def.paradas[0].hacia) : this.def.numero;
     this.flecha = Number(desde) < Number(this.def.numero) ? 1 : -1;
     this.vista.fijarLlamada(true);
     this.vista.fijarIndicador(desde, this.flecha, true);
@@ -331,7 +321,7 @@ export class Ascensor implements MandoAscensor {
   private partir(ctx: ContextoJuego): void {
     this.cambiarFase('viajando');
     this.cambiado = false;
-    this.flecha = Number(this.numeroDe(this.destino ?? '')) > Number(this.def.numero) ? 1 : -1;
+    this.flecha = Number(numeroDe(this.destino ?? '')) > Number(this.def.numero) ? 1 : -1;
     this.vista.fijarIndicador(this.def.numero, this.flecha, true);
     ctx.director.bloquear(TIEMPOS_ASCENSOR.viaje + 3);
     // Ella no viaja. Si estaba afuera con cuerpo, golpea el metal y se va a las paredes.
@@ -361,36 +351,28 @@ export class Ascensor implements MandoAscensor {
     if (this.tiempo >= TIEMPOS_ASCENSOR.viaje) this.llegar(ctx, true);
   }
 
-  /**
-   * A la mitad del viaje: le pido al juego el piso de destino. Ahí sigo viajando en su cabina (recibir). Si el
-   * destino todavía no existe, el piso que se arma es el último que existe antes de él; si es este, no cambio nada.
-   */
+  /** A la mitad del viaje: le pido al juego el piso de destino. Ahí sigo viajando en su cabina (recibir). */
   private cambiarDePiso(ctx: ContextoJuego): void {
     const destino = this.destino;
     if (!destino) return;
-    const armar = pisoPorId(destino) ? destino : pisoAntesDe(destino)?.id;
-    if (!armar || armar === ctx.piso.id) return;
     const transcurrido = this.tiempo;
     const flecha = this.flecha;
     this.sonido.detenerMotor();
-    ctx.viaje.porAscensor(armar, () => ctx.nivel.ascensor?.recibir(ctx, transcurrido, flecha, destino));
+    ctx.viaje.porAscensor(destino, () => ctx.nivel.ascensor?.recibir(ctx, transcurrido, flecha));
   }
 
-  /**
-   * Llego a este piso a mitad de un viaje (la cabina del piso que dejé quedó atrás): sigo viajando aquí. `destino`
-   * es el piso que elegí: casi siempre este; si es uno que todavía no existe, sigo hacia él.
-   */
-  recibir(ctx: ContextoJuego, transcurrido: number, flecha: number, destino: string): void {
+  /** Llego a este piso a mitad de un viaje (la cabina del piso que dejé quedó atrás): sigo viajando aquí. */
+  recibir(ctx: ContextoJuego, transcurrido: number, flecha: number): void {
     this.cambiarFase('viajando');
     this.tiempo = transcurrido;
     this.cambiado = true;
-    this.destino = destino === ctx.piso.id ? null : destino;
+    this.destino = null;
     this.apertura = 0;
     this.flecha = flecha;
     this.vista.fijarApertura(0);
     this.vista.fijarIndicador(this.def.numero, flecha, true);
-    // El botón encendido es el mismo que encendí en la otra cabina.
-    this.vista.fijarBoton(this.numeros.indexOf(this.numeroDe(destino)));
+    // El botón encendido es el de este piso: el mismo que encendí en la otra cabina.
+    this.vista.fijarBoton(this.numeros.indexOf(this.def.numero));
     ctx.director.bloquear(TIEMPOS_ASCENSOR.viaje - transcurrido + 3);
     this.sacudon(ctx, 0.3);
     this.sonido.arrancarMotor(ctx, false);
@@ -405,13 +387,6 @@ export class Ascensor implements MandoAscensor {
     this.sonido.campanilla(ctx, this.puerta(), this.frente());
     if (!conmigo) {
       this.abrir(ctx);
-      return;
-    }
-    // Llegué a un piso que todavía no existe: no abro. Lo que pasa ahora es del guion de este piso.
-    const final = this.destino && !pisoPorId(this.destino) ? this.destino : null;
-    if (final) {
-      this.cambiarFase('aqui');
-      ctx.bus.emit('ascensor-fin-recorrido', { hacia: final });
       return;
     }
     this.sacudon(ctx, 0.4);
@@ -509,7 +484,7 @@ export class Ascensor implements MandoAscensor {
     this.aperturaTrampilla = 0;
     this.temblorTrampilla = 0;
     this.vista.fijarTrampilla(0, 0);
-    const lejos = this.def.paradas[0] ? this.numeroDe(this.def.paradas[0].hacia) : this.def.numero;
+    const lejos = this.def.paradas[0] ? numeroDe(this.def.paradas[0].hacia) : this.def.numero;
     this.vista.fijarIndicador(lejos, 0, this.fase !== 'muerto');
   }
 
