@@ -377,6 +377,33 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
   peligro, y el clic cuenta como `ruido:citofono`. La muerte por el clic tiene su explicación ("Oyó el botón del
   citófono").
 - Pruebas: `citofono.test.ts` y el recorrido `citofono.spec.ts`.
+
+## El final: "la puerta la llama" (P1-guion, tanda 3, 2026-10-15)
+
+Medido con un robot antes de cambiar nada ([informe](pruebas/cerraduras-robot-2026-10-15.md)): abrir las tres
+seguidas ganaba en 6 s y alejarla con el citófono perdía. Lo que cambió:
+- **Las cerraduras son ruido mío** (causa `cerradura`, origen `jugador`; `PuertaPrincipal`): bajito al empezar
+  (`RUIDO_EMPEZAR`, 0.2) y fuerte al ceder (0.35–0.5). Durante un encuentro me delatan como cualquier ruido mío; antes,
+  con origen `puerta`, nunca cazaban y durante un encuentro contaban como "un ruido ajeno": el encuentro se superaba.
+  La muerte tiene su explicación ("Oyó la cerradura.").
+- **Abrir una es un momento** (cadena 3 s, cerrojo 2.5 s, llave 3.5 s). Alejarme más de `ALEJARSE_LA_SUELTA` (0.9 m)
+  la suelta a medias: no cede y no suena su final.
+- **"La puerta la llama"** (`EstadoParedes`): si lo último que oyó fue una cerradura, va por los muros con prisa
+  (`LLEGADA_PUERTA`, 3 s, como cuando él mide), con un roce y rasguños que se oyen (y su subtítulo), y junto a la
+  puerta sale aunque el director no lo permita, a `DISTANCIA_SALIDA_PUERTA` (3.5 m) del jugador y con poca pausa. Una
+  vez por cerradura: si vuelve al muro, se queda vigilando.
+- **"El timbre la ocupa"** (`Memoria.registrarRuido`): el último ruido guarda su causa; un timbre del citófono (origen
+  del entorno) la ocupa `OCUPADA_POR_TIMBRE` s (10): un ruido más débil que el timbre o que `SACA_DEL_TIMBRE` (0.15) no
+  cambia adónde va, ni en los muros ni investigando (`atendioUltimo`). Los demás señuelos, como estaban.
+- **La salida espera si me caza** (guion del Piso 1): si la última cerradura cede con ella cazándome, salgo cuando
+  sobreviva y vuelva a la puerta. Antes, la puerta abierta la mandaba a las paredes en el mismo instante.
+- **La caza da el último paso** (`EstadoCazando`): en la celda del jugador, si sabe dónde está, se desliza hasta él (el
+  camino termina en el centro de la celda, y una esquina queda a 0.92 m; atrapa a 0.85). Cambia todas las cazas del
+  juego: solo en ese caso, que antes dejaba una caza sin final.
+- La primera cerradura que suena trae la pista de la regla. Los botones del citófono van a 10 cm.
+- Pruebas: `puertaPrincipal.test.ts`, `puertaLaLlama.test.ts` (las dos reglas, con una entidad falsa),
+  `cazaUltimoPaso.test.ts` y el recorrido `cerraduras.spec.ts`. La medición con el robot, a pedido:
+  `medirCerraduras.spec.ts` (con `robotFinal.ts` y `ayudasFinal.ts`).
 - Pruebas: `puertaPrincipal.test.ts` y el recorrido `piso1.spec.ts` (llegar en la cabina desde el 4, el libro, las
   llaves, las tres cerraduras y "Sobreviviste"); `piso2.spec` y `cabinaDetenida.spec` ahora terminan en el Piso 1.
 

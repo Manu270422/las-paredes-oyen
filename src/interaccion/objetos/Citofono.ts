@@ -35,8 +35,8 @@ export const TIMBRES_ENTRANTES = 6;
 const ENTRE_TIMBRES_ENTRANTES = 2.2;
 /** Altura de un timbre si el mapa no la dice (m). */
 const ALTURA_TIMBRE = 1.6;
-/** Pequeña: los botones están pegados, como los del ascensor. */
-const RADIO_ZONA = 0.035;
+/** Del tamaño del botón y un poco más (van a 10 cm uno de otro): con miedo, la mira tiembla. */
+const RADIO_ZONA = 0.045;
 
 export const TEXTO_OCUPADO = 'Línea ocupada';
 export const TEXTO_CONTESTAR = 'Contestar';

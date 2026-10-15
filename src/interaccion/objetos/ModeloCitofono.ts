@@ -16,8 +16,12 @@ export interface VistaCitofono {
   fijarOcupado(ocupado: boolean): void;
 }
 
-/** Medidas en metros: el ancho del panel, su grosor, el alto de cada fila y lo que ocupa la rejilla de arriba. */
-const PANEL = { ancho: 0.2, grosor: 0.03, fila: 0.075, cabecera: 0.085, pie: 0.03 } as const;
+/** Medidas en metros: el ancho del panel, su grosor, el alto de cada fila y lo que ocupa la rejilla de arriba. Las
+ * filas van a 10 cm: con 7.5 cm, el temblor del miedo bastaba para enfocar el botón de al lado (lo vio el robot de la
+ * tanda 3). */
+const PANEL = { ancho: 0.22, grosor: 0.03, fila: 0.1, cabecera: 0.085, pie: 0.03 } as const;
+/** El ancho de la tira de papel con los nombres (m). */
+const ANCHO_TIRA = 0.125;
 
 export class ModeloCitofono implements VistaCitofono {
   readonly grupo = new Group();
@@ -48,13 +52,13 @@ export class ModeloCitofono implements VistaCitofono {
     // La luz de "línea ocupada", arriba a la derecha.
     this.ocupado = new MeshStandardMaterial({ color: 0x2e0605, emissive: 0xff2414, emissiveIntensity: 0 });
     const ledOcupado = new Mesh(new BoxGeometry(0.012, 0.012, 0.006), this.ocupado);
-    ledOcupado.position.set(0.07, arriba - 0.04, frente + 0.002);
+    ledOcupado.position.set(0.08, arriba - 0.04, frente + 0.002);
     this.grupo.add(ledOcupado);
 
     // La tira de papel con los nombres, a la izquierda de los botones.
-    const papel = new MeshStandardMaterial({ map: texturaEtiquetasCitofono(rotulos), roughness: 0.92 });
-    const tira = new Mesh(new PlaneGeometry(0.11, PANEL.fila * filas), papel);
-    tira.position.set(-0.035, arriba - PANEL.cabecera - (PANEL.fila * filas) / 2, frente + 0.0015);
+    const papel = new MeshStandardMaterial({ map: texturaEtiquetasCitofono(rotulos, PANEL.fila / ANCHO_TIRA), roughness: 0.92 });
+    const tira = new Mesh(new PlaneGeometry(ANCHO_TIRA, PANEL.fila * filas), papel);
+    tira.position.set(-0.04, arriba - PANEL.cabecera - (PANEL.fila * filas) / 2, frente + 0.0015);
     this.grupo.add(tira);
 
     // Un botón por fila, con su luz al lado.
@@ -72,7 +76,7 @@ export class ModeloCitofono implements VistaCitofono {
   }
 
   posicionBoton(i: number): { x: number; y: number; z: number } {
-    return { x: 0.05, y: this.alto / 2 - PANEL.cabecera - PANEL.fila * (i + 0.5), z: PANEL.grosor + 0.012 };
+    return { x: 0.055, y: this.alto / 2 - PANEL.cabecera - PANEL.fila * (i + 0.5), z: PANEL.grosor + 0.012 };
   }
 
   fijarLuz(i: number, encendida: boolean): void {

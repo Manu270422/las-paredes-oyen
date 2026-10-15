@@ -76,7 +76,7 @@ Objetivos (borrador): averiguar qué pasó con el portero → las llaves de la p
 |---|---|---|
 | 1 | El esqueleto jugable de principio a fin: el mapa (vestíbulo, portería, el 101, contadores, el pasillo de la escalera), la cabina llega desde el 2 y se queda sin corriente al abrirse, el libro de minuta, las llaves de don Aurelio, la puerta principal con tres cerraduras, la salida con lluvia, "Sobreviviste" con la ventana del 401 y los créditos | Hecha el 2026-10-14 (ver la bitácora y 02-ARQUITECTURA); los textos, para revisar con el creador |
 | 2 | El citófono: un botón por timbre que lo hace sonar lejos (el señuelo), con un ruido pequeño donde estoy y un tiempo de espera entre usos; ella llamando sola con una voz conocida (una vez) | Hecha el 2026-10-14 (ver abajo y 02-ARQUITECTURA); los textos, para revisar con el creador |
-| 3 | Afinar las cerraduras con ella cerca: muy difícil pero justo (abrirlas seguidas la trae; alejarla con el citófono entre una y otra), medido caminando en Normal y en Pesadilla | Pendiente |
+| 3 | Afinar las cerraduras con ella cerca: muy difícil pero justo (abrirlas seguidas la trae; alejarla con el citófono entre una y otra), medido caminando en Normal y en Pesadilla | Hecha el 2026-10-15, medida con un robot ([informe](../pruebas/cerraduras-robot-2026-10-15.md)); falta que la jueguen personas |
 | 4 | Pulido: rastros, buzones, sonidos de la calle, textos | Pendiente |
 
 **Lo que quedó en la tanda 1, que el creador puede cambiar:**
@@ -110,3 +110,16 @@ Objetivos (borrador): averiguar qué pasó con el portero → las llaves de la p
   oye por la línea, sale del muro y caza con su aviso. Si muero ahí, reaparezco frente a la puerta con las llaves y ya
   no vuelve a llamar.
 - **Voces:** como en las cintas, la voz es el susurro sintetizado y el subtítulo; no hay grabaciones de voz.
+
+**Lo que quedó en la tanda 3 (las cerraduras), que el creador puede cambiar** (medido con un robot, ver el
+[informe](../pruebas/cerraduras-robot-2026-10-15.md); personas, todavía ninguna):
+- **Antes no era difícil**: abrir las tres seguidas ganaba en 6 s (también en Pesadilla) y alejarla con el citófono
+  perdía. Ahora, con el robot: seguidas y "un timbre y las tres" mueren; "un timbre por cerradura" sale (~94 s, en
+  Normal y en Pesadilla); sin citófono, esperando frente a la puerta, también se sale, pero en ~2.5–3 minutos.
+- **La regla, en una línea**: cada cerradura que suena la llama hacia la puerta; si te está escuchando, te delata.
+  Sale como pista la primera vez que suena una, y como explicación al morir ("Oyó la cerradura.").
+- **Los números** (cada uno es una constante): cerraduras de 3, 2.5 y 3.5 s; llega a la puerta en 3 s; sale a 3.5 m
+  de ti; el timbre la ocupa 10 s; alejarte 0.9 m suelta la cerradura.
+- **La última cerradura no salva si te delató**: si cede con ella cazándote, primero la caza.
+- **Pesadilla** no tiene números propios en la puerta: ya la distingue que no hay punto de control (morir ahí es
+  volver al Piso 4). Si al jugarla se siente fácil, se puede acortar el rato que la ocupa el timbre solo en Pesadilla.

@@ -6,6 +6,7 @@
 //   contesto, se calla (la nota de don Aurelio lo dice: "no conteste"). Si contesto, habla con la voz de Hernando y
 //   se queda escuchando por la línea: es un encuentro con las reglas de siempre (quieto y sin aire, se corta; si me
 //   oye, sale del muro y caza).
+// - La puerta principal (tanda 3): la primera vez que suena una cerradura, la pista de su regla ("la puerta la llama").
 // - El final: cuando la puerta principal termina de abrirse (sus tres cerraduras), salgo. Afuera llueve; a mi
 //   espalda, en el cuarto piso, una ventana tiene luz: la del 401. "Sobreviviste".
 // Todo se basa en banderas, así funciona igual al cargar partida.
@@ -45,6 +46,8 @@ export const LLAMA_TRAS_LLAVES = 4;
 const CERCA_DEL_PANEL = 2.6;
 /** Del clic de contestar a la voz (s). */
 const ANTES_DE_LA_VOZ = 1.3;
+/** A esta distancia de la puerta abierta (m) cuento que salgo, si la salida quedó esperando. */
+const EN_LA_PUERTA = 2.2;
 
 /** Lo que se lee del citófono. BORRADOR (2026-10-14): lo revisa el creador. */
 export const TEXTOS_CITOFONO = {
@@ -59,6 +62,10 @@ export const TEXTOS_CITOFONO = {
   ignorada: '[El citófono deja de sonar]',
 } as const;
 
+/** La regla de la puerta (tanda 3), la primera vez que suena una cerradura. BORRADOR: lo revisa el creador. */
+export const PISTA_PUERTA =
+  'Cada cerradura que suena la llama hacia la puerta. Aléjala antes con el citófono y abre una por vez. Si la oyes venir, apártate de la puerta: la cerradura se suelta.';
+
 export class GuionPiso1 implements GuionPiso {
   private readonly cancelaciones: Array<() => void> = [];
   private enFinal = false;
@@ -67,6 +74,10 @@ export class GuionPiso1 implements GuionPiso {
   /** La línea abierta: ella escuchando por el citófono. */
   private escucha: EncuentroSinCuerpo | null = null;
   private estatica: FuenteSonido | null = null;
+  /** Ya di la pista de la puerta en esta partida. */
+  private pistaPuerta = false;
+  /** La puerta quedó abierta mientras ella me cazaba: salgo cuando ya no me cace y vuelva a la puerta. */
+  private salidaPendiente = false;
 
   constructor(private readonly acciones: AccionesGuion) {}
 
@@ -75,6 +86,12 @@ export class GuionPiso1 implements GuionPiso {
       ctx.bus.on('bandera', ({ nombre }) => {
         if (nombre === PUERTA_ABIERTA) this.salir(ctx);
         if (nombre === LLAVES && !ctx.progreso.tiene(LLAMO)) this.llamaEn = LLAMA_TRAS_LLAVES;
+      }),
+      // La primera cerradura que suena: la regla de la puerta, antes de que ella llegue.
+      ctx.bus.on('ruido', ({ causa }) => {
+        if (causa !== 'cerradura' || this.pistaPuerta) return;
+        this.pistaPuerta = true;
+        ctx.bus.emit('pista', { id: 'puertaPrincipal', texto: PISTA_PUERTA });
       }),
     );
   }
@@ -86,6 +103,7 @@ export class GuionPiso1 implements GuionPiso {
 
   reiniciar(ctx: ContextoJuego): void {
     this.enFinal = false;
+    this.salidaPendiente = false;
     this.llamaEn = null;
     this.cortarLinea();
     // Su llamada pasa una vez: si cargo con las llaves (su punto de control es de antes de que llamara), ya no llama.
@@ -96,6 +114,7 @@ export class GuionPiso1 implements GuionPiso {
     this.sinCorriente(ctx);
     this.pistaDelCitofono(ctx);
     this.escucha?.actualizar(dt, ctx);
+    this.salidaQueEspera(ctx);
     if (this.llamaEn === null) return;
     this.llamaEn -= dt;
     // Si el citófono está ocupado (acabo de timbrar) o ella me está cazando, espera y vuelve a intentar.
@@ -122,6 +141,14 @@ export class GuionPiso1 implements GuionPiso {
     ctx.progreso.marcar(SIN_CORRIENTE);
     // Las luces de una bandera se aplican solas al cargar; en vivo, las pide el guion (como el apagón del Piso 3).
     ctx.programador.despues(0.3, () => ctx.nivel.aplicarLuzDe(SIN_CORRIENTE));
+  }
+
+  /** La puerta quedó abierta mientras me cazaba: salgo cuando ya no me caza y estoy otra vez en la puerta. */
+  private salidaQueEspera(ctx: ContextoJuego): void {
+    if (!this.salidaPendiente || ctx.entidad.estado === 'cazando') return;
+    const puerta = ctx.nivel.salidas[0]?.objeto.position;
+    const j = ctx.jugador.posicion;
+    if (puerta && Math.hypot(j.x - puerta.x, j.z - puerta.z) < EN_LA_PUERTA) this.salir(ctx);
   }
 
   /** La primera vez que me acerco al citófono sabiendo de él (leí el libro), cómo se usa. */
@@ -204,6 +231,15 @@ export class GuionPiso1 implements GuionPiso {
   /** La puerta se abrió del todo: afuera llueve, la ventana del 401 y la pantalla final. */
   private salir(ctx: ContextoJuego): void {
     if (this.enFinal) return;
+    // Si la última cerradura cedió con ella escuchándome, su ruido me delató: me está cazando y la puerta abierta no
+    // me salva. Salgo cuando vuelva a la puerta sin que me cace (o muero en la caza, como en cualquier encuentro).
+    // Medido con el robot (tanda 3): antes, la puerta abierta mandaba a la criatura a las paredes en el mismo instante
+    // en que el ruido la lanzaba a cazar, y abrir las tres sin cuidado ganaba igual.
+    if (ctx.entidad.estado === 'cazando') {
+      this.salidaPendiente = true;
+      return;
+    }
+    this.salidaPendiente = false;
     this.enFinal = true;
     this.llamaEn = null;
     this.cortarLinea();

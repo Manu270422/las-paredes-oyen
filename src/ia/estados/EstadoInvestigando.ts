@@ -172,6 +172,8 @@ export class EstadoInvestigando implements EstadoIA {
       entidad.cazar(ruido.causa, ctx, ruido.pared);
       return;
     }
+    // Un timbre del citófono me tiene ocupada: lo más débil no me saca de ahí (lo decide la memoria al oírlo).
+    if (!entidad.memoria.atendioUltimo) return;
     // Un ruido nuevo reinicia la búsqueda hacia allá.
     this.busquedas = 0;
     this.escuchando = Math.min(this.escuchando, 0.4);

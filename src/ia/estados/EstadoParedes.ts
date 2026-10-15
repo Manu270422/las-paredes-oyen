@@ -44,6 +44,19 @@ const VELOCIDAD_MAXIMA_MEDICION = 7;
 export const ENTRA_A_BUSCAR = 25;
 /** Hasta qué distancia del jugador busco por dónde salir, fuera de los cuartos acolchados (m). */
 const RADIO_SALIDA_SORDO = 9;
+/**
+ * LA PUERTA PRINCIPAL (P1-guion, tanda 3): "la puerta la llama". Si lo último que oí fue una de sus cerraduras (causa
+ * 'cerradura': solo existe en la salida del edificio), voy por los muros como cuando él mide: rápido (llego en estos
+ * segundos desde donde esté) y haciéndome oír, para que sepa que voy. Medido con el robot: sin esto, abrir las tres
+ * seguidas ganaba en 6 s, porque recién cargado el director no me deja salir y desde lejos no alcanzaba a llegar.
+ */
+export const LLEGADA_PUERTA = 3;
+/** Cerca de la puerta salgo aunque el director no quiera (la salida del edificio es mía), así de cerca de él (m). */
+export const DISTANCIA_SALIDA_PUERTA = 3.5;
+/** Y escucho menos antes de caminar (s): ya sé dónde está. */
+const PAUSA_SALIDA_PUERTA = 0.8;
+/** Cada cuánto rasco mientras voy hacia la puerta (s). */
+const RASGUNO_PUERTA = 0.8;
 
 export class EstadoParedes implements EstadoIA {
   readonly nombre = 'paredes' as const;
@@ -54,6 +67,10 @@ export class EstadoParedes implements EstadoIA {
   private velocidadMedicion = 0;
   /** Segundos seguidos que el jugador lleva en un cuarto acolchado. */
   private enSordo = 0;
+  /** La cerradura que me llamó (su momento) y la prisa que llevo hacia ella; y la última a la que ya salí. */
+  private puertaOida = -1;
+  private velocidadPuerta = 0;
+  private puertaAtendida = -1;
 
   entrar(entidad: Entidad): void {
     entidad.desvanecer();
@@ -80,6 +97,17 @@ export class EstadoParedes implements EstadoIA {
       this.velocidadMedicion = Math.min(VELOCIDAD_MAXIMA_MEDICION, Math.max(CONFIG.entidad.velocidadParedes, falta / LLEGADA_MEDICION));
     }
     this.atraidaAntes = atraidaPorMedicion;
+    // ¿Me llama la puerta? Con cada cerradura nueva fijo la prisa (como al medir) y me hago oír desde donde estoy.
+    const porLaPuerta = ruidoReciente !== null && ruidoReciente.causa === 'cerradura';
+    if (porLaPuerta && ruidoReciente.tiempo !== this.puertaOida) {
+      this.puertaOida = ruidoReciente.tiempo;
+      const falta = distancia2D(entidad.posicion.x, entidad.posicion.z, ruidoReciente.x, ruidoReciente.z);
+      this.velocidadPuerta = Math.min(VELOCIDAD_MAXIMA_MEDICION, Math.max(CONFIG.entidad.velocidadParedes, falta / LLEGADA_PUERTA));
+      if (falta > 3) {
+        entidad.sonarEnPared('friccion_muro', ctx, 0.8, 'algo corre por dentro del muro, hacia la puerta');
+        this.temporizadorPista = RASGUNO_PUERTA;
+      }
+    }
 
     // ¿Hacia dónde me deslizo?
     let objetivo: { x: number; z: number };
@@ -93,13 +121,24 @@ export class EstadoParedes implements EstadoIA {
       }
       objetivo = this.deriva;
     }
-    const velocidad = atraidaPorMedicion ? this.velocidadMedicion : CONFIG.entidad.velocidadParedes * (ruidoReciente ? 1 : 0.5);
+    const velocidad = atraidaPorMedicion
+      ? this.velocidadMedicion
+      : porLaPuerta
+        ? this.velocidadPuerta
+        : CONFIG.entidad.velocidadParedes * (ruidoReciente ? 1 : 0.5);
     entidad.deslizarHacia(objetivo.x, objetivo.z, velocidad, dt);
+    const cercaDelObjetivo = distancia2D(entidad.posicion.x, entidad.posicion.z, objetivo.x, objetivo.z) < 3;
 
     // Pistas sonoras de dónde estoy (solo si estoy cerca del jugador).
     const distancia = entidad.distanciaAlJugador(ctx);
     this.temporizadorPista -= dt;
-    if (atraidaPorMedicion && distancia < 14) {
+    if (porLaPuerta && !cercaDelObjetivo) {
+      // Voy hacia la puerta: rasguños seguidos, que se acercan.
+      if (this.temporizadorPista <= 0) {
+        this.temporizadorPista = RASGUNO_PUERTA;
+        entidad.sonarEnPared('rasguno', ctx, 0.6, '');
+      }
+    } else if (atraidaPorMedicion && distancia < 14) {
       // Rasguños cada vez más cerca mientras mido. Cuando llego, silencio: estoy escuchando.
       if (distancia > DISTANCIA_LLEGADA_MEDICION && this.temporizadorPista <= 0) {
         this.temporizadorPista = aleatorio(2.2, 3.6);
@@ -119,7 +158,19 @@ export class EstadoParedes implements EstadoIA {
       this.entrarCaminando(entidad, ctx);
       return;
     }
-    const cercaDelObjetivo = distancia2D(entidad.posicion.x, entidad.posicion.z, objetivo.x, objetivo.z) < 3;
+    // La puerta me llama: llegué junto a la cerradura y salgo, aunque el director no quiera. Una vez por cerradura:
+    // si vuelvo al muro (la busqué y no la oí), no salgo otra vez por la misma, me quedo cerca vigilando.
+    if (porLaPuerta && cercaDelObjetivo && ruidoReciente.tiempo !== this.puertaAtendida) {
+      const salida = entidad.buscarPuntoSalida(objetivo.x, objetivo.z, ctx, DISTANCIA_SALIDA_PUERTA, 6);
+      if (salida) {
+        this.puertaAtendida = ruidoReciente.tiempo;
+        entidad.manifestar(salida.x, salida.z, ctx);
+        entidad.pausaSalida = PAUSA_SALIDA_PUERTA;
+        ctx.bus.emit('sonido-relevante', { descripcion: 'algo se desprende del muro, cerca de la puerta', x: salida.x, z: salida.z });
+        entidad.cambiarEstado('investigando', ctx);
+        return;
+      }
+    }
     if (entidad.solicitudAcecho && distancia < 14) {
       // El director quiere presión: salgo detrás del jugador, fuera de su vista.
       const atras = { x: j.x + Math.sin(ctx.jugador.yaw) * 7, z: j.z + Math.cos(ctx.jugador.yaw) * 7 };

@@ -29,6 +29,8 @@ export type CausaRuido =
   | 'tablero'
   /** El citófono de la portería: el botón donde estoy (del jugador) o el timbre que suena lejos (del entorno). */
   | 'citofono'
+  /** Una cerradura de la puerta principal (la salida): la abro yo, y la puerta la llama (ver EstadoParedes). */
+  | 'cerradura'
   /** Una máquina del edificio: el motor y la campanilla del ascensor. */
   | 'maquina'
   | 'otro';

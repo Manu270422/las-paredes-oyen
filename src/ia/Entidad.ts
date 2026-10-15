@@ -138,7 +138,7 @@ export class Entidad {
   oir(ruido: Ruido, ctx: ContextoJuego): void {
     const percibido = this.percepcion.percibir(ruido, this.posicion.x, this.posicion.z, !this.fisica, ctx) * ctx.dificultad.oido;
     if (percibido < CONFIG.entidad.umbralAudicion) return;
-    this.memoria.registrarRuido(ruido.x, ruido.z, percibido, ctx.programador.ahora, ruido.origen === 'jugador' ? ruido : null);
+    this.memoria.registrarRuido(ruido.x, ruido.z, percibido, ctx.programador.ahora, ruido.origen === 'jugador' ? ruido : null, ruido);
     this.maquina.oir(this, ctx, percibido, ruido);
   }
 

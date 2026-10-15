@@ -246,14 +246,15 @@ function lienzoRotulo(texto: string, fraccionCifras: number): HTMLCanvasElement 
  * La tira de papel de un citófono de portería: los nombres de sus botones escritos a mano, uno por renglón, en papel
  * amarillento detrás del plástico. Un renglón por rótulo, de arriba abajo (el mismo orden de los botones).
  */
-export function texturaEtiquetasCitofono(rotulos: readonly string[]): CanvasTexture {
-  const [lienzo] = lienzosGuardados(`citofono:${rotulos.join('|')}`, () => [lienzoEtiquetasCitofono(rotulos)]);
+export function texturaEtiquetasCitofono(rotulos: readonly string[], proporcionRenglon: number): CanvasTexture {
+  const [lienzo] = lienzosGuardados(`citofono:${rotulos.join('|')}:${proporcionRenglon}`, () => [lienzoEtiquetasCitofono(rotulos, proporcionRenglon)]);
   return textura(lienzo);
 }
 
-function lienzoEtiquetasCitofono(rotulos: readonly string[]): HTMLCanvasElement {
+/** `proporcionRenglon`: alto / ancho de cada renglón en el panel (así la letra no sale estirada). */
+function lienzoEtiquetasCitofono(rotulos: readonly string[], proporcionRenglon: number): HTMLCanvasElement {
   const W = 256;
-  const renglon = 96;
+  const renglon = Math.round(W * proporcionRenglon);
   const H = renglon * rotulos.length;
   const { lienzo, c } = crearLienzo(W, H);
   const ruido = new Ruido2D(semillaDe(rotulos.join('')));
@@ -275,19 +276,22 @@ function lienzoEtiquetasCitofono(rotulos: readonly string[]): HTMLCanvasElement 
   // Los renglones y los nombres, en tinta azul gastada.
   c.textAlign = 'center';
   c.textBaseline = 'middle';
+  // La misma altura de letra para todos (como las placas: alta, para que se lea de lejos). El nombre que no cabe a lo
+  // ancho se estrecha en vez de achicarse: achicando, "Contadores" dejaba "101" diminuto y nada se leía.
+  const anchoMaximo = W * 0.88;
+  c.font = `600 ${Math.round(renglon * 0.36)}px ${FAMILIA}`;
   rotulos.forEach((rotulo, i) => {
     if (i > 0) {
       c.fillStyle = 'rgba(70, 60, 40, 0.5)';
       c.fillRect(8, i * renglon - 1, W - 16, 2);
     }
-    let tamano = renglon * 0.5;
-    c.font = `600 ${tamano}px ${FAMILIA}`;
-    while (c.measureText(rotulo).width > W * 0.86 && tamano > 12) {
-      tamano -= 2;
-      c.font = `600 ${tamano}px ${FAMILIA}`;
-    }
+    const ancho = c.measureText(rotulo).width;
+    c.save();
+    c.translate(W / 2, i * renglon + renglon / 2 + 2);
+    if (ancho > anchoMaximo) c.scale(anchoMaximo / ancho, 1);
     c.fillStyle = 'rgb(36, 44, 92)';
-    c.fillText(rotulo, W / 2, i * renglon + renglon / 2 + 2);
+    c.fillText(rotulo, 0, 0);
+    c.restore();
   });
   return lienzo;
 }
