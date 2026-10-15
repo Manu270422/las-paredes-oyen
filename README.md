@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>Terror psicológico en primera persona que se juega con los oídos.</b><br>
-  <sub>Ambientado en Bucaramanga, Colombia · Sin motor comercial · TypeScript + WebGL 2 + Web Audio</sub>
+  <sub>Un juego de <b>El Mundo de Manu</b> · Ambientado en Bucaramanga, Colombia · Sin motor comercial · TypeScript + WebGL 2 + Web Audio</sub>
 </p>
 
 <p align="center">
@@ -234,7 +234,7 @@ de dibujo sobre WebGL 2: la IA, el audio, el director, la física, la interacci�
 - Web Audio API nativa, audio 3D binaural (**HRTF**)
 - **Oclusión por muros**: un golpe detrás de dos paredes suena apagado y grave
 - Reverberación por convolución distinta en cada habitación
-- **41 sonidos sintetizados por código**, con variantes
+- **45 sonidos sintetizados por código**, con variantes
 - **Audio híbrido**: cualquier sonido se puede reemplazar por una grabación real desde `public/audio/manifiesto.json`
   (hoy está vacío: todo lo que suena sigue siendo síntesis)
 - **Firma sonora** de El Inquilino por estado: su jadeo al cazar te dice dónde está
@@ -469,9 +469,10 @@ while something blind that lives inside the walls listens for you. Every step, e
 flashlight is information for it.
 
 Built without a commercial engine: TypeScript, WebGL 2 (Three.js as a drawing library only) and the Web Audio API,
-with binaural HRTF audio, wall occlusion, per-room convolution reverb, 41 procedurally synthesized sounds, an acoustic
+with binaural HRTF audio, wall occlusion, per-room convolution reverb, 45 procedurally synthesized sounds, an acoustic
 AI, and a horror director. It runs in the browser on PC, phones and tablets. The game is currently Spanish-only.
 Play it at [almendros.elmundodemanu.com](https://almendros.elmundodemanu.com). Headphones required.
+Developed by **El Mundo de Manu**.
 
 </details>
 
@@ -482,8 +483,9 @@ Play it at [almendros.elmundodemanu.com](https://almendros.elmundodemanu.com). H
 </p>
 
 <p align="center">
-  Creado por <b>Manu</b> · <a href="https://github.com/Manu270422">@Manu270422</a> · <a href="https://almendros.elmundodemanu.com">almendros.elmundodemanu.com</a><br>
-  <sub>© 2026 Manu. Todos los derechos reservados.</sub>
+  Desarrollado por <b>El Mundo de Manu</b> · Creado y dirigido por Carlos Manuel Turizo Hernández<br>
+  <a href="https://github.com/Manu270422">@Manu270422</a> · <a href="https://almendros.elmundodemanu.com">almendros.elmundodemanu.com</a><br>
+  <sub>© 2026 El Mundo de Manu. Todos los derechos reservados.</sub>
 </p>
 
 <p align="center"><i>Las paredes oyen. Y ahora, tú también.</i></p>

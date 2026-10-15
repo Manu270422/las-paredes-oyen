@@ -801,6 +801,28 @@ export const RECETAS_SONIDO: Record<IdSonido, RecetaSonido> = {
     },
   },
 
+  // El timbre de un citófono viejo de portería: una campanilla eléctrica que el martillo golpea 24 veces por segundo
+  // (el "rrrin"), con sus parciales agudos de lata y el zumbido del electroimán debajo. Un segundo, sin cola: así se
+  // distingue de la campanilla del ascensor, que es un ding-dong limpio.
+  timbre: {
+    variantes: 1,
+    generar: (tasa) => {
+      const duracion = 1.05;
+      const lata = new PasaBanda(2400, 3, tasa);
+      return terminar(
+        crearMuestras(duracion, tasa, (t) => {
+          const martillo = Math.pow(Math.max(0, Math.sin(DOS_PI * 24 * t)), 0.6);
+          const campana = Math.sin(DOS_PI * 880 * t) * 0.7 + Math.sin(DOS_PI * 1335 * t) * 0.35 + Math.sin(DOS_PI * 2210 * t) * 0.18;
+          const golpes = saturar(campana, 1.5) * (0.35 + 0.65 * martillo) + lata.procesar(ruido()) * martillo * 0.25;
+          const iman = Math.sin(DOS_PI * 60 * t) * 0.12;
+          const forma = Math.min(1, t / 0.01) * Math.min(1, (duracion - t) / 0.04);
+          return (golpes + iman) * forma;
+        }),
+        tasa,
+      );
+    },
+  },
+
   ui: {
     variantes: 1,
     generar: (tasa) => {

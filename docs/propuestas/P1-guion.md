@@ -75,7 +75,7 @@ Objetivos (borrador): averiguar qué pasó con el portero → las llaves de la p
 | Tanda | Qué | Estado |
 |---|---|---|
 | 1 | El esqueleto jugable de principio a fin: el mapa (vestíbulo, portería, el 101, contadores, el pasillo de la escalera), la cabina llega desde el 2 y se queda sin corriente al abrirse, el libro de minuta, las llaves de don Aurelio, la puerta principal con tres cerraduras, la salida con lluvia, "Sobreviviste" con la ventana del 401 y los créditos | Hecha el 2026-10-14 (ver la bitácora y 02-ARQUITECTURA); los textos, para revisar con el creador |
-| 2 | El citófono: un botón por apartamento que hace sonar su timbre lejos (el señuelo), con un ruido pequeño donde estoy y un tiempo de espera entre usos; ella llamando sola con voces (una vez, con una voz conocida) | Pendiente |
+| 2 | El citófono: un botón por timbre que lo hace sonar lejos (el señuelo), con un ruido pequeño donde estoy y un tiempo de espera entre usos; ella llamando sola con una voz conocida (una vez) | Hecha el 2026-10-14 (ver abajo y 02-ARQUITECTURA); los textos, para revisar con el creador |
 | 3 | Afinar las cerraduras con ella cerca: muy difícil pero justo (abrirlas seguidas la trae; alejarla con el citófono entre una y otra), medido caminando en Normal y en Pesadilla | Pendiente |
 | 4 | Pulido: rastros, buzones, sonidos de la calle, textos | Pendiente |
 
@@ -84,11 +84,29 @@ Objetivos (borrador): averiguar qué pasó con el portero → las llaves de la p
   frente a la puerta). Los dos últimos cuentan también en Difícil; en Pesadilla, ninguno, como en todo el juego. Abrir
   una cerradura no guarda: si muero a mitad, se vuelven a cerrar.
 - **Las cerraduras:** la cadena (1.4 s), el cerrojo (1.2 s) y la llave (1.8 s), en ese orden. Sus ruidos son como el
-  del candado de la reja: ella va a ver, no sale cazando. Mientras no exista el citófono, la única forma de alejarla
-  es esperar quieto y lejos a que se vaya. La dificultad real se mide en la tanda 3.
+  del candado de la reja: ella va a ver, no sale cazando. Para alejarla entre una y otra: el citófono (tanda 2) o el
+  señuelo de la grabadora, que existe desde el Piso 4. La dificultad real se mide en la tanda 3.
 - **El ascensor del 1** tiene el mismo panel de siempre, pero ningún botón se enciende ("El ascensor se quedó sin
   corriente"). La escalera, con escombros arriba y la reja abajo (el sótano, fuera de la 1.0).
 - **La nota de don Aurelio** dice que las llaves están "en mi cinturón", pero el llavero está sobre la cama del 101:
   si no se pone un cinturón ahí, hay que cambiar esa línea.
 - **Ella en el Piso 1** usa lo mismo que en los otros pisos (paredes, encuentros, cazas, el director). La imitación
   completa empieza al leer el libro de minuta.
+
+**Lo que quedó en la tanda 2 (el citófono), que el creador puede cambiar:**
+- **Ningún apartamento de arriba en el panel.** El P1-guion decía "un botón por apartamento del piso", pero en el
+  Piso 1 solo está el 101 y ella solo está en el piso donde estoy (un timbre en el 302 no lo oiría). Por eso los
+  botones son los timbres que hay abajo: el 101 (el más cercano a la portería: atraerla ahí es atraerla hacia mí), los
+  contadores, el parlante del vestíbulo (arriba, junto a los buzones) y el citófono de la cabina. Todos quedan a
+  13–17 m de la puerta principal.
+- **Los números:** el clic del botón es un ruido de 0.15 (menos que un paso); el timbre, 0.8, tres veces; la línea
+  queda ocupada 15 s. Si al jugarlo la espera se siente larga o corta, es un solo número (`ESPERA_CITOFONO`).
+- **Ocupado no hace nada:** pulsar con la línea ocupada no suena ni la atrae, solo dice "La línea sigue ocupada".
+- **Cómo se aprende:** el libro de minuta trae, al margen, el "truco de portero" (timbrar a los contadores para que
+  los muchachos se vayan del vestíbulo), y la primera vez junto al panel sale la pista.
+- **Su llamada** (una vez, 4 s después de tomar las llaves): desde la línea del ascensor, la cabina en la que bajé con
+  ella encima, con la voz de Hernando, la última que se oyó en una cinta. Dejarla sonar no tiene castigo (la nota de
+  don Aurelio dice que no conteste). Contestar es el susto de historia y un encuentro con las reglas de siempre: si me
+  oye por la línea, sale del muro y caza con su aviso. Si muero ahí, reaparezco frente a la puerta con las llaves y ya
+  no vuelve a llamar.
+- **Voces:** como en las cintas, la voz es el susurro sintetizado y el subtítulo; no hay grabaciones de voz.

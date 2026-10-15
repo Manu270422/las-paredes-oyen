@@ -335,6 +335,7 @@ export class Telemetria {
     bus.on('rastro-visto', ({ id }) => this.registrar('rastro-visto', { id }));
     bus.on('piso-cambiado', ({ desde, hacia, por }) => this.registrar('piso-cambiado', { desde, hacia, por }));
     bus.on('ascensor-llamado', ({ piso, respuesta }) => this.registrar('ascensor-llamado', { piso, respuesta, ...this.estadoPeligro() }));
+    bus.on('citofono', ({ accion, timbre }) => this.registrar('citofono', { accion, timbre, ...this.estadoPeligro() }));
     bus.on('piso-completado', ({ piso, tiempo, muertes }) => this.registrar('piso-completado', { piso, tiempo: r2(tiempo), muertes }));
     bus.on('pista', ({ id }) => this.registrar('pista', { id }));
     bus.on('dificultad-cambiada', ({ de, a, motivo }) => this.registrar('dificultad', { de, a, motivo }));

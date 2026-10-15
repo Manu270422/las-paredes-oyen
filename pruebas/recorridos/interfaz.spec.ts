@@ -102,3 +102,28 @@ test('sin telemetría, la pausa no muestra "Exportar registro de la prueba"', as
   await expect(page.locator('.pausa').getByRole('button', { name: 'Continuar', exact: true })).toBeVisible();
   await expect(page.locator('.pausa').getByRole('button', { name: 'Exportar registro de la prueba' })).toBeHidden();
 });
+
+// Los créditos (decisión del creador, 2026-10-14): el estudio en el pie del menú; en Créditos, "Desarrollado por" y
+// "Creado y dirigido por" debajo del título, y la ayuda de IA en la sección de tecnología, no como autoría.
+test('el menú lleva el nombre del estudio y Créditos separa la autoría de la ayuda de IA', async ({ page }) => {
+  await iniciar(page);
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.__juego?.estado === 'menu');
+  await expect(page.locator('.menu__estudio'), 'el estudio en el pie del menú').toHaveText('El Mundo de Manu');
+  await page.getByRole('button', { name: 'Créditos', exact: true }).click();
+  const creditos = page.locator('.creditos__texto');
+  await expect(creditos).toBeVisible();
+  const lineas = await creditos.evaluate((caja) => {
+    const hijos = [...caja.children].map((h) => ({ etiqueta: h.tagName, texto: h.textContent?.trim() ?? '' }));
+    const tecnologia = hijos.findIndex((h) => h.etiqueta === 'H3' && h.texto === 'Tecnología');
+    const siguiente = hijos.findIndex((h, i) => i > tecnologia && h.etiqueta === 'H3');
+    return {
+      autoria: hijos.filter((h) => h.etiqueta === 'P').map((h) => h.texto).slice(1, 3),
+      enTecnologia: hijos.slice(tecnologia + 1, siguiente === -1 ? undefined : siguiente).map((h) => h.texto),
+      antesDeTecnologia: hijos.slice(0, tecnologia).map((h) => h.texto),
+    };
+  });
+  expect(lineas.autoria).toEqual(['Desarrollado por El Mundo de Manu', 'Creado y dirigido por Carlos Manuel Turizo Hernández']);
+  expect(lineas.enTecnologia).toContain('Desarrollado con asistencia de IA (Claude, de Anthropic)');
+  expect(lineas.antesDeTecnologia.join(' '), 'la IA no está en la autoría').not.toContain('IA');
+});

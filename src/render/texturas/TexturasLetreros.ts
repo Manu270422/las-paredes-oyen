@@ -241,3 +241,53 @@ function lienzoRotulo(texto: string, fraccionCifras: number): HTMLCanvasElement 
   c.putImageData(img, 0, 0);
   return lienzo;
 }
+
+/**
+ * La tira de papel de un citófono de portería: los nombres de sus botones escritos a mano, uno por renglón, en papel
+ * amarillento detrás del plástico. Un renglón por rótulo, de arriba abajo (el mismo orden de los botones).
+ */
+export function texturaEtiquetasCitofono(rotulos: readonly string[]): CanvasTexture {
+  const [lienzo] = lienzosGuardados(`citofono:${rotulos.join('|')}`, () => [lienzoEtiquetasCitofono(rotulos)]);
+  return textura(lienzo);
+}
+
+function lienzoEtiquetasCitofono(rotulos: readonly string[]): HTMLCanvasElement {
+  const W = 256;
+  const renglon = 96;
+  const H = renglon * rotulos.length;
+  const { lienzo, c } = crearLienzo(W, H);
+  const ruido = new Ruido2D(semillaDe(rotulos.join('')));
+  // El papel: amarillento, más sucio en los bordes (donde lo tocan los dedos).
+  const imagen = c.createImageData(W, H);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const mancha = 0.88 + 0.12 * ruido.fractal((x / W) * 5, (y / H) * 5 * (H / W), 3, 256);
+      const borde = Math.min(x, y, W - 1 - x, H - 1 - y);
+      const mugre = 1 - 0.25 * (1 - suave(0, 18, borde));
+      const i = (y * W + x) * 4;
+      imagen.data[i] = 222 * mancha * mugre;
+      imagen.data[i + 1] = 208 * mancha * mugre;
+      imagen.data[i + 2] = 168 * mancha * mugre;
+      imagen.data[i + 3] = 255;
+    }
+  }
+  c.putImageData(imagen, 0, 0);
+  // Los renglones y los nombres, en tinta azul gastada.
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  rotulos.forEach((rotulo, i) => {
+    if (i > 0) {
+      c.fillStyle = 'rgba(70, 60, 40, 0.5)';
+      c.fillRect(8, i * renglon - 1, W - 16, 2);
+    }
+    let tamano = renglon * 0.5;
+    c.font = `600 ${tamano}px ${FAMILIA}`;
+    while (c.measureText(rotulo).width > W * 0.86 && tamano > 12) {
+      tamano -= 2;
+      c.font = `600 ${tamano}px ${FAMILIA}`;
+    }
+    c.fillStyle = 'rgb(36, 44, 92)';
+    c.fillText(rotulo, W / 2, i * renglon + renglon / 2 + 2);
+  });
+  return lienzo;
+}

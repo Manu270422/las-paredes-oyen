@@ -166,8 +166,9 @@ test.describe.serial('El Piso 1 caminando, hasta salir del edificio', () => {
     expect(r.tarjeta ?? '', 'sobre el negro, Sobreviviste y la ventana del 401').toContain('la del 401');
     expect(r.estado).toBe('fin');
     expect(r.titulo).toBe('Sobreviviste');
-    expect(r.creditos ?? '').toContain('Carlos Manuel Turizo Hernández');
-    expect(r.creditos ?? '').toContain('inteligencia artificial');
+    expect(r.creditos ?? '').toContain('Desarrollado por El Mundo de Manu');
+    expect(r.creditos ?? '').toContain('Creado y dirigido por Carlos Manuel Turizo Hernández');
+    expect(r.creditos ?? '', 'la ayuda de IA va en Créditos (tecnología), no en la autoría').not.toContain('Claude');
     expect(r.siguienteVisible, 'no hay "próximamente": es el final del juego').toBe(false);
   });
 });

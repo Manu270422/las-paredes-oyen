@@ -123,7 +123,7 @@ la reja se pone en marcha solo, como si alguien lo hubiera llamado desde abajo.
 - **Audio 3D HRTF** (binaural) en calidad media/alta; paneo simple en baja.
 - **Oclusión por rejilla**: cuento muros y puertas cerradas entre oyente y fuente → filtro pasa-bajos + atenuación; los muros "reverberan" más.
 - **Reverb por habitación** con convolución: impulsos generados por código (pasillo, sala, cuarto, baño, escalera, ducto metálico) y fundido cruzado al cambiar de cuarto.
-- **Todo sintetizado** (44 sonidos con variantes): pasos por superficie, crujidos por *stick-slip*, golpes, respiración con formantes, susurros con fonemas falsos, zumbido de 60 Hz, tuberías inarmónicas, y la firma de la criatura.
+- **Todo sintetizado** (45 sonidos con variantes): pasos por superficie, crujidos por *stick-slip*, golpes, respiración con formantes, susurros con fonemas falsos, zumbido de 60 Hz, tuberías inarmónicas, y la firma de la criatura.
 - **Audio híbrido**: `public/audio/manifiesto.json` permite reemplazar (o sumar variantes a) cualquier `IdSonido` con una grabación real; si falla, queda la síntesis. Hoy el manifiesto está vacío.
 - **La grabadora como segunda realidad** (`jugador/CapturaGrabadora.ts`): la cinta capta los sonidos reales a < 12 m y la presencia silenciosa de la criatura, con dirección y distancia.
 - **Modo escuchar**: baja ambiente, sube la entidad, reduce la oclusión.

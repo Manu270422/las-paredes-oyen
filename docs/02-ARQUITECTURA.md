@@ -28,7 +28,7 @@ LasParedesOyen/
    │  ├─ shaders/              GLSL del postprocesado
    │  └─ texturas/             Generador procedural, recetas, cookie de la linterna, pintor de rastros
    ├─ audio/                   Motor, fuentes 3D, reverberación, ambiente, biblioteca
-   │  └─ sintesis/             Sintetizador y recetas de los 44 sonidos
+   │  └─ sintesis/             Sintetizador y recetas de los 45 sonidos
    ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, letreros, rastros, escaleras, ascensor, colisiones
    │  └─ datos/                Tipos de mapa (la forma; los mapas viven en cada piso)
    ├─ jugador/                 Jugador, cámara, respiración, corazón, linterna, grabadora
@@ -353,8 +353,30 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
   cerraduras no guardan: morir las vuelve a cerrar.
 - **El final del juego** (`PantallaFin`): sin piso siguiente, el título es "Sobreviviste", no hay "Próximamente" y
   salen los créditos de `config/Creditos.ts` (también en la pantalla de créditos del menú).
-- **Lo que falta** (tandas 2–4 del P1-guion): el citófono (el señuelo con su ruido pequeño y su espera, y ella
-  llamando con voces), afinar la dificultad de las cerraduras con ella cerca y el pulido.
+- **Lo que falta** (tandas 3–4 del P1-guion): afinar la dificultad de las cerraduras con ella cerca y el pulido.
+
+## El citófono (P1-guion, tanda 2, 2026-10-14)
+
+- **Una pieza del motor** (`interaccion/objetos/Citofono.ts`, tipo de interactuable `citofono`; el dibujo en
+  `ModeloCitofono.ts` y la tira de papel en `texturaEtiquetasCitofono`). El mapa dice dónde está el panel y sus
+  `timbres` (`DefTimbre`: rótulo, texto del indicador, subtítulo y dónde suena). El panel no se enfoca: se enfocan sus
+  botones, que el nivel mete en `interactuables` como los del ascensor (`Nivel.citofonos`).
+- **Pulsar un botón:** un clic donde estoy (ruido mío de 0.15, causa `citofono`: menos que un paso), y medio segundo
+  después su timbre suena tres veces donde está (ruido del entorno de 0.8, como la campanilla del ascensor). Ella lo
+  oye como cualquier ruido: desde los muros va hacia allá, y si ya investigaba, la distrae (lo mismo que la radio o la
+  grabadora). Después la línea queda ocupada 15 s: los botones dicen "Línea ocupada" y no hacen nada, ni ruido.
+- **Llamadas que entran** (`Citofono.llamarDesde`): el panel timbra sin ser un ruido para ella, la luz de esa línea
+  parpadea y su botón dice "Contestar". Si nadie contesta, suena 6 veces y avisa al guion; contestar es el mismo clic, y
+  la línea queda abierta hasta que el guion cuelga (`colgar`).
+- **La llamada de ella en el Piso 1** (`pisos/piso1/guion.ts`): una vez, 4 s después de tomar las llaves, desde la
+  línea del ascensor. Contestar usa `EncuentroSinCuerpo` en el panel: mientras habla (la voz de Hernando), solo lo
+  fuerte me delata; cuando escucha, las reglas de cualquier encuentro, con la justicia del aire. Superada, se corta; si
+  me oye, sale del muro más cercano (a 4–8 m) y caza con su aviso. Durante la llamada, ella y el director son de este
+  momento. Al cargar con las llaves, ya no llama.
+- **Telemetría:** el evento `citofono` (timbre, ocupado, llamada, contestada, ignorada, colgada) con el estado de
+  peligro, y el clic cuenta como `ruido:citofono`. La muerte por el clic tiene su explicación ("Oyó el botón del
+  citófono").
+- Pruebas: `citofono.test.ts` y el recorrido `citofono.spec.ts`.
 - Pruebas: `puertaPrincipal.test.ts` y el recorrido `piso1.spec.ts` (llegar en la cabina desde el 4, el libro, las
   llaves, las tres cerraduras y "Sobreviviste"); `piso2.spec` y `cabinaDetenida.spec` ahora terminan en el Piso 1.
 

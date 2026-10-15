@@ -15,6 +15,7 @@ import { Examinable } from '../interaccion/objetos/Examinable';
 import { PuntoMedicion } from '../interaccion/objetos/PuntoMedicion';
 import { Tablero } from '../interaccion/objetos/Tablero';
 import { PuertaPrincipal } from '../interaccion/objetos/PuertaPrincipal';
+import { Citofono } from '../interaccion/objetos/Citofono';
 import { Radio } from '../interaccion/objetos/Radio';
 import { construirGeometria } from './ConstructorGeometria';
 import { construirEscaleras, type OpcionesEscalera } from './ConstructorEscalera';
@@ -51,6 +52,8 @@ export class Nivel {
   radio: Radio | null = null;
   /** Las puertas principales (la salida del edificio): sus cerraduras tardan, y las actualizo cada fotograma. */
   readonly salidas: PuertaPrincipal[] = [];
+  /** Los citófonos del piso (el de la portería): sus botones van en `interactuables`; el guion puede hacerlos sonar. */
+  readonly citofonos: Citofono[] = [];
   /** Avisa la primera vez que el jugador ve cada rastro del piso (para la telemetría). */
   readonly vigiaRastros: VigiaRastros;
 
@@ -184,6 +187,14 @@ export class Nivel {
           objeto = salida;
           break;
         }
+        case 'citofono': {
+          // El panel no se enfoca: se enfocan sus botones, uno por timbre (como los del ascensor).
+          const citofono = new Citofono(d);
+          this.citofonos.push(citofono);
+          this.interactuables.push(...citofono.botones);
+          this.grupo.add(citofono.objeto);
+          continue;
+        }
       }
       this.interactuables.push(objeto);
       this.grupo.add(objeto.objeto);
@@ -309,6 +320,7 @@ export class Nivel {
     if (ctx) this.vigiaRastros.actualizar(dt, ctx);
     if (ctx) for (const reja of this.rejas) reja.actualizar(dt, ctx);
     if (ctx) for (const salida of this.salidas) salida.actualizar(dt, ctx);
+    if (ctx) for (const citofono of this.citofonos) citofono.actualizar(dt, ctx);
     if (ctx) this.ascensor?.actualizar(dt, ctx);
   }
 
@@ -328,6 +340,7 @@ export class Nivel {
     for (const lampara of this.lamparas) lampara.restablecer();
     for (const mueble of this.muebles) mueble.restablecer();
     for (const i of this.interactuables) i.restablecer?.(ctx);
+    for (const citofono of this.citofonos) citofono.restablecer();
     this.ascensor?.restablecer(ctx);
 
     for (const bandera of Object.keys(this.piso.luzPorBandera)) if (p.tiene(bandera)) this.aplicarLuzDe(bandera);

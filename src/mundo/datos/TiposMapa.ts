@@ -93,7 +93,7 @@ export interface DefMueble {
 }
 
 /** 'salida': la puerta principal del edificio, con tres cerraduras (interaccion/objetos/PuertaPrincipal.ts). */
-export type TipoInteractuable = 'documento' | 'recogible' | 'examinable' | 'medicion' | 'tablero' | 'radio' | 'salida';
+export type TipoInteractuable = 'documento' | 'recogible' | 'examinable' | 'medicion' | 'tablero' | 'radio' | 'salida' | 'citofono';
 
 export interface DefInteractuable {
   tipo: TipoInteractuable;
@@ -120,6 +120,23 @@ export interface DefInteractuable {
   accion?: string;
   /** Qué se examina (tipo examinable): una clave de `examinables` del paquete del piso. */
   examinable?: string;
+  /** Los botones del citófono (tipo citofono), de arriba abajo: cada uno hace sonar su timbre en otro punto del piso. */
+  timbres?: DefTimbre[];
+}
+
+/** Un timbre del citófono: lo que dice su botón y dónde suena (en celdas). */
+export interface DefTimbre {
+  id: string;
+  /** Lo escrito junto al botón ("101"). */
+  rotulo: string;
+  /** Lo que dice el indicador al mirarlo ("Timbrar al 101"). */
+  texto: string;
+  /** El subtítulo del sonido cuando suena ("el timbre del 101"). */
+  suena: string;
+  x: number;
+  y: number;
+  /** Altura del timbre en metros (por defecto, 1.6). */
+  altura?: number;
 }
 
 export interface PuntoAparicion {
