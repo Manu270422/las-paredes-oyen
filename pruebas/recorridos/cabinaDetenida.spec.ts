@@ -1,7 +1,7 @@
 // La cabina que se detiene entre el 2 y el 1 (P2-guion, tanda 3), en el juego real, cada camino en su partida:
 // 1) me adelanto a aguantar el aire en cuanto cae encima: ella sigue arrastrándose y no escucha hasta que lo suelto y
-//    lo recupero (la justicia del aire); cuando se queda quieta, aguanto, se va trepando, la cabina sigue y termina el
-//    piso;
+//    lo recupero (la justicia del aire); cuando se queda quieta, aguanto, se va trepando, el piso queda completado y la
+//    cabina sigue al Piso 1;
 // 2) aguanto el aire pero doy un paso mientras escucha: revienta la trampilla y cae adentro; su aviso dura lo que en cualquier caza (mientras
 //    avisa no atrapa, aunque esté encima), muero por lo que hice y reaparezco en el 202 con la llave en el bolsillo.
 import { expect, test, type Page } from '@playwright/test';
@@ -34,6 +34,8 @@ async function prepararse(page: Page, errores: string[]): Promise<void> {
     ctx.bus.on('encuentro', (e) => anotar(`encuentro:${e.estado}`));
     ctx.bus.on('sonido-relevante', (s) => anotar(s.descripcion));
     ctx.bus.on('subtitulo', (s) => anotar(s.texto));
+    ctx.bus.on('tarjeta', (t) => anotar(t.titulo));
+    ctx.bus.on('paso-jugador', () => anotar('paso'));
     window.__cabina = lista;
   });
   expect(await bajarAlUnoConLaLlave(page)).toBe('Bajar al Piso 1');
@@ -91,8 +93,8 @@ test('me adelanto a aguantar: no escucha hasta que recupero el aire; quieto y si
     P.soltar('KeyQ');
     const fallo = hay('encuentro:fallido');
     // Se va trepando y la cabina sigue: llega abajo y termina el piso.
-    const finPartida = performance.now() + 30_000;
-    while (J.estado !== 'fin' && performance.now() < finPartida) await P.esperarReal(50);
+    const finViaje = performance.now() + 30_000;
+    while (!(J.estado === 'jugando' && J.ctx.piso.id === 'piso1') && performance.now() < finViaje) await P.esperarReal(50);
     return {
       escuchoMientrasAguantaba,
       empezo,
@@ -101,7 +103,8 @@ test('me adelanto a aguantar: no escucha hasta que recupero el aire; quieto y si
       fallo,
       seFue: hay('[Se va trepando por el pozo, hacia arriba]'),
       estado: J.estado,
-      titulo: document.querySelector('.fin__titulo')?.textContent ?? null,
+      piso: J.ctx.piso.id,
+      superado: hay('Piso 2 superado'),
     };
   });
   await page.screenshot({ path: info.outputPath('fin.png') });
@@ -114,8 +117,9 @@ test('me adelanto a aguantar: no escucha hasta que recupero el aire; quieto y si
   expect(r.supero, 'quieto y sin aire, lo superé').toBe(true);
   expect(r.fallo).toBe(false);
   expect(r.seFue).toBe(true);
-  expect(r.estado, 'la cabina siguió y terminó el piso').toBe('fin');
-  expect(r.titulo).toBe('Piso 2 completado');
+  expect(r.superado, 'el Piso 2 quedó completado (su tarjeta, sobre el negro)').toBe(true);
+  expect(r.piso, 'la cabina siguió hasta el Piso 1').toBe('piso1');
+  expect(r.estado).toBe('jugando');
   expect(errores, 'errores de consola').toEqual([]);
 });
 
@@ -131,16 +135,30 @@ test('aguanto el aire pero doy un paso mientras escucha: cae adentro con su avis
     const hay = (que: string) => lista.some((x) => x.que === que);
     const fin = performance.now() + 25_000;
     while (!hay('encuentro:inicio') && performance.now() < fin) await P.esperarReal(20);
-    // Aguanto el aire (mi respiración no me delata), pero pasada la gracia doy un paso en la cabina.
+    // Aguanto el aire (mi respiración no me delata), pero pasada la gracia camino nervioso en la cabina, de un lado al
+    // otro. Un paso suena al completar la zancada (0.72 m) y contra la pared de la cabina no siempre se completa: yendo
+    // y viniendo, sí, antes de que termine el encuentro más corto.
     P.sostener('KeyQ');
     const t0 = ctx.programador.ahora;
-    while (ctx.programador.ahora < t0 + 1.5) await P.esperarReal(20);
-    P.sostener('KeyW');
-    const finPaso = performance.now() + 5_000;
-    while (!hay('encuentro:fallido') && performance.now() < finPaso) await P.esperarReal(10);
-    P.soltar('KeyW');
+    while (ctx.programador.ahora < t0 + ctx.dificultad.graciaEncuentro + 0.1) await P.esperarReal(20);
+    let tecla = 'KeyW';
+    let vuelta = ctx.programador.ahora;
+    P.sostener(tecla);
+    const finPaso = performance.now() + 6_000;
+    while (!hay('encuentro:fallido') && performance.now() < finPaso) {
+      if (ctx.programador.ahora - vuelta > 0.4) {
+        P.soltar(tecla);
+        tecla = tecla === 'KeyW' ? 'KeyS' : 'KeyW';
+        P.sostener(tecla);
+        vuelta = ctx.programador.ahora;
+      }
+      await P.esperarReal(10);
+    }
+    P.soltar(tecla);
     P.soltar('KeyQ');
-    const tFallo = ctx.programador.ahora;
+    // El aviso se mide desde el instante en que me oyó (el evento), no desde que esta espera lo nota: con el PC cargado,
+    // eso llega uno o dos fotogramas tarde y el aviso parecería más corto de lo que fue.
+    const tFallo = lista.find((x) => x.que === 'encuentro:fallido')?.t ?? ctx.programador.ahora;
     await P.esperarReal(50);
     const E = ctx.entidad;
     await P.esperarReal(250);
@@ -150,6 +168,7 @@ test('aguanto el aire pero doy un paso mientras escucha: cae adentro con su avis
     const avisoDuro = ctx.programador.ahora - tFallo;
     while (J.estado !== 'muerte' && performance.now() < finMuerte) await P.esperarReal(20);
     return {
+      pasos: lista.filter((x) => x.que === 'paso' && x.t >= t0).length,
       alCaer,
       trampilla: hay('[La trampilla del techo revienta]'),
       avisoDuro,
@@ -158,6 +177,7 @@ test('aguanto el aire pero doy un paso mientras escucha: cae adentro con su avis
     };
   });
   await page.screenshot({ path: info.outputPath('muerte.png') });
+  expect(r.pasos, 'di al menos un paso mientras escuchaba').toBeGreaterThanOrEqual(1);
   expect(r.trampilla, 'revienta la trampilla').toBe(true);
   expect(r.alCaer.trampilla, 'y se ve: la tapa cuelga abierta').toBe(1);
   expect(r.alCaer.fisica, 'cae adentro, con cuerpo').toBe(true);

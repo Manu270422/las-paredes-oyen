@@ -264,10 +264,9 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
   panel es uno solo): al 2, `visitado:piso2`; al 1, `objeto:llave_servicio`.
 - **`visitado:<piso>`** (`narrativa/Requisito.ts`): se cumple si ya estuve en ese piso (`Progreso.visitado`: el que
   juego o uno que dejé). Así, la primera bajada a un piso es siempre por la escalera.
-- **Un piso que todavía no existe.** Una parada puede llevar al `siguiente` de un piso aunque no esté en el catálogo
-  (con `numero` para su botón; `EnlacesAscensor` lo valida). La cabina viaja hasta el último piso que existe
-  (`pisoAntesDe`) y, al llegar conmigo, no abre: emite `ascensor-fin-recorrido` y lo que pasa es del guion de ese
-  piso (el Piso 2 cierra la partida). Cuando exista el Piso 1, esa parada será un viaje normal.
+- **Un piso que todavía no existía** (quitado el 2026-10-14, con el Piso 1): hasta entonces, la parada al 1 viajaba
+  hasta el 2 y su guion cerraba la partida (`numero`, `pisoAntesDe`, `ascensor-fin-recorrido`). Con el Piso 1 en el
+  catálogo, es un viaje normal y `EnlacesAscensor` vuelve a exigir que cada parada lleve a un piso que existe.
 - **Escalera tapiada** (`opcionesEscalera.tapiadaAbajo`): un muro de ladrillo nuevo (material `ladrillo`, receta
   procedural) donde iría la reja. `PozosCaminables` lo cuenta como tramo tapado para siempre (ni yo ni ella).
 - **La reja que se abre sola** (`DefEscaleraPiso.seAbreCon`): al marcarse esa bandera, `TramoEscalera.alBandera` la
@@ -312,9 +311,10 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
 - **Mientras avisa, no atrapa** (`Entidad.avisando`, que marca `EstadoCazando`; `Juego` lo respeta al atrapar). Antes,
   una caza que empezaba a menos de 0.85 m mataba sin el aviso que promete la regla de justicia. En el juego normal
   casi no pasaba; cayendo dentro de la cabina, pasaba siempre.
-- **La escena** (`pisos/piso2/cabinaDetenida.ts`): frena pasado el 55 % del viaje al 1, algo cae sobre el techo, se
+- **La escena** (`pisos/piso2/cabinaDetenida.ts`): frena al 30 % del viaje al 1 (antes de la mitad, cuando ya se
+  arma el piso de destino; hasta el 2026-10-14 frenaba al 55 %, cuando el 1 no existía), algo cae sobre el techo, se
   arrastra, se queda a escuchar (la luz de la cabina titila todo el rato). Superada: trepa por el pozo, se marca
-  `cabina:superada` y la cabina sigue al final. Fallida: revienta la trampilla, cae adentro (`Entidad.caerDesde`) y
+  `cabina:superada`, el Piso 2 queda completado y la cabina sigue al Piso 1. Fallida: revienta la trampilla, cae adentro (`Entidad.caerDesde`) y
   caza con la causa que me delató; reaparezco en el 202 con la llave.
 - Pruebas: `cabinaDetenida.test.ts`, `ascensor.test.ts` (detener y reanudar) y el recorrido `cabinaDetenida.spec.ts`
   (los dos caminos, cada uno en su partida).
@@ -331,6 +331,32 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
   caja del fondo: es la radio genérica del nivel; el director la puede encender y la atrae lejos del 202.
 - Pruebas: `ascensor.test.ts` (la trampilla), `cabinaDetenida.spec` (tiembla al caer encima; abierta al caer adentro)
   y `rastrosPiso2.spec`.
+
+## El Piso 1 (P1-guion, tanda 1, 2026-10-14)
+
+- **El último piso del catálogo** (`pisos/piso1/`): no tiene `siguiente`, así que su `terminarPartida` es el final del
+  juego. Mapa propio de 32×20 (no el esqueleto de los apartamentos): vestíbulo, portería, el cuarto de don Aurelio
+  (101), contadores y el pasillo de la escalera; la cabina en la misma celda (5, 11).
+- **El ascensor se queda sin corriente al llegar:** el guion, la primera vez que las puertas se abren, revienta el tubo
+  y marca `ascensor:sin_corriente` (la luz se aplica en vivo con `aplicarLuzDe`). El panel es el mismo de siempre, pero
+  todas sus paradas piden `corriente:ascensor`, que nunca se cumple. La escalera, tapada arriba y con la reja abajo.
+- **Las paradas al 1** (`pisos/paradasAscensor.ts`): desde el 2, con la llave de servicio; desde el 3 y el 4
+  (`PARADA_AL_1_DESDE_ARRIBA`), solo después de haber estado en el 1, que en la práctica nunca pasa (no se sube).
+- **La puerta principal** (`interaccion/objetos/PuertaPrincipal.ts`, tipo de interactuable `salida`; el nivel las
+  guarda en `Nivel.salidas` y las actualiza en cada fotograma): tres cerraduras en orden, cada una con su momento
+  (1.2–1.8 s) y un ruido que a ella le llega como una puerta (0.35–0.5: va a investigar, no sale cazando). Cada una
+  queda en `cerradura:1..3`; la última pide el objeto del paquete (`llaves_aurelio`). Abiertas las tres, marca la
+  bandera del paquete (`puerta:abierta`) y el guion hace la salida: lluvia, fundido, la tarjeta "Sobreviviste" con la
+  ventana del 401 y `terminarPartida`.
+- **Puntos de control:** al llegar (el pasillo), al leer el libro de minuta (la portería) y al tomar las llaves (el
+  vestíbulo, frente a la puerta). Los dos últimos son mayores (cuentan en Difícil); en Pesadilla, ninguno. Las
+  cerraduras no guardan: morir las vuelve a cerrar.
+- **El final del juego** (`PantallaFin`): sin piso siguiente, el título es "Sobreviviste", no hay "Próximamente" y
+  salen los créditos de `config/Creditos.ts` (también en la pantalla de créditos del menú).
+- **Lo que falta** (tandas 2–4 del P1-guion): el citófono (el señuelo con su ruido pequeño y su espera, y ella
+  llamando con voces), afinar la dificultad de las cerraduras con ella cerca y el pulido.
+- Pruebas: `puertaPrincipal.test.ts` y el recorrido `piso1.spec.ts` (llegar en la cabina desde el 4, el libro, las
+  llaves, las tres cerraduras y "Sobreviviste"); `piso2.spec` y `cabinaDetenida.spec` ahora terminan en el Piso 1.
 
 ## Lo que se lee y lo que se examina
 

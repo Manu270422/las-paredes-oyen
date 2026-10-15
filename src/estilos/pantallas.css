@@ -543,6 +543,15 @@
   margin: var(--espacio-m) 0 0;
 }
 
+/* Los créditos al final del juego: una línea baja, como la firma al pie de una carta. */
+.fin__creditos {
+  max-width: 40em;
+  margin: var(--espacio-m) 0 0;
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-s);
+  line-height: 1.5;
+}
+
 .fin__texto {
   max-width: 36em;
   margin: 0;

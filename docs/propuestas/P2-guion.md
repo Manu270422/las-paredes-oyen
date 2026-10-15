@@ -86,7 +86,9 @@ objetivos queda: averiguar (libro de quejas) → grabar el cuarto sordo → la l
 - La puerta abierta no deja pasar el sonido (lo que aísla son los colchones: Hernando forró también las puertas).
 
 **Decisiones de la tanda 3 que el creador puede cambiar:**
-- La cabina frena pasado el 55 % del viaje: ya no se puede volver, y la caída al Piso 1 queda "debajo".
+- La cabina frena pasado el 55 % del viaje: ya no se puede volver, y la caída al Piso 1 queda "debajo". **Cambio del
+  2026-10-14 (con el Piso 1):** frena al 30 %, porque a la mitad del viaje ya se arma el piso de destino y la escena
+  tiene que pasar antes. Superada, el Piso 2 queda completado (su tarjeta sobre el negro) y la cabina llega al 1.
 - Son las reglas de cualquier encuentro (misma duración y misma gracia por dificultad). La diferencia es que, mientras
   ella se arrastra, su ruido tapa hasta un jadeo, y no se pone a escuchar hasta que el jugador suelta el aire y lo
   recupera (si se adelantó a aguantar, no lo castiga).

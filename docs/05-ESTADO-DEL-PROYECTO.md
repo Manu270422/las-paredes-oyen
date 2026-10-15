@@ -30,10 +30,10 @@ desarrolladores, sin página oficial confirmada; verificar en la Play Console):
 
 | Qué | Dónde |
 |---|---|
-| Sitio público | `almendros.elmundodemanu.com`, publica **`origin/main`** (2026-10-14: `19bb33d`, el PR #3 del creador. Trae los pisos 4, 3 y 2 con las tandas 1 y 2 del Piso 2; la tanda 1 entró con el PR #2) |
+| Sitio público | `almendros.elmundodemanu.com`, publica **`origin/main`** (2026-10-14: `c3eed4a` en GitHub; los PR #4 y #5 son las tandas 3 y 4 del Piso 2. Verificar con `git fetch` que `main` trae `36ab5d7` antes de congelar `ronda3`) |
 | Trabajo en curso | **`sprint-5`** (local). El creador publica con un PR de GitHub que, al fusionarse, borra la rama remota: que `origin/sprint-5` no exista después de un PR es normal, y `git push -u origin sprint-5` la vuelve a crear |
 | Ver qué commit está publicado | En el bundle en vivo aparece `0.1.0+<sha>` (buscar en `assets/index-*.js`) |
-| Enlace de los testers | Ronda 2: la etiqueta `ronda2` (`be7e516`); ver 04-PROTOCOLO. El preview de `sprint-4` sigue en `9c3bd61` |
+| Enlace de los testers | Ronda 3 (desde el 2026-10-14): el sitio principal, que publica `origin/main` (en GitHub, `c3eed4a`, con el Piso 2 completo), congelado con la etiqueta `ronda3`. Ronda 2: la etiqueta `ronda2` (`be7e516`); ver 04-PROTOCOLO. El preview de `sprint-4` sigue en `9c3bd61` |
 
 **Claude no fusiona con `main` ni publica:** lo hace el creador, cuando decide (CLAUDE.md).
 
@@ -47,10 +47,11 @@ El `main` local puede estar desactualizado: comparar siempre con `origin/main`.
 
 | Qué | Avance | Nota |
 |---|---|---|
-| Sistemas (IA, audio, director, guardado, UI, pruebas) | ~90 % | Sólidos: 489 unitarias + 69 recorridos caminando, la batería completa en verde (2026-10-14) |
+| Sistemas (IA, audio, director, guardado, UI, pruebas) | ~90 % | Sólidos: 527 unitarias + 72 recorridos caminando. La batería completa pasó entera el 2026-10-14 con el Piso 2; con el Piso 1, solo se corrieron los recorridos afectados |
 | **Piso 4 como experiencia** | **~55 % (sin validar)** | La ronda 1 lo mostró en ~2 min y sin tensión ([informe](pruebas/ronda-1-2026-10-08.md)). Con [P4-ritmo](propuestas/P4-ritmo.md) ya hay encuentro temprano, medir atrae, la historia lleva a la llave y el 402 tiene clímax. Hasta que lo jueguen personas nuevas, es una hipótesis |
 | Piso 3 | ~80 % (sin validar) | Completo de principio a fin ([P3-guion](propuestas/P3-guion.md)): libreta, apagón, grabar la pared del cuarto de Andrés, ella en el pasillo, final. Desde el 2026-10-12 tiene el ascensor (sube al 4 y baja al 3). Falta que lo jueguen personas |
 | Piso 2 | ~85 % (sin validar) | Las 4 tandas (2026-10-14): el cuarto sordo, la cabina que se detiene con ella encima y el pulido. Solo lo jugó el creador (4:01 en la tanda 3). Faltan jugadores nuevos y revisar los textos |
+| Piso 1 | ~35 % (sin validar) | Tanda 1 de 4 (2026-10-14): se juega de punta a punta hasta "Sobreviviste", pero sin el citófono (su regla nueva) y sin medir la dificultad de las cerraduras con ella cerca. Nadie lo ha jugado todavía |
 | Android | ~30 % | Capacitor 8, APK de prueba compilado ([06-ANDROID](06-ANDROID.md)). Falta: verlo en un celular, ícono, firma, cuenta de Play Console, prueba cerrada |
 | Validación con jugadores nuevos (Gate 1) | ~5 % | La ronda 1 fue con jugadores que ya conocían el juego |
 | Hacia la Play Store | ~20 % | Faltan: Piso 4 con ritmo, final del juego, audio real, rendimiento móvil medido, fuente propia, Capacitor |
@@ -65,11 +66,13 @@ El `main` local puede estar desactualizado: comparar siempre con `origin/main`.
 El 2026-10-13 el creador eligió hacer el Piso 2 antes que lo de Android: la prueba cerrada de la Play Store (12
 testers, 14 días) no alcanza a empezar a tiempo para el 31 de octubre, así que la tienda queda para después.
 
-**Ahora (2026-10-14): el Piso 2 está terminado (sus 4 tandas) y el Piso 1 espera las decisiones del creador** en
-[P1-guion](propuestas/P1-guion.md) (el portero y el citófono, y el final "Sobreviviste"). El creador eligió el 13 hacer
-los pisos antes que lo de Android, sabiendo que la Play Store pasa del 31 de octubre; con el Piso 1 el juego tendría
-principio y fin, y sería el momento de cerrar la 1.0 y volver a la prueba cerrada. La ronda 2 de testers juega la
-etiqueta `ronda2` (`be7e516`) con `?telemetria=1`; el creador enviará los registros. Rama de trabajo: `sprint-5`.
+**Ahora (2026-10-14): el Piso 1 está en construcción** ([P1-guion](propuestas/P1-guion.md), aprobado por el creador:
+don Aurelio, el citófono, tres cerraduras, "Sobreviviste" con la ventana del 401, créditos; sótano y azotea fuera de
+la 1.0). **La tanda 1 está hecha:** el juego ya se puede jugar de principio a fin, del 4 a la calle. Siguen la tanda 2
+(el citófono), la 3 (afinar las cerraduras) y la 4 (pulido).
+**La 1.0 no se cierra todavía:** antes, la ronda 3 de testers (el sitio principal con `?telemetria=1`, etiqueta
+`ronda3`; el creador manda el enlace en paralelo) y la medición en un celular real (A4). **Mientras dure la ronda 3, no
+se fusiona nada a `main`** (el Piso 1 sigue en `sprint-5`). Rama de trabajo: `sprint-5`.
 
 ## Textos nuevos del Piso 2 que el creador debe revisar (2026-10-13, borradores)
 
@@ -100,8 +103,35 @@ etiqueta `ronda2` (`be7e516`) con `?telemetria=1`; el creador enviará los regis
   voz suya… Las llaves se las dejo al portero, que es el único que todavía contesta. — Rosalba, 203"). Ojo: la carta
   menciona al portero, que podría ser el hilo del Piso 1 (ver [P1-guion](propuestas/P1-guion.md)); si se decide otra
   cosa, esa línea se cambia.
-- **Final del Piso 2 (después de la cabina):** a negro, "[Las puertas se abren. Abajo, la portería está a
-  oscuras]" y la pantalla "Piso 2 completado · Próximamente: Piso 1".
+- **Final del Piso 2 (después de la cabina):** desde el 2026-10-14 ya no termina la partida: la tarjeta "Piso 2
+  superado" sobre el negro y la cabina llega al Piso 1. El texto "[Las puertas se abren. Abajo, la portería está a
+  oscuras]" y la pantalla "Próximamente: Piso 1" se quitaron.
+
+## Textos nuevos del Piso 1 que el creador debe revisar (2026-10-14, borradores)
+
+- **Libro de minuta (portería):** "03:10 — Llamó el 402 por el citófono. Nadie habló. Se oía un niño respirando.",
+  "02:14 — Llamó el 302. Ese piso está cerrado desde el primero.", "Don Hernando dice que no conteste el citófono de
+  los pisos cerrados. Que son las tuberías. / Las tuberías no dicen mi nombre." y la última anotación: "Hoy contesté.
+  / Era la voz de mi señora, que se murió hace seis años. Me dijo que bajara a abrirle. / No le abrí. / Cerré la puerta
+  con cadena, cerrojo y llave. Que nadie salga y que nadie entre. / Yo me quedo aquí, contestando."
+- **Nota de don Aurelio (101):** "Si alguien lee esto: las llaves están en mi cinturón. La de la puerta es la grande.
+  / Si el citófono suena, no conteste. Sabe hablar como mi señora." Está en la mesita del 101 (opcional). Ojo: el
+  llavero está sobre la cama y no hay cinturón a la vista.
+- **Las llaves:** "El llavero de don Aurelio. La grande dice «PUERTA»."
+- **Objetivos:** "Averigua qué pasó con el portero: la portería está al fondo del vestíbulo", "Busca las llaves de la
+  puerta: don Aurelio vivía detrás de la portería" y "Abre la puerta principal: la cadena, el cerrojo y la llave.
+  Cada una hace ruido".
+- **El ascensor del 1:** "Ningún botón se enciende. El ascensor se quedó sin corriente." Desde el 3 y el 4, el botón
+  del 1: "El botón del 1 no se enciende desde este piso."
+- **La puerta principal:** "Quitar la cadena" / "[La cadena cae al piso]", "Correr el cerrojo" / "[El cerrojo cede de
+  golpe]", "Abrir con la llave" / "[La llave gira, despacio]"; sin las llaves, "Cerrada con llave" / "Falta la llave
+  de esta cerradura."
+- **La salida:** "[La puerta se abre. Afuera llueve]" y, sobre el negro, "Sobreviviste" con "A tu espalda, en el
+  cuarto piso, una ventana tiene luz: la del 401."
+- **Pantalla final del juego:** el título "Sobreviviste", la frase de siempre ("Nadie dijo nada. Nunca. Y todo lo que
+  se calló sigue ahí, escuchando.") y los créditos: "Las paredes oyen · un juego de Carlos Manuel Turizo Hernández.
+  Programado con ayuda de inteligencia artificial (Claude, de Anthropic)." La línea de la IA es un borrador: puede
+  decirse de otra forma o sin nombrar la herramienta.
 
 ## Textos y decisiones del ascensor que el creador debe revisar (2026-10-12)
 
@@ -206,6 +236,7 @@ Commit `9646829`, "El 302: la libreta de Andrés…". Se tomaron estas decisione
 
 | Fecha | Qué se hizo |
 |---|---|
+| 2026-10-14 | **Piso 1, tanda 1: el juego ya va del Piso 4 a la calle** ([P1-guion](propuestas/P1-guion.md), aprobado por el creador; motor en 02-ARQUITECTURA, "El Piso 1"). Decisiones del creador: don Aurelio, el portero, es el hilo; la regla nueva es el citófono (con un ruido pequeño donde estoy y una espera entre usos); tres cerraduras, muy difícil pero justo, con punto de control antes de la puerta en Normal y ninguno en Pesadilla; "Sobreviviste" con la ventana del 401 y créditos con su nombre y una línea sobre la ayuda de IA; sótano y azotea fuera de la 1.0; la 1.0 no se cierra todavía. **Hecho:** el mapa propio (vestíbulo, portería, el 101, contadores); la cabina detenida del 2 ahora sigue al 1 de verdad (frena al 30 % del viaje, antes de que se arme el piso de destino) y el Piso 2 queda completado con su tarjeta; al abrirse las puertas en el 1, el tubo revienta y el ascensor se queda sin corriente; el libro de minuta y la nota de don Aurelio; las llaves (guardan en el vestíbulo, frente a la puerta); la puerta principal con la cadena, el cerrojo y la llave, cada una con su momento y su ruido; la salida con lluvia, la tarjeta "Sobreviviste" y la pantalla final con los créditos (`config/Creditos.ts`, también en Créditos del menú). Se quitó todo lo del "piso que todavía no existe" (`numero` de la parada, `pisoAntesDe`, `ascensor-fin-recorrido`). **Falta:** el citófono (tanda 2), medir las cerraduras con ella cerca (tanda 3) y el pulido (tanda 4); los textos son borradores (arriba). **Pruebas:** typecheck y typecheck:tests limpios; **527/527 unitarias** (nueva `puertaPrincipal.test.ts`; `ascensor.test.ts` con el panel igual en los 4 pisos y las paradas al 1); `npm run build` bien. Recorridos que tocan el ascensor, los pisos y el final, en una tanda: **18/19** (`piso1.spec` nuevo 3/3 con las capturas revisadas, `piso2` 2/2, `ascensor` 2/2, `cuartoSordo` 3/3, `finalPiso3` 2/2, `cambioPiso`, `finDePiso`, `rastrosPiso2`, `telemetriaViajes` y `directorNormal`). Falló `cabinaDetenida` "doy un paso": el encuentro terminó superado sin que el paso sonara. **Causa (de la prueba, no del juego):** un paso suena al completar la zancada de 0.72 m, contando todo lo caminado desde el 4; contra la pared de la cabina a veces no se completa antes del encuentro más corto (medido: el paso llegó 1.5 s y 2.9 s después de empezar a escuchar, según la corrida). Repetida 3 veces con registro, salió además un aviso medido de 0.72 s contra el mínimo de 0.75: la prueba tomaba la hora del fallo cuando lo notaba (uno o dos fotogramas tarde con el PC cargado). La prueba ahora camina de un lado al otro y mide desde el evento; el mínimo sigue en 0.75 s. Después: `cabinaDetenida` **6/6** (3 repeticiones). **La batería completa no se corrió** con el Piso 1. Nota: el aviso de la caza pierde el fotograma en que empieza (como mucho 0.05 s); no se tocó. |
 | 2026-10-14 | **Piso 2, tanda 4: el pulido** (y el Piso 2 queda terminado). El creador jugó la tanda 3 publicada hasta el final: 10:33 en Normal, el Piso 2 en 4:01 con 3 cazas; contó que ella "apareció de repente en el ascensor desde arriba". Por eso: **la trampilla del techo de la cabina se ve** (marco de caucho negro, corrida del tubo de luz que la tapaba), tiembla cuando cae encima y con cada rasguño, y revienta cuando cae adentro; **el frenazo suena** (metal y cables). Además: tres rastros ("MENTIROSO" junto a la administración, la mano junto al 202 y la humedad del 302 en el techo del 202), la radio de Hernando en el pasillo (el director la puede encender) y la carta del 203 (opcional; menciona al portero, posible hilo del Piso 1). Borrador del Piso 1 para decidir: [P1-guion](propuestas/P1-guion.md). **Pruebas:** **batería completa en una corrida: typecheck:tests limpio, 489/489 unitarias y 69/69 recorridos (48 min)**, con Chrome cerrado y las extensiones de Java deshabilitadas. Antes, por partes: `cabinaDetenida.spec` (con la trampilla) y `rastrosPiso2.spec` nuevo, con las capturas revisadas; `npm run build` bien. |
 | 2026-10-14 | **Piso 2, tanda 3: la cabina que se detiene** (02-ARQUITECTURA, "La cabina que se detiene"; decisiones a revisar en P2-guion). Bajando al 1, la cabina frena entre pisos, algo cae sobre el techo, se arrastra y se queda a escuchar: quieto y sin aire, se va trepando por el pozo y la cabina sigue al final; si te oye, revienta la trampilla, cae adentro con el aviso de siempre y reapareces en el 202 con la llave. Son las reglas del encuentro de todo el juego, más la justicia del aire (no escucha hasta que sueltas el aire y lo recuperas). **Antes:** el sonido del ascensor salió a `SonidoAscensor.ts` (sin cambios de sonido). **Arreglo de justicia general:** mientras ella da el aviso de caza, ya no atrapa aunque esté encima (`Entidad.avisando`); antes, una caza que empezaba a menos de 0.85 m mataba sin aviso. **Pruebas:** typecheck y typecheck:tests limpios; 488/488 unitarias (nuevas: `cabinaDetenida.test.ts` y detener/reanudar en `ascensor.test.ts`); `npm run build` bien. Recorridos: `cabinaDetenida.spec` nuevo 2/2 (adelantarse a aguantar no castiga; aguantar la supera y termina el piso; un paso con el aire aguantado la hace caer adentro, el aviso dura ≥ 0.75 s, la muerte dice "caminar" y se reaparece en el 202 con la llave), y `piso2` 2/2 (ahora aguanta el aire en la cabina), `piso4` 3/3, `escaleraCaminada` 2/2, `accesibilidad` 3/3, `ofertaBajar` 1/1 y `directorNormal` 1/1. `ascensor.spec` falló una vez por el tope de 2 s del cambio de piso (2.27 s en una tanda de 15 min); solo, 2/2. La batería completa no se corrió. |
 | 2026-10-14 | **Piso 2, tanda 2: el cuarto sordo** (02-ARQUITECTURA, "El cuarto sordo"; decisiones a revisar en P2-guion). El creador jugó la tanda 1 publicada (PR #2 a `main`) hasta el final: 12:48 en Normal, el Piso 2 en 2:13 (lejos de los 12–18 min del diseño; faltan esta tanda, la 3 y la 4). Ahora el 202 entero y el archivo del 201 tienen colchones (textura propia, sin eco) y aíslan el sonido en los dos sentidos: adentro no se oyen sus rasguños ni sus pasos (ni sus subtítulos), y ella no oye ni el ruido más fuerte. Medir ahí no la atrae; nunca sale de un muro acolchado; con 25 s seguidos adentro sale afuera y entra caminando por la puerta, y solo la delatan la linterna y las lámparas. Primera vez adentro: una línea y, con pistas, la regla. **Pruebas:** typecheck y typecheck:tests limpios; 476/476 unitarias (nueva `aislamiento.test.ts`; ajustó el oído de ella a través de los colchones de ×0.03 a ×0.01, porque correr pegado a un muro en Pesadilla quedaba en el borde); `npm run build` bien. Recorridos: `cuartoSordo.spec` nuevo 3/3 (dos veces, capturas revisadas), `piso2` 2/2, `piso4` 3/3, `directorNormal` 1/1 (el director igual que en `gate1-congelado`). Una tanda falló dos veces por memoria (0.17 GB libres: captura en blanco, errores de shader con el registro vacío, "Target crashed"); con Chrome cerrado y las extensiones de Java deshabilitadas, todo pasó. La batería completa no se corrió. |

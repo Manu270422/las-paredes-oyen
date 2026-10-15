@@ -4,10 +4,8 @@
 //   (mundo/Aislamiento.ts y el estado de ella en las paredes); aquí solo se cuenta.
 // - Grabar el cuarto sordo (medido:202) y su cinta: silencio, la voz de Hernando desde los colchones y algo de metal
 //   que cae. Al terminar la cinta (cinta:202) aparece la llave de servicio en el rincón de la sala.
-// - El final: con la llave, el botón del 1 lleva la cabina hacia abajo. El Piso 1 todavía no existe: cuando la
-//   cabina llega ('ascensor-fin-recorrido'), la imagen se va a negro, las puertas se abren a la portería a oscuras
-//   y la partida termina ("Próximamente: Piso 1").
-// - Bajando al 1, la cabina se detiene entre pisos con ella encima (cabinaDetenida.ts): quieto y sin aire.
+// - El final: con la llave, el botón del 1 lleva la cabina hacia abajo. Bajando, se detiene entre pisos con ella
+//   encima (cabinaDetenida.ts): quieto y sin aire. Si aguanto, el piso queda completado y la cabina sigue al Piso 1.
 // Todo se basa en banderas, así funciona igual al cargar partida.
 import type { AccionesGuion } from '../../narrativa/AccionesGuion';
 import { reproducirCinta } from '../../narrativa/Cinta';
@@ -17,10 +15,8 @@ import { CabinaDetenida } from './cabinaDetenida';
 
 /** Terminó de sonar la cinta del cuarto sordo: con ella aparece la llave de servicio. */
 export const CINTA_202 = 'cinta:202';
-/** Empezó el final, en la cabina: la partida termina. */
+/** Superé la cabina detenida: el piso queda completado y la cabina sigue bajando al 1. */
 export const FINAL_PISO_2 = 'final:piso2';
-/** Lo que se oye al llegar abajo, ya a oscuras. */
-export const PUERTAS_ABAJO = '[Las puertas se abren. Abajo, la portería está a oscuras]';
 /** Ya entré una vez a un cuarto acolchado (no se repite lo que noto). */
 export const SORDO_VISTO = 'sordo:visto';
 /** Lo que noto la primera vez. Solo la mitad de la regla: la otra mitad la dice el cuaderno de Hernando. */
@@ -30,9 +26,11 @@ export const PISTA_CUARTO_SORDO = 'En un cuarto acolchado no la oyes, y ella tam
 
 export class GuionPiso2 implements GuionPiso {
   private readonly cancelaciones: Array<() => void> = [];
-  private enFinal = false;
-  /** El clímax: la cabina que se detiene entre el 2 y el 1 con ella encima. */
-  private readonly cabina = new CabinaDetenida();
+  /** El clímax: la cabina que se detiene entre el 2 y el 1 con ella encima. Superarla completa el piso. */
+  private readonly cabina = new CabinaDetenida((ctx) => {
+    ctx.progreso.marcar(FINAL_PISO_2);
+    this.acciones.completarPiso();
+  });
 
   constructor(private readonly acciones: AccionesGuion) {}
 
@@ -41,7 +39,6 @@ export class GuionPiso2 implements GuionPiso {
       ctx.bus.on('bandera', ({ nombre }) => {
         if (nombre === 'medido:202') reproducirCinta('202', ctx, () => ctx.progreso.marcar(CINTA_202));
       }),
-      ctx.bus.on('ascensor-fin-recorrido', () => this.final(ctx)),
     );
   }
 
@@ -51,7 +48,6 @@ export class GuionPiso2 implements GuionPiso {
   }
 
   reiniciar(ctx: ContextoJuego): void {
-    this.enFinal = false;
     this.cabina.reiniciar();
     // Medir guarda antes de que suene la cinta: si cargo ahí, la cinta ya "sonó" (y la llave ya está en el rincón).
     if (ctx.progreso.tiene('medido:202') && !ctx.progreso.tiene(CINTA_202)) ctx.progreso.marcarSilencioso(CINTA_202);
@@ -64,32 +60,5 @@ export class GuionPiso2 implements GuionPiso {
     ctx.progreso.marcarSilencioso(SORDO_VISTO);
     ctx.bus.emit('subtitulo', { texto: PRIMER_CUARTO_SORDO, duracion: 5 });
     ctx.bus.emit('pista', { id: 'cuartoSordo', texto: PISTA_CUARTO_SORDO });
-  }
-
-  /** La cabina llegó abajo: a negro, las puertas se abren a la portería y la partida termina. */
-  private final(ctx: ContextoJuego): void {
-    if (this.enFinal) return;
-    this.enFinal = true;
-    ctx.progreso.marcar(FINAL_PISO_2);
-    ctx.director.bloquear(60);
-    ctx.director.activo = false;
-    ctx.entidad.puedeManifestarse = false;
-    if (ctx.entidad.estado !== 'paredes') ctx.entidad.cambiarEstado('paredes', ctx);
-    this.acciones.fijarSoloMirar(true);
-    const puerta = ctx.nivel.ascensor?.marco;
-    ctx.programador.secuencia(
-      [
-        [0.6, () => this.acciones.fundido(true, 1.4)],
-        [2.2, () => {
-          if (puerta) ctx.audio.reproducir('puertas_ascensor', { posicion: { x: puerta.cx, y: 1.2, z: puerta.cz }, volumen: 0.8 });
-          ctx.bus.emit('subtitulo', { texto: PUERTAS_ABAJO, duracion: 4, tipo: 'efecto' });
-        }],
-        [6.0, () => {
-          this.acciones.fijarSoloMirar(false);
-          this.acciones.terminarPartida();
-        }],
-      ],
-      'final',
-    );
   }
 }

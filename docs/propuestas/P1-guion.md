@@ -1,7 +1,13 @@
-# P1 — Diseño del Piso 1 (propuesta, sin programar)
+# P1 — Diseño del Piso 1 (aprobado; tanda 1 hecha, ver "Construcción" al final)
 
-> 2026-10-14. Lo pidió el creador ("luego determinamos el piso 1"). **No se programa hasta que el creador responda las
-> preguntas de abajo.** Respeta lo que ya existe: el Piso 2 termina en la cabina, que baja al 1 ("las puertas se abren a
+> **Decidido por el creador el 2026-10-14:** (1) el portero es el hilo y se llama **don Aurelio**; (2) la regla nueva
+> es **el citófono (A)**, con un ajuste: pulsar un botón hace un ruido pequeño donde está el jugador y hay un tiempo de
+> espera entre usos; (3) el final con **tres cerraduras**, muy difícil pero justo, con **punto de control antes de la
+> puerta en Normal y ninguno en Pesadilla**; (4) **"Sobreviviste" con la ventana del 401**, y créditos con el nombre
+> del creador y una línea sobre la ayuda de IA; (5) **sótano y azotea fuera de la 1.0**; (6) **la 1.0 no se cierra
+> todavía**: antes, la ronda de testers y la medición en un celular real (A4).
+>
+> 2026-10-14. Lo pidió el creador ("luego determinamos el piso 1"). Respeta lo que ya existe: el Piso 2 termina en la cabina, que baja al 1 ("las puertas se abren a
 > la portería a oscuras"); la escalera del 2 hacia abajo está tapiada; y el orden aprobado (C1) termina en **salir del
 > edificio con "Sobreviviste": muy difícil, como Granny, pero posible**. Principio de C1: variar antes que multiplicar.
 
@@ -63,3 +69,26 @@ Objetivos (borrador): averiguar qué pasó con el portero → las llaves de la p
    juego termina al salir.
 6. **Con el Piso 1 el juego tiene principio y fin.** ¿Es el momento de cerrar la versión 1.0 y volver a lo de Android
    (la prueba cerrada de 14 días)?
+
+## Construcción (por tandas, cada una con su commit y su recorrido caminando)
+
+| Tanda | Qué | Estado |
+|---|---|---|
+| 1 | El esqueleto jugable de principio a fin: el mapa (vestíbulo, portería, el 101, contadores, el pasillo de la escalera), la cabina llega desde el 2 y se queda sin corriente al abrirse, el libro de minuta, las llaves de don Aurelio, la puerta principal con tres cerraduras, la salida con lluvia, "Sobreviviste" con la ventana del 401 y los créditos | Hecha el 2026-10-14 (ver la bitácora y 02-ARQUITECTURA); los textos, para revisar con el creador |
+| 2 | El citófono: un botón por apartamento que hace sonar su timbre lejos (el señuelo), con un ruido pequeño donde estoy y un tiempo de espera entre usos; ella llamando sola con voces (una vez, con una voz conocida) | Pendiente |
+| 3 | Afinar las cerraduras con ella cerca: muy difícil pero justo (abrirlas seguidas la trae; alejarla con el citófono entre una y otra), medido caminando en Normal y en Pesadilla | Pendiente |
+| 4 | Pulido: rastros, buzones, sonidos de la calle, textos | Pendiente |
+
+**Lo que quedó en la tanda 1, que el creador puede cambiar:**
+- **Puntos de control:** al llegar (el pasillo), al leer el libro (la portería) y al tomar las llaves (el vestíbulo,
+  frente a la puerta). Los dos últimos cuentan también en Difícil; en Pesadilla, ninguno, como en todo el juego. Abrir
+  una cerradura no guarda: si muero a mitad, se vuelven a cerrar.
+- **Las cerraduras:** la cadena (1.4 s), el cerrojo (1.2 s) y la llave (1.8 s), en ese orden. Sus ruidos son como el
+  del candado de la reja: ella va a ver, no sale cazando. Mientras no exista el citófono, la única forma de alejarla
+  es esperar quieto y lejos a que se vaya. La dificultad real se mide en la tanda 3.
+- **El ascensor del 1** tiene el mismo panel de siempre, pero ningún botón se enciende ("El ascensor se quedó sin
+  corriente"). La escalera, con escombros arriba y la reja abajo (el sótano, fuera de la 1.0).
+- **La nota de don Aurelio** dice que las llaves están "en mi cinturón", pero el llavero está sobre la cama del 101:
+  si no se pone un cinturón ahí, hay que cambiar esa línea.
+- **Ella en el Piso 1** usa lo mismo que en los otros pisos (paredes, encuentros, cazas, el director). La imitación
+  completa empieza al leer el libro de minuta.

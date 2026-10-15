@@ -92,7 +92,8 @@ export interface DefMueble {
   movible?: boolean;
 }
 
-export type TipoInteractuable = 'documento' | 'recogible' | 'examinable' | 'medicion' | 'tablero' | 'radio';
+/** 'salida': la puerta principal del edificio, con tres cerraduras (interaccion/objetos/PuertaPrincipal.ts). */
+export type TipoInteractuable = 'documento' | 'recogible' | 'examinable' | 'medicion' | 'tablero' | 'radio' | 'salida';
 
 export interface DefInteractuable {
   tipo: TipoInteractuable;
@@ -104,7 +105,7 @@ export interface DefInteractuable {
   rot?: number;
   /** Documento que abre (tipo documento). */
   documento?: string;
-  /** La bandera que marca al activarse (tipo tablero). */
+  /** La bandera que marca al activarse (tipo tablero) o al abrirse del todo (tipo salida). */
   bandera?: string;
   /** Id del objeto que entrega (tipo recogible): una clave de `objetos` del paquete del piso. */
   objeto?: string;

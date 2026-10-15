@@ -105,6 +105,35 @@ export async function bajarAlUnoConLaLlave(page: Page): Promise<string | null> {
 }
 
 /**
+ * Desde el Piso 4 recién empezado, hasta el Piso 1: bajo caminando al 2, tomo la llave y bajo en la cabina. Cuando se
+ * detiene y ella se queda escuchando encima, aguanto el aire hasta que se va, como una persona. Devuelve el piso donde
+ * quedé y los encuentros.
+ */
+export async function llegarAlPiso1(page: Page): Promise<{ piso: string; encuentros: string[] }> {
+  await bajarAlPiso2(page);
+  await calmar(page);
+  await page.evaluate(() => {
+    const { ctx } = window.__juego!;
+    const encuentros: string[] = [];
+    ctx.bus.on('encuentro', (e) => {
+      encuentros.push(e.estado);
+      if (e.estado === 'inicio') window.__piloto!.sostener('KeyQ');
+      else window.__piloto!.soltar('KeyQ');
+    });
+    (window as unknown as { __encuentros: string[] }).__encuentros = encuentros;
+  });
+  await bajarAlUnoConLaLlave(page);
+  return page.evaluate(async () => {
+    const J = window.__juego!;
+    const P = window.__piloto!;
+    const limite = performance.now() + 60_000;
+    while (!(J.estado === 'jugando' && J.ctx.piso.id === 'piso1') && performance.now() < limite) await P.esperarReal(50);
+    P.soltar('KeyQ');
+    return { piso: J.ctx.piso.id, encuentros: [...(window as unknown as { __encuentros: string[] }).__encuentros] };
+  });
+}
+
+/**
  * Desde el Piso 4 recién empezado: con el 4 y el 3 terminados (sus banderas, en silencio), bajo por los escalones del
  * 4 al 3 y del 3 al 2 cruzando cada descanso, y salgo a la boca del Piso 2. Devuelve el piso donde quedé.
  */
