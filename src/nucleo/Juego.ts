@@ -491,7 +491,7 @@ export class Juego {
     this.memoria.reiniciarSesion();
     this.nivel.restablecer(ctx);
     this.grabadora.reiniciar();
-    const punto = this.nivel.puntoControl(this.puntoControl, this.piso.puntoInicial);
+    const punto = this.nivel.puntoControl(this.puntoControl, this.piso.puntoInicial, this.progreso);
     this.jugador.teletransportar(punto.x, punto.y, punto.angulo);
     const guarida = this.piso.mapa.guaridaEntidad;
     this.entidad.reiniciar(guarida.x * CONFIG.celda, guarida.y * CONFIG.celda, ctx);

@@ -52,7 +52,8 @@ export const PISO_4: PaquetePiso = {
     'medido:403': 'sala403',
     tablero_activado: 'servicio',
     'objeto:llave_402': 'dormitorio401',
-    // El apagón deja el clímax a la vuelta: si muero midiendo el 402, vuelvo adentro del 402.
+    // El apagón deja el clímax a la vuelta: si muero midiendo el 402, vuelvo adentro del 402. Solo con su llave (el
+    // punto la pide en el mapa): sin ella, vuelvo al cuarto del tablero.
     apagon_pasillo: 'sala402',
     // Con la llave de la escalera en la mano, si muero reaparezco junto a la reja (a donde iba).
     'objeto:llave_escalera': 'escalera',

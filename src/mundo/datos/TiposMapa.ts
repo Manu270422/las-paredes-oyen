@@ -144,6 +144,13 @@ export interface PuntoAparicion {
   y: number;
   /** Ángulo de la mirada en grados (0 = mirando hacia -Z / norte). */
   angulo: number;
+  /**
+   * Lo que hace falta para reaparecer aquí, como un requisito de objetivo ('objeto:llave_402'). Si al cargar no se
+   * cumple, uso el punto `sino`: así ningún punto de control deja a nadie encerrado detrás de una puerta con llave.
+   */
+  requiere?: string;
+  /** El punto de control donde reaparezco si no se cumple `requiere`. */
+  sino?: string;
 }
 
 export interface DefMapa {

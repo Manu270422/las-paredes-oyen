@@ -121,6 +121,16 @@ Dos pruebas lo vigilan (`pruebas/unitarias/`):
   Las palabras que también son vocabulario del motor (`'pasillo'` como reverberación, `'orden'` como tipo de papel…)
   están declaradas archivo por archivo con su cuenta exacta.
 
+**Puntos de control con condición (2026-10-17).** Un punto del mapa puede pedir algo para reaparecer en él
+(`requiere`, escrito como el requisito de un objetivo: `'objeto:llave_402'`) y decir adónde volver si no se cumple
+(`sino`, otro punto del mapa). `Nivel.puntoControl` lo decide **al cargar**, con el progreso del guardado: no cambia lo
+que se guarda, así que también repara las partidas que ya quedaron guardadas ahí. Si no se cumple y no hay `sino`, se
+usa el punto inicial del piso. Lo pidió un error real: el apagón del Piso 4 guardaba adentro del 402 y los objetivos
+mandan al tablero antes que a la llave; quien moría entonces, sin la llave, reaparecía encerrado. Lo vigilan
+`puntosSinEncierro.test.ts` (en cada piso del catálogo recorre la rejilla desde el punto inicial con las puertas con
+llave cerradas: un punto al que no se llega tiene que pedir esa llave y tener un `sino` alcanzable) y
+`encierro402.spec.ts`, caminando.
+
 ## El hueco de una escalera (celda `E`)
 
 La rejilla de un mapa tiene cuatro caracteres: `#` muro, `.` piso, `P` puerta y `E` hueco de escalera. El hueco es

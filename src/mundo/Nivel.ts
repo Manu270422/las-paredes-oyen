@@ -27,6 +27,8 @@ import { ponerRastro, VigiaRastros } from './Rastros';
 import { TramoEscalera } from '../interaccion/objetos/TramoEscalera';
 import { RejaEscalera } from './RejaEscalera';
 import { aislaAcolchado, esAcolchado } from './Aislamiento';
+import { cumpleRequisito } from '../narrativa/Requisito';
+import type { Progreso } from '../narrativa/Progreso';
 import { PozosCaminables } from './PozosCaminables';
 import type { TramoPie } from './EscaleraCaminable';
 import { PoolLuces } from './PoolLuces';
@@ -258,9 +260,22 @@ export class Nivel {
     return this.muebles.find((m) => m.id === id);
   }
 
-  /** El punto de control con ese nombre; si no existe (una partida vieja), el de respaldo (el inicial del piso). */
-  puntoControl(nombre: string, respaldo: string): PuntoAparicion {
-    return this.def.puntosControl[nombre] ?? this.def.puntosControl[respaldo];
+  /**
+   * El punto de control con ese nombre; si no existe (una partida vieja), el de respaldo (el inicial del piso). Si pide
+   * algo que no tengo (`requiere`), sigo a su `sino`: un punto detrás de una puerta con llave, sin la llave, me deja
+   * encerrado (pasó en el 402: el apagón guardaba adentro antes de tener su llave). Se decide al cargar, así que
+   * también arregla las partidas que ya quedaron guardadas ahí.
+   */
+  puntoControl(nombre: string, respaldo: string, progreso?: Pick<Progreso, 'tiene' | 'tieneObjeto' | 'visitado'>): PuntoAparicion {
+    const puntos = this.def.puntosControl;
+    let actual: string | undefined = nombre;
+    for (let vueltas = 0; actual !== undefined && vueltas < 5; vueltas++) {
+      const punto: PuntoAparicion | undefined = puntos[actual];
+      if (!punto) break;
+      if (!punto.requiere || !progreso || cumpleRequisito(progreso, punto.requiere)) return punto;
+      actual = punto.sino;
+    }
+    return puntos[respaldo];
   }
 
   /** Reúno las cajas de colisión cercanas a un punto (muros, huecos de escalera, jambas, puertas cerradas, muebles). */
