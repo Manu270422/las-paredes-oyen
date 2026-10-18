@@ -23,7 +23,7 @@ export const DOCUMENTOS: Record<string, Documento> = {
     tipo: 'nota',
     accion: 'Leer la nota',
     paginas: [
-      '(Un papel doblado junto a la cama, con la misma letra pareja del libro.)\n\nSi alguien lee esto: las llaves están en mi cinturón. La de la puerta es la grande.\n\nSi el citófono suena, no conteste. Sabe hablar como mi señora.',
+      '(Un papel doblado junto a la cama, con la misma letra pareja del libro.)\n\nSi alguien lee esto: las llaves quedaron en la cama, con el cinturón. La de la puerta es la grande.\n\nSi el citófono suena, no conteste. Sabe hablar como mi señora.',
     ],
   },
 };

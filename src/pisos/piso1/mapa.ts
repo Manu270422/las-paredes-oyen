@@ -118,6 +118,9 @@ export const MAPA_PISO_1: DefMapa = {
     { tipo: 'recogible', id: 'llavesAurelio', objeto: 'llaves_aurelio', x: 29.2, y: 3.0, altura: 0.62 },
     // Pilas, en una caja de los contadores.
     { tipo: 'recogible', id: 'pilas1', objeto: 'pilas', x: 17.6, y: 1.5, altura: 0.521 },
+    // Lo que se mira (tanda 4): las cartas en un casillero de los buzones y el televisor de la portería.
+    { tipo: 'examinable', id: 'exBuzones', examinable: 'buzones', x: 9.5, y: 6.45, altura: 0.97, rot: 90 },
+    { tipo: 'examinable', id: 'exTelevisor', examinable: 'televisor_porteria', x: 28.2, y: 12.4, altura: 0.72 },
     // La puerta principal, en el muro sur del vestíbulo, mirando hacia adentro. La última cerradura pide las llaves.
     { tipo: 'salida', id: 'puertaPrincipal', x: 16, y: 13.98, rot: 180, objeto: 'llaves_aurelio', bandera: 'puerta:abierta' },
   ],
@@ -133,5 +136,8 @@ export const MAPA_PISO_1: DefMapa = {
 
   guaridaEntidad: { x: 11, y: 2.5 },
 
-  viento: { x: 2.5, y: 12 },
+  // El viento de la calle, que se cuela por la rendija de la puerta principal (tanda 4): desde el fondo del
+  // vestíbulo apenas se oye, y junto a la puerta, sí. En los otros pisos el viento sube por la escalera; aquí la
+  // escalera está tapada y lo que llama es la salida.
+  viento: { x: 16, y: 13.7 },
 };

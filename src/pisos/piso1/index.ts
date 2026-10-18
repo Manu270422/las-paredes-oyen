@@ -4,6 +4,7 @@
 // cerraduras. Es el último piso: al salir, "Sobreviviste".
 import type { PaquetePiso } from '../TiposPiso';
 import { DOCUMENTOS } from './documentos';
+import { EXAMINABLES } from './examinables';
 import { GuionPiso1, PUERTA_ABIERTA, SIN_CORRIENTE } from './guion';
 import { MAPA_PISO_1 } from './mapa';
 
@@ -23,6 +24,7 @@ export const PISO_1: PaquetePiso = {
     { id: 'salir', texto: 'Abre la puerta principal: la cadena, el cerrojo y la llave. Cada una hace ruido', bandera: PUERTA_ABIERTA },
   ],
   documentos: DOCUMENTOS,
+  examinables: EXAMINABLES,
   transcripciones: {},
   // Como en el 3 y el 2, ella ya está despierta al llegar. La imitación completa llega con el libro de minuta: ahí se
   // entiende que sabe hablar con las voces de los que ya no están.
@@ -53,6 +55,14 @@ export const PISO_1: PaquetePiso = {
   // Al abrirse las puertas de la cabina, su tubo revienta (lo marca el guion).
   luzPorBandera: { [SIN_CORRIENTE]: { lamparas: { luzAscensor: 'rota' } } },
   rotulos: [{ texto: '1', x: 2.45, y: 8, altura: 1.6, rot: 0, alto: 0.45 }],
+  // Lo que quedó de don Aurelio (tanda 4): las llamadas que contó junto al citófono, lo que escribió junto a la puerta
+  // que cerró ("Que nadie salga y que nadie entre", su minuta) y, en su cuarto, lo que alguien no alcanzó a limpiar,
+  // arrastrado hacia el muro. Las llaves quedaron en la cama: él no.
+  rastros: [
+    { tipo: 'conteo', id: 'conteo_citofono', x: 29, y: 11.9, rot: -90, altura: 1.3, ancho: 0.5, alto: 0.3, cuenta: 23 },
+    { tipo: 'frase', id: 'frase_puerta', x: 13.9, y: 14, rot: 180, altura: 1.45, ancho: 1.5, alto: 0.5, lineas: ['QUE NADIE', 'SALGA'] },
+    { tipo: 'charco', id: 'charco_101', x: 27.3, y: 3.0, rot: 180, ancho: 0.9, alto: 1.3 },
+  ],
   // La escalera no sirve: arriba, tablas y escombros; abajo (el sótano, fuera de la 1.0), la reja sin llave.
   opcionesEscalera: { rejaAbajo: true, escombrosArriba: true },
   // El mismo ascensor, pero muerto: llega (en un viaje que empezó arriba) y ya no sale. El panel es el mismo de

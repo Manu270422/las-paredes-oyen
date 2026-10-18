@@ -167,6 +167,7 @@ export class PuertaPrincipal implements Interactuable {
     const [id, volumen] = c.sonidoEmpieza;
     ctx.audio.reproducir(id, { posicion: { x: p.x, y: 1.2, z: p.z }, volumen, tono: 0.9 });
     this.sonar(ctx, RUIDO_EMPEZAR);
+    ctx.bus.emit('cerradura', { accion: 'empieza', numero: this.abiertas + 1 });
     ctx.bus.emit('subtitulo', { texto: c.empieza, duracion: Math.min(2.5, c.duracion), tipo: 'efecto' });
   }
 
@@ -179,6 +180,7 @@ export class PuertaPrincipal implements Interactuable {
       // Me alejé: la suelto a medias. No cede, no suena su final y hay que empezarla otra vez.
       this.momento = 0;
       ctx.bus.emit('subtitulo', { texto: c.suelta, duracion: 2.5 });
+      ctx.bus.emit('cerradura', { accion: 'suelta', numero: this.abiertas + 1 });
       return;
     }
     this.momento -= dt;
@@ -188,6 +190,7 @@ export class PuertaPrincipal implements Interactuable {
       ctx.audio.reproducir(id, { posicion: { x: p.x, y: 1.2, z: p.z }, volumen, retraso: cuando });
     }
     this.sonar(ctx, c.ruido);
+    ctx.bus.emit('cerradura', { accion: 'cede', numero: this.abiertas + 1 });
     ctx.bus.emit('subtitulo', { texto: c.cede, duracion: 2.5, tipo: 'efecto' });
     this.abiertas++;
     this.posar();

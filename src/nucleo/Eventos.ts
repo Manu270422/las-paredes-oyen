@@ -121,6 +121,8 @@ export interface MapaEventos {
    * esa llamada. 'colgada': la línea se cortó después de contestar.
    */
   citofono: { accion: 'timbre' | 'ocupado' | 'llamada' | 'contestada' | 'ignorada' | 'colgada'; timbre: string };
+  /** La puerta principal: empecé una cerradura (`numero`, desde 1), la solté a medias o cedió. */
+  cerradura: { accion: 'empieza' | 'suelta' | 'cede'; numero: number };
 }
 
 /** Cómo llego a otro piso (ver 'piso-cambiado'). */

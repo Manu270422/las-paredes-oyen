@@ -76,6 +76,20 @@ describe('La puerta principal y sus tres cerraduras', () => {
     expect(m.puerta.texto(m.falso.ctx)).toBe(CERRADURAS[0].accion);
   });
 
+  it('avisa lo que pasa con cada cerradura (para la telemetría): empieza, se suelta o cede, con su número', () => {
+    const m = armar([], ['llaves']);
+    const eventos: string[] = [];
+    m.falso.bus.on('cerradura', (e) => eventos.push(`${e.accion}:${e.numero}`));
+    m.puerta.interactuar(m.falso.ctx);
+    m.falso.ctx.jugador.posicion.z -= ALEJARSE_LA_SUELTA + 0.1;
+    m.esperar(0.2);
+    m.falso.ctx.jugador.posicion.z += ALEJARSE_LA_SUELTA + 0.1;
+    m.puerta.interactuar(m.falso.ctx);
+    m.esperar(CERRADURAS[0].duracion + 0.1);
+    m.puerta.interactuar(m.falso.ctx);
+    expect(eventos).toEqual(['empieza:1', 'suelta:1', 'empieza:1', 'cede:1', 'empieza:2']);
+  });
+
   it('moverme un poco frente a la puerta no la suelta', () => {
     const m = armar([], ['llaves']);
     m.puerta.interactuar(m.falso.ctx);

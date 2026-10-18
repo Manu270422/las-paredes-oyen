@@ -77,7 +77,7 @@ Objetivos (borrador): averiguar qué pasó con el portero → las llaves de la p
 | 1 | El esqueleto jugable de principio a fin: el mapa (vestíbulo, portería, el 101, contadores, el pasillo de la escalera), la cabina llega desde el 2 y se queda sin corriente al abrirse, el libro de minuta, las llaves de don Aurelio, la puerta principal con tres cerraduras, la salida con lluvia, "Sobreviviste" con la ventana del 401 y los créditos | Hecha el 2026-10-14 (ver la bitácora y 02-ARQUITECTURA); los textos, para revisar con el creador |
 | 2 | El citófono: un botón por timbre que lo hace sonar lejos (el señuelo), con un ruido pequeño donde estoy y un tiempo de espera entre usos; ella llamando sola con una voz conocida (una vez) | Hecha el 2026-10-14 (ver abajo y 02-ARQUITECTURA); los textos, para revisar con el creador |
 | 3 | Afinar las cerraduras con ella cerca: muy difícil pero justo (abrirlas seguidas la trae; alejarla con el citófono entre una y otra), medido caminando en Normal y en Pesadilla | Hecha el 2026-10-15, medida con un robot ([informe](../pruebas/cerraduras-robot-2026-10-15.md)); falta que la jueguen personas |
-| 4 | Pulido: rastros, buzones, sonidos de la calle, textos | Pendiente |
+| 4 | Pulido: rastros, buzones, sonidos de la calle, textos | Hecha el 2026-10-17 (ver abajo); la calle caminable al salir es otra propuesta: [C3](C3-salir-a-la-calle.md) |
 
 **Lo que quedó en la tanda 1, que el creador puede cambiar:**
 - **Puntos de control:** al llegar (el pasillo), al leer el libro (la portería) y al tomar las llaves (el vestíbulo,
@@ -123,3 +123,16 @@ Objetivos (borrador): averiguar qué pasó con el portero → las llaves de la p
 - **La última cerradura no salva si te delató**: si cede con ella cazándote, primero la caza.
 - **Pesadilla** no tiene números propios en la puerta: ya la distingue que no hay punto de control (morir ahí es
   volver al Piso 4). Si al jugarla se siente fácil, se puede acortar el rato que la ocupa el timbre solo en Pesadilla.
+
+**Lo que quedó en la tanda 4 (el pulido), que el creador puede cambiar:**
+- **Tres rastros de don Aurelio**: rayas de conteo junto al citófono (las llamadas que contó: 23), "QUE NADIE SALGA"
+  escrito junto a la puerta principal (lo de su minuta) y, en su cuarto, un charco que alguien no alcanzó a limpiar,
+  arrastrado hacia el muro. Las llaves quedaron en la cama; él no.
+- **Dos cosas para mirar**: las cartas en los buzones ("La casilla del 402 ya no cierra de tantas") y el televisor
+  de la portería ("El volumen quedó en el máximo": lo que hacía el edificio cuando se oía el 402).
+- **La calle se oye**: el viento del piso ya no sube por la escalera (tapada): se cuela por la rendija de la puerta
+  principal. Desde lejos casi no se oye; junto a la puerta, sí.
+- **La nota de don Aurelio** dice ahora que las llaves "quedaron en la cama, con el cinturón" (antes decía que
+  estaban en su cinturón, y no había cinturón a la vista).
+- **Para las pruebas con personas**: la telemetría anota cada cerradura (empieza, se suelta, cede) con el estado del
+  peligro, y 04-PROTOCOLO tiene la ronda 4 (H17–H20, momentos 30–36, preguntas 22–25).

@@ -401,6 +401,11 @@ seguidas ganaba en 6 s y alejarla con el citófono perdía. Lo que cambió:
   camino termina en el centro de la celda, y una esquina queda a 0.92 m; atrapa a 0.85). Cambia todas las cazas del
   juego: solo en ese caso, que antes dejaba una caza sin final.
 - La primera cerradura que suena trae la pista de la regla. Los botones del citófono van a 10 cm.
+- **El pulido (tanda 4, 2026-10-17):** el evento `cerradura` (empieza, suelta, cede; lo registra la telemetría con el
+  estado del peligro); dos modelos nuevos para lo que se examina: `sobres` y `ninguno` (solo la zona de toque, para
+  mirar un mueble que ya está); en el Piso 1, tres rastros, dos examinables y el viento en la rendija de la puerta
+  principal. Pruebas: `rastrosPiso1.spec.ts`. La calle caminable al salir es una propuesta aparte
+  ([C3](propuestas/C3-salir-a-la-calle.md)).
 - Pruebas: `puertaPrincipal.test.ts`, `puertaLaLlama.test.ts` (las dos reglas, con una entidad falsa),
   `cazaUltimoPaso.test.ts` y el recorrido `cerraduras.spec.ts`. La medición con el robot, a pedido:
   `medirCerraduras.spec.ts` (con `robotFinal.ts` y `ayudasFinal.ts`).
