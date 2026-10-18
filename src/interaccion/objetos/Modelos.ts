@@ -183,6 +183,23 @@ export function modeloExaminable(modelo: DefExaminable['modelo']): { grupo: Grou
       g.add(hoja, caja(0.06, 0.018, 0.002, cinta, -0.07, 0.135, 0.006), caja(0.06, 0.018, 0.002, cinta, 0.07, 0.14, 0.006));
       return { grupo: g, mirada: new Vector3(0, 0, 0.01) };
     }
+    case 'sobres': {
+      // Cartas que nadie recogió: un fajo de sobres acostados, corridos uno sobre otro, y uno parado que asoma.
+      const papel = mat('sobre', 0xcfc6ad, 0.92);
+      const viejo = mat('sobreViejo', 0xa99f84, 0.95);
+      for (let i = 0; i < 6; i++) {
+        const sobre = caja(0.16, 0.004, 0.1, i % 2 ? viejo : papel, (i % 3) * 0.012 - 0.012, 0.002 + i * 0.005, (i % 2) * 0.01 - 0.005);
+        sobre.rotation.y = (i - 2.5) * 0.06;
+        g.add(sobre);
+      }
+      const parado = caja(0.15, 0.1, 0.004, papel, 0.01, 0.05, -0.06);
+      parado.rotation.x = -0.12;
+      g.add(parado);
+      return { grupo: g, mirada: new Vector3(0, 0.04, 0) };
+    }
+    case 'ninguno':
+      // Se mira algo que ya está en el cuarto (un mueble): solo pongo la zona de toque.
+      return { grupo: g, mirada: new Vector3(0, 0, 0) };
   }
 }
 

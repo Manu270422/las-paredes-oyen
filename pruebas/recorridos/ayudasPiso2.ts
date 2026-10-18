@@ -59,7 +59,8 @@ export async function instalarAyudas(page: Page): Promise<void> {
       const P = window.__piloto!;
       const cosa = ctx.nivel.interactuables.find((i) => i.id === id) ?? ctx.nivel.ascensor?.botones.find((b) => b.id === id);
       if (!cosa) throw new Error(`No hay "${id}" en ${ctx.piso.id}.`);
-      const p = cosa.objeto.position;
+      // En el mundo: los botones del citófono van dentro de su panel (su posición propia es relativa a él).
+      const p = cosa.objeto.getWorldPosition(cosa.objeto.position.clone());
       P.mirarA(p.x, p.y, p.z);
       if (pitch !== undefined) ctx.jugador.pitch = pitch;
       await P.esperarJuego(0.3);

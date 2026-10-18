@@ -45,6 +45,7 @@ export type IdSonido =
   | 'motor_ascensor'
   | 'campanilla'
   | 'puertas_ascensor'
+  | 'timbre'
   | 'ui';
 
 /** Grupos de mezcla. Cada uno tiene su volumen y reacciona distinto al "escuchar". */

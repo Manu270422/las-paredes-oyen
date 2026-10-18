@@ -1,5 +1,5 @@
 // Aquí están los créditos y la nota técnica del proyecto.
-import { CREDITOS } from '../../config/Creditos';
+import { CREDITOS, lineasDeAutoria } from '../../config/Creditos';
 import { crearBoton } from '../componentes/Boton';
 import { Pantalla } from './Pantalla';
 
@@ -17,11 +17,10 @@ export class PantallaCreditos extends Pantalla {
     cuerpo.innerHTML = `
       <h3>${CREDITOS.titulo}</h3>
       <p>Un juego de terror psicológico sobre lo que se oye y se calla.</p>
-      <h3>Creado por</h3>
-      <p>${CREDITOS.autor}</p>
-      <p>${CREDITOS.ayudaIA}</p>
+      ${lineasDeAutoria().map((linea) => `<p class="creditos__autoria">${linea}</p>`).join('')}
       <h3>Tecnología</h3>
       <p>Construido sin motor comercial: TypeScript, WebGL 2 (Three.js como librería de dibujo) y Web Audio API.</p>
+      <p>${CREDITOS.ayudaIA}</p>
       <h3>Contenido procedural</h3>
       <p>Todas las texturas y todos los sonidos del vertical slice se generan por código al iniciar el juego.</p>
       <h3>Gracias</h3>

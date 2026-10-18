@@ -28,7 +28,7 @@ LasParedesOyen/
    │  ├─ shaders/              GLSL del postprocesado
    │  └─ texturas/             Generador procedural, recetas, cookie de la linterna, pintor de rastros
    ├─ audio/                   Motor, fuentes 3D, reverberación, ambiente, biblioteca
-   │  └─ sintesis/             Sintetizador y recetas de los 44 sonidos
+   │  └─ sintesis/             Sintetizador y recetas de los 45 sonidos
    ├─ mundo/                   Nivel, rejilla, geometría, puertas, lámparas, muebles, letreros, rastros, escaleras, ascensor, colisiones
    │  └─ datos/                Tipos de mapa (la forma; los mapas viven en cada piso)
    ├─ jugador/                 Jugador, cámara, respiración, corazón, linterna, grabadora
@@ -120,6 +120,16 @@ Dos pruebas lo vigilan (`pruebas/unitarias/`):
 - `motorSinContenido`: ningún archivo del motor escribe entre comillas un id o una bandera de un paquete del catálogo.
   Las palabras que también son vocabulario del motor (`'pasillo'` como reverberación, `'orden'` como tipo de papel…)
   están declaradas archivo por archivo con su cuenta exacta.
+
+**Puntos de control con condición (2026-10-17).** Un punto del mapa puede pedir algo para reaparecer en él
+(`requiere`, escrito como el requisito de un objetivo: `'objeto:llave_402'`) y decir adónde volver si no se cumple
+(`sino`, otro punto del mapa). `Nivel.puntoControl` lo decide **al cargar**, con el progreso del guardado: no cambia lo
+que se guarda, así que también repara las partidas que ya quedaron guardadas ahí. Si no se cumple y no hay `sino`, se
+usa el punto inicial del piso. Lo pidió un error real: el apagón del Piso 4 guardaba adentro del 402 y los objetivos
+mandan al tablero antes que a la llave; quien moría entonces, sin la llave, reaparecía encerrado. Lo vigilan
+`puntosSinEncierro.test.ts` (en cada piso del catálogo recorre la rejilla desde el punto inicial con las puertas con
+llave cerradas: un punto al que no se llega tiene que pedir esa llave y tener un `sino` alcanzable) y
+`encierro402.spec.ts`, caminando.
 
 ## El hueco de una escalera (celda `E`)
 
@@ -353,8 +363,62 @@ pintor las vuelve sangre escrita con el dedo; sin trazador, se niega a pintarla.
   cerraduras no guardan: morir las vuelve a cerrar.
 - **El final del juego** (`PantallaFin`): sin piso siguiente, el título es "Sobreviviste", no hay "Próximamente" y
   salen los créditos de `config/Creditos.ts` (también en la pantalla de créditos del menú).
-- **Lo que falta** (tandas 2–4 del P1-guion): el citófono (el señuelo con su ruido pequeño y su espera, y ella
-  llamando con voces), afinar la dificultad de las cerraduras con ella cerca y el pulido.
+- **Lo que falta** (tandas 3–4 del P1-guion): afinar la dificultad de las cerraduras con ella cerca y el pulido.
+
+## El citófono (P1-guion, tanda 2, 2026-10-14)
+
+- **Una pieza del motor** (`interaccion/objetos/Citofono.ts`, tipo de interactuable `citofono`; el dibujo en
+  `ModeloCitofono.ts` y la tira de papel en `texturaEtiquetasCitofono`). El mapa dice dónde está el panel y sus
+  `timbres` (`DefTimbre`: rótulo, texto del indicador, subtítulo y dónde suena). El panel no se enfoca: se enfocan sus
+  botones, que el nivel mete en `interactuables` como los del ascensor (`Nivel.citofonos`).
+- **Pulsar un botón:** un clic donde estoy (ruido mío de 0.15, causa `citofono`: menos que un paso), y medio segundo
+  después su timbre suena tres veces donde está (ruido del entorno de 0.8, como la campanilla del ascensor). Ella lo
+  oye como cualquier ruido: desde los muros va hacia allá, y si ya investigaba, la distrae (lo mismo que la radio o la
+  grabadora). Después la línea queda ocupada 15 s: los botones dicen "Línea ocupada" y no hacen nada, ni ruido.
+- **Llamadas que entran** (`Citofono.llamarDesde`): el panel timbra sin ser un ruido para ella, la luz de esa línea
+  parpadea y su botón dice "Contestar". Si nadie contesta, suena 6 veces y avisa al guion; contestar es el mismo clic, y
+  la línea queda abierta hasta que el guion cuelga (`colgar`).
+- **La llamada de ella en el Piso 1** (`pisos/piso1/guion.ts`): una vez, 4 s después de tomar las llaves, desde la
+  línea del ascensor. Contestar usa `EncuentroSinCuerpo` en el panel: mientras habla (la voz de Hernando), solo lo
+  fuerte me delata; cuando escucha, las reglas de cualquier encuentro, con la justicia del aire. Superada, se corta; si
+  me oye, sale del muro más cercano (a 4–8 m) y caza con su aviso. Durante la llamada, ella y el director son de este
+  momento. Al cargar con las llaves, ya no llama.
+- **Telemetría:** el evento `citofono` (timbre, ocupado, llamada, contestada, ignorada, colgada) con el estado de
+  peligro, y el clic cuenta como `ruido:citofono`. La muerte por el clic tiene su explicación ("Oyó el botón del
+  citófono").
+- Pruebas: `citofono.test.ts` y el recorrido `citofono.spec.ts`.
+
+## El final: "la puerta la llama" (P1-guion, tanda 3, 2026-10-15)
+
+Medido con un robot antes de cambiar nada ([informe](pruebas/cerraduras-robot-2026-10-15.md)): abrir las tres
+seguidas ganaba en 6 s y alejarla con el citófono perdía. Lo que cambió:
+- **Las cerraduras son ruido mío** (causa `cerradura`, origen `jugador`; `PuertaPrincipal`): bajito al empezar
+  (`RUIDO_EMPEZAR`, 0.2) y fuerte al ceder (0.35–0.5). Durante un encuentro me delatan como cualquier ruido mío; antes,
+  con origen `puerta`, nunca cazaban y durante un encuentro contaban como "un ruido ajeno": el encuentro se superaba.
+  La muerte tiene su explicación ("Oyó la cerradura.").
+- **Abrir una es un momento** (cadena 3 s, cerrojo 2.5 s, llave 3.5 s). Alejarme más de `ALEJARSE_LA_SUELTA` (0.9 m)
+  la suelta a medias: no cede y no suena su final.
+- **"La puerta la llama"** (`EstadoParedes`): si lo último que oyó fue una cerradura, va por los muros con prisa
+  (`LLEGADA_PUERTA`, 3 s, como cuando él mide), con un roce y rasguños que se oyen (y su subtítulo), y junto a la
+  puerta sale aunque el director no lo permita, a `DISTANCIA_SALIDA_PUERTA` (3.5 m) del jugador y con poca pausa. Una
+  vez por cerradura: si vuelve al muro, se queda vigilando.
+- **"El timbre la ocupa"** (`Memoria.registrarRuido`): el último ruido guarda su causa; un timbre del citófono (origen
+  del entorno) la ocupa `OCUPADA_POR_TIMBRE` s (10): un ruido más débil que el timbre o que `SACA_DEL_TIMBRE` (0.15) no
+  cambia adónde va, ni en los muros ni investigando (`atendioUltimo`). Los demás señuelos, como estaban.
+- **La salida espera si me caza** (guion del Piso 1): si la última cerradura cede con ella cazándome, salgo cuando
+  sobreviva y vuelva a la puerta. Antes, la puerta abierta la mandaba a las paredes en el mismo instante.
+- **La caza da el último paso** (`EstadoCazando`): en la celda del jugador, si sabe dónde está, se desliza hasta él (el
+  camino termina en el centro de la celda, y una esquina queda a 0.92 m; atrapa a 0.85). Cambia todas las cazas del
+  juego: solo en ese caso, que antes dejaba una caza sin final.
+- La primera cerradura que suena trae la pista de la regla. Los botones del citófono van a 10 cm.
+- **El pulido (tanda 4, 2026-10-17):** el evento `cerradura` (empieza, suelta, cede; lo registra la telemetría con el
+  estado del peligro); dos modelos nuevos para lo que se examina: `sobres` y `ninguno` (solo la zona de toque, para
+  mirar un mueble que ya está); en el Piso 1, tres rastros, dos examinables y el viento en la rendija de la puerta
+  principal. Pruebas: `rastrosPiso1.spec.ts`. La calle caminable al salir es una propuesta aparte
+  ([C3](propuestas/C3-salir-a-la-calle.md)).
+- Pruebas: `puertaPrincipal.test.ts`, `puertaLaLlama.test.ts` (las dos reglas, con una entidad falsa),
+  `cazaUltimoPaso.test.ts` y el recorrido `cerraduras.spec.ts`. La medición con el robot, a pedido:
+  `medirCerraduras.spec.ts` (con `robotFinal.ts` y `ayudasFinal.ts`).
 - Pruebas: `puertaPrincipal.test.ts` y el recorrido `piso1.spec.ts` (llegar en la cabina desde el 4, el libro, las
   llaves, las tres cerraduras y "Sobreviviste"); `piso2.spec` y `cabinaDetenida.spec` ahora terminan en el Piso 1.
 

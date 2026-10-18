@@ -5,7 +5,9 @@ import { explicarMuerte } from '../../src/narrativa/ExplicacionesMuerte';
 import type { MotivoCaza } from '../../src/nucleo/Eventos';
 
 /** Las únicas causas que pueden iniciar una caza: ruidos del jugador y su presencia. */
-const MOTIVOS_POSIBLES: MotivoCaza[] = ['paso', 'carrera', 'respiracion', 'jadeo', 'linterna-clic', 'linterna-zumbido', 'presencia'];
+// 'citofono': el clic del botón del citófono de la portería (Piso 1) es un ruido mío.
+// 'cerradura': las cerraduras de la puerta principal (Piso 1) son ruidos míos.
+const MOTIVOS_POSIBLES: MotivoCaza[] = ['paso', 'carrera', 'respiracion', 'jadeo', 'linterna-clic', 'linterna-zumbido', 'citofono', 'cerradura', 'presencia'];
 
 describe('explicarMuerte', () => {
   it.each(MOTIVOS_POSIBLES)('"%s" tiene explicación, consejo y no es la genérica', (motivo) => {

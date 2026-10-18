@@ -173,6 +173,13 @@
   letter-spacing: 0.08em;
 }
 
+/* El estudio: la firma del menú, un poco más clara que el resto del pie. */
+.menu__estudio {
+  color: var(--color-texto);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
 /* En pantallas bajitas pongo el título y las opciones lado a lado. */
 @media (max-height: 480px) {
   .menu {
@@ -543,13 +550,22 @@
   margin: var(--espacio-m) 0 0;
 }
 
-/* Los créditos al final del juego: una línea baja, como la firma al pie de una carta. */
+/* Los créditos al final del juego: bajos, como la firma al pie de una carta. El estudio, un poco más visible. */
 .fin__creditos {
   max-width: 40em;
   margin: var(--espacio-m) 0 0;
   color: var(--color-texto-tenue);
   font-size: var(--texto-s);
   line-height: 1.5;
+}
+
+.fin__creditos p {
+  margin: 0;
+}
+
+.fin__creditos .fin__estudio {
+  color: var(--color-texto);
+  letter-spacing: 0.08em;
 }
 
 .fin__texto {
@@ -617,4 +633,10 @@
 
 .creditos__texto p {
   margin: 0;
+}
+
+/* El estudio y quién lo creó, justo debajo del título del juego. */
+.creditos__texto .creditos__autoria:first-of-type {
+  margin-top: var(--espacio-s);
+  letter-spacing: 0.08em;
 }

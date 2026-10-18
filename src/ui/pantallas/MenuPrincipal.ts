@@ -4,6 +4,7 @@
 import { NOMBRE_DIFICULTAD, type IdDificultad } from '../../config/Dificultad';
 import { crearBoton } from '../componentes/Boton';
 import { COMPILACION } from '../../config/Compilacion';
+import { CREDITOS } from '../../config/Creditos';
 import { Pantalla } from './Pantalla';
 
 export interface AccionesMenuPrincipal {
@@ -34,7 +35,8 @@ export class MenuPrincipal extends Pantalla {
     this.opciones.setAttribute('aria-label', 'Menú principal');
     const pie = document.createElement('footer');
     pie.className = 'menu__pie';
-    pie.innerHTML = '<span>Usa audífonos</span><span class="menu__version"></span>';
+    pie.innerHTML = '<span class="menu__estudio"></span><span>Usa audífonos</span><span class="menu__version"></span>';
+    pie.querySelector('.menu__estudio')!.textContent = CREDITOS.estudio;
     pie.querySelector('.menu__version')!.textContent = `Versión ${COMPILACION}`;
     this.elemento.append(cabecera, this.opciones, pie);
   }

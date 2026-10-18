@@ -63,6 +63,14 @@ export class EstadoCazando implements EstadoIA {
 
     entidad.pose = 'correr';
     const resultado = entidad.avanzar(dt, ctx.dificultad.velocidadCaza, ctx, true);
+    // Ya en su celda: el camino termina en el centro, y si él está quieto cerca de una esquina queda hasta a 0.92 m,
+    // más de lo que alcanzo (CONFIG.entidad.distanciaAtrapar, 0.85). Me quedaba pegada sin tocarlo, y la caza no
+    // terminaba nunca (en la puerta del Piso 1 eso dejaba la salida esperando para siempre). Si sé dónde está, doy el
+    // último paso hasta él (dentro de una celda no hay muros).
+    if (resultado === 'llego' && conoce) {
+      entidad.deslizarHacia(j.x, j.z, ctx.dificultad.velocidadCaza, dt);
+      return;
+    }
     if ((resultado === 'llego' || resultado === 'sin-camino') && !conoce) {
       // Perdí su rastro: vuelvo a buscar escuchando.
       entidad.cambiarEstado('investigando', ctx);

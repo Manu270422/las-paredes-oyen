@@ -176,8 +176,10 @@ export const MAPA_PISO_4: DefMapa = {
     // del cambio puede tener este punto: sin él no tendría dónde reaparecer.
     estudio403: { x: 24.5, y: 3.3, angulo: 180 },
     dormitorio401: { x: 7.3, y: 3.3, angulo: 180 },
-    // Dentro del 402, junto a la puerta, mirando la sala: el clímax ya no obliga a cruzar medio piso otra vez.
-    sala402: { x: 14.5, y: 12.4, angulo: 0 },
+    // Dentro del 402, junto a la puerta, mirando la sala: el clímax ya no obliga a cruzar medio piso otra vez. Pero
+    // solo con su llave: el apagón (que guarda aquí) llega después del tablero, y el tablero va antes que la llave.
+    // Sin ella, reaparecer aquí era quedar encerrado (lo encontró un probador el 2026-10-17): vuelvo al tablero.
+    sala402: { x: 14.5, y: 12.4, angulo: 0, requiere: 'objeto:llave_402', sino: 'servicio' },
   },
 
   guaridaEntidad: { x: 14, y: 4.5 },

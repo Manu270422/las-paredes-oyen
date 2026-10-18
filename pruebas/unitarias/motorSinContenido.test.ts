@@ -20,7 +20,8 @@ const COINCIDENCIAS: Record<string, Record<string, number>> = {
   'src/audio/TiposAudio.ts': { llave: 1, tablero: 1 },
   'src/interaccion/objetos/InteractuablePuerta.ts': { llave: 1 },
   'src/mundo/RejaEscalera.ts': { llave: 1 },
-  'src/interaccion/objetos/PuertaPrincipal.ts': { llave: 1 },
+  // 'llave': el sonido de la llave al empezar a girarla y al ceder (tanda 3).
+  'src/interaccion/objetos/PuertaPrincipal.ts': { llave: 2 },
   // Tipos de LÁMPARA ('emergencia' es un tipo de luz, no la lámpara de la escalera del Piso 4).
   'src/director/eventos/LuzFalla.ts': { emergencia: 1 },
   'src/mundo/PoolLuces.ts': { emergencia: 1 },

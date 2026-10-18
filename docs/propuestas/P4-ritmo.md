@@ -17,6 +17,13 @@ medir no atrae nada a tiempo y la orden de trabajo dice dónde está todo.
 | 3 | **La llave del 402 cambia de lugar y la historia lleva hasta ella.** La orden de trabajo ya no dice "encima del escritorio": dice que se la dejó al vecino del 403. En el escritorio del estudio, donde estaba la llave, ahora está la nota de M.: la llave volvió al cajón de la mesita de doña Rosalba, en el 401, junto al diario. La llave aparece al leer la nota | Hay que leer para avanzar; el camino va y vuelve por el pasillo (401 → 403 → 401 → servicio → 402) y pasa por el diario, que nadie leía | `pisos/piso4/documentos.ts`, `mapa.ts`, `objetivos.ts`, `index.ts` |
 | 4 | **El clímax en el 402.** Al empezar a medir el 402, sale del muro a ~4.5 m, a la espalda, y llega a escuchar antes de que termine la cinta. La cinta del 402 la capta | El final se medía con ella a 15 m y la cinta salía vacía | `pisos/piso4/guion.ts` |
 | 5 | **Punto de control en el 402** al apagón (dentro del 402, junto a la puerta) y otro en el dormitorio del 401 al tomar la llave | El clímax ahora puede matar: no se repite medio piso por eso | `pisos/piso4/index.ts`, `mapa.ts` |
+
+> **Corrección (2026-10-17).** El cambio 5 tenía un error, y lo encontró un probador. El camino del cambio 3 pone la
+> llave antes del tablero, pero los objetivos mandan al tablero primero, y el apagón llega después del tablero, tenga
+> o no la llave. En Fácil y Normal, quien moría después del apagón sin la llave reaparecía adentro del 402, con la
+> puerta cerrada con llave y la llave en el 401: encerrado. Ahora el punto del 402 solo vale con la llave
+> (`requiere: 'objeto:llave_402'`); sin ella, se reaparece en el cuarto del tablero (`sino: 'servicio'`). Ver
+> "Puntos de control con condición" en 02-ARQUITECTURA.
 | 6 | **El objetivo se recuerda solo** cada 90 s de juego sin cambiar (en todas las dificultades, también en Difícil, que no tiene pistas) | En la ronda 1, el de Difícil vio el objetivo 6.5 s y se perdió 3 min | `narrativa/Progreso.ts` |
 
 ## Lo que no cambia

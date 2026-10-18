@@ -110,6 +110,22 @@ export function explicarMuerte(motivo: MotivoCaza, enPared: boolean): Explicacio
         consejo: 'El ascensor se oye en todo el edificio: el motor por los muros y la campanilla al llegar. Úsalo cuando esté lejos.',
         eco: { id: 'campanilla', repeticiones: 1, intervalo: 0, volumen: 0.8 },
       };
+    case 'cerradura':
+      return {
+        clave: 'cerradura',
+        titulo: 'Te oyó.',
+        linea: 'Oyó la cerradura.',
+        consejo: 'Cada cerradura suena donde estás, y la puerta la llama. Aléjala antes con el citófono y abre una por vez.',
+        eco: { id: 'cerradura', repeticiones: 1, intervalo: 0, volumen: 0.9 },
+      };
+    case 'citofono':
+      return {
+        clave: 'citofono',
+        titulo: 'Te oyó.',
+        linea: 'Oyó el botón del citófono.',
+        consejo: 'El timbre suena lejos, pero el botón suena donde estás. Úsalo cuando ella no esté cerca de ti.',
+        eco: { id: 'clic', repeticiones: 2, intervalo: 0.3, volumen: 0.8 },
+      };
     case 'presencia':
       return {
         clave: 'presencia',

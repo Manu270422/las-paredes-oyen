@@ -27,6 +27,10 @@ export type CausaRuido =
   | 'senuelo'
   | 'radio'
   | 'tablero'
+  /** El citófono de la portería: el botón donde estoy (del jugador) o el timbre que suena lejos (del entorno). */
+  | 'citofono'
+  /** Una cerradura de la puerta principal (la salida): la abro yo, y la puerta la llama (ver EstadoParedes). */
+  | 'cerradura'
   /** Una máquina del edificio: el motor y la campanilla del ascensor. */
   | 'maquina'
   | 'otro';
@@ -111,6 +115,14 @@ export interface MapaEventos {
    * otro piso: zumba por los muros y tarda), 'abre' (ya estaba aquí) o 'nada' (ya venía o ya estaba abierto).
    */
   'ascensor-llamado': { piso: string; respuesta: 'muerto' | 'viene' | 'abre' | 'nada' };
+  /**
+   * El citófono de la portería. 'timbre': pulsé un botón y su timbre suena lejos. 'ocupado': lo pulsé con la línea
+   * ocupada (no pasa nada). 'llamada': suena solo (llaman desde `timbre`). 'contestada' / 'ignorada': lo que hice con
+   * esa llamada. 'colgada': la línea se cortó después de contestar.
+   */
+  citofono: { accion: 'timbre' | 'ocupado' | 'llamada' | 'contestada' | 'ignorada' | 'colgada'; timbre: string };
+  /** La puerta principal: empecé una cerradura (`numero`, desde 1), la solté a medias o cedió. */
+  cerradura: { accion: 'empieza' | 'suelta' | 'cede'; numero: number };
 }
 
 /** Cómo llego a otro piso (ver 'piso-cambiado'). */

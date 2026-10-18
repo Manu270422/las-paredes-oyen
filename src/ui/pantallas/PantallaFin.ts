@@ -1,7 +1,7 @@
 // Aquí está el final de la partida. Dice sin ambigüedad lo que pasó ("Piso 3 completado"), las estadísticas
 // de la partida en voz baja, una línea por piso si fueron varios, qué sigue y cómo volver a jugar. Sin
 // fanfarria: el silencio es parte del final.
-import { CREDITOS } from '../../config/Creditos';
+import { lineasDeAutoria } from '../../config/Creditos';
 import { crearBoton } from '../componentes/Boton';
 import type { PuenteTelemetria } from '../PuenteTelemetria';
 import { reloj } from '../../utilidades/Reloj';
@@ -51,7 +51,7 @@ export class PantallaFin extends Pantalla {
   private readonly pisos: HTMLUListElement;
   private readonly siguiente: HTMLParagraphElement;
   /** Los créditos: solo al final del juego (cuando no hay piso siguiente). */
-  private readonly creditos: HTMLParagraphElement;
+  private readonly creditos: HTMLDivElement;
   private readonly exportar: HTMLButtonElement;
 
   constructor(
@@ -71,7 +71,7 @@ export class PantallaFin extends Pantalla {
     this.pisos.className = 'fin__pisos';
     this.siguiente = document.createElement('p');
     this.siguiente.className = 'subtitulo-juego fin__siguiente';
-    this.creditos = document.createElement('p');
+    this.creditos = document.createElement('div');
     this.creditos.className = 'fin__creditos';
     const acciones = document.createElement('div');
     acciones.className = 'fin__acciones';
@@ -127,6 +127,14 @@ export class PantallaFin extends Pantalla {
     this.siguiente.hidden = finDelJuego;
     this.siguiente.textContent = s === null ? '' : s.disponible ? `Sigue: ${s.nombre}` : `Próximamente: ${s.nombre}`;
     this.creditos.hidden = !finDelJuego;
-    this.creditos.textContent = `${CREDITOS.titulo} · un juego de ${CREDITOS.autor}. ${CREDITOS.ayudaIA}`;
+    // El estudio primero (más visible) y, debajo, quién lo creó y dirigió. La ayuda de IA va en Créditos, en tecnología.
+    this.creditos.replaceChildren(
+      ...lineasDeAutoria().map((linea, i) => {
+        const p = document.createElement('p');
+        p.className = i === 0 ? 'fin__estudio' : '';
+        p.textContent = linea;
+        return p;
+      }),
+    );
   }
 }

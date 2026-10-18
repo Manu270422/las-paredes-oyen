@@ -12,7 +12,7 @@ import type { ContextoJuego } from '../nucleo/ContextoJuego';
 
 /** Un objeto que se recoge del piso (unas pilas, una llave): qué es, cómo se ve y qué pasa al tomarlo. */
 export interface DefObjetoRecogible {
-  /** Su forma 3D (las que existen en interaccion/objetos/Modelos.ts). */
+  /** Su forma 3D (las que existen en interaccion/objetos/Modelos.ts). 'ninguno': se mira un mueble que ya está. */
   readonly modelo: 'pilas' | 'llave';
   /** Lo que dice el indicador al mirarlo. */
   readonly texto: string;
@@ -30,8 +30,8 @@ export interface DefObjetoRecogible {
  * sin pausar nada. La criatura sigue oyendo mientras leo.
  */
 export interface DefExaminable {
-  /** Su forma 3D (las que existen en interaccion/objetos/Modelos.ts). */
-  readonly modelo: 'palo' | 'carrito' | 'dibujo';
+  /** Su forma 3D (las que existen en interaccion/objetos/Modelos.ts). 'ninguno': se mira un mueble que ya está. */
+  readonly modelo: 'palo' | 'carrito' | 'dibujo' | 'sobres' | 'ninguno';
   /** Lo que dice el indicador al mirarlo ("Mirar el dibujo"). */
   readonly texto: string;
   /** Lo que pienso al examinarlo: una sola línea, corta (se queda según lo larga que sea). */

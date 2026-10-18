@@ -1,7 +1,11 @@
 // Aquí está la puerta principal de un edificio: la salida. Dos hojas de madera con vidrio esmerilado y tres
-// cerraduras que se abren en orden, cada una con su momento y su ruido: la cadena, el cerrojo y la llave. Cada ruido
-// le llega a ella como el de una puerta (va a investigar, no sale cazando), así que abrirlas seguidas la trae: hay
-// que alejarla entre una y otra (P1-guion).
+// cerraduras que se abren en orden: la cadena, el cerrojo y la llave (P1-guion). Abrir una es un MOMENTO, como medir:
+// - al empezar, forcejeo con ella: un ruido mío, bajito;
+// - si me alejo antes de que ceda, la suelto a medias: no se abre y no suena su final (hay que empezarla otra vez);
+// - cuando cede, suena fuerte (la cadena cae, el cerrojo golpea el tope, la llave da la vuelta): otro ruido mío.
+// Son ruidos MÍOS (causa 'cerradura'): si ella me está escuchando, me delatan como cualquier otro. Y la puerta la llama
+// (EstadoParedes): cada cerradura que oye la trae rápido por los muros. Por eso hay que alejarla antes, y abrir una por
+// vez (tanda 3, medido con el robot de medirCerraduras).
 // Cada cerradura abierta queda en una bandera ("cerradura:1", ":2", ":3"); al cargar, la puerta queda como diga el
 // progreso. Morir sin un punto de control en medio las vuelve a cerrar (sus banderas no alcanzaron a guardarse).
 // Abiertas las tres, se marca la bandera de salida del paquete: lo que pasa después (salir) es del guion del piso.
@@ -14,20 +18,56 @@ import type { ContextoJuego } from '../../nucleo/ContextoJuego';
 import { GRADOS } from '../../utilidades/Matematicas';
 import { crearZonaToque, vincular, type Interactuable } from '../Interactuable';
 
-/** Una cerradura: lo que dice el indicador, lo que dura su momento, cuánto le suena a ella y cómo suena. */
+/** Una cerradura: lo que dice el indicador, lo que se lee y suena al empezar y al ceder, lo que dura y su ruido. */
 interface Cerradura {
   readonly accion: string;
-  readonly subtitulo: string;
+  readonly empieza: string;
+  readonly cede: string;
+  readonly suelta: string;
   readonly duracion: number;
+  /** El ruido cuando cede (0..1). Al empezar, todas hacen RUIDO_EMPEZAR. */
   readonly ruido: number;
-  readonly sonidos: ReadonlyArray<readonly [IdSonido, number, number]>;
+  readonly sonidoEmpieza: readonly [IdSonido, number];
+  readonly sonidoCede: ReadonlyArray<readonly [IdSonido, number, number]>;
 }
 
-/** Las tres, en orden. Los ruidos son como el del candado de la reja (0.4): se oyen, y ella viene a ver. */
+/** El forcejeo al empezar cualquiera: menos que un paso caminando (0.38); se oye cerca. */
+export const RUIDO_EMPEZAR = 0.2;
+/** Si me alejo más que esto (m) de donde empecé, la suelto a medias. */
+export const ALEJARSE_LA_SUELTA = 0.9;
+
+/** Las tres, en orden. Cuando ceden suenan como el candado de la reja (0.4): fuerte, y la puerta la llama. */
 export const CERRADURAS: readonly Cerradura[] = [
-  { accion: 'Quitar la cadena', subtitulo: '[La cadena cae al piso]', duracion: 1.4, ruido: 0.45, sonidos: [['cadena', 0, 1], ['candado', 0.9, 0.7]] },
-  { accion: 'Correr el cerrojo', subtitulo: '[El cerrojo cede de golpe]', duracion: 1.2, ruido: 0.5, sonidos: [['cerradura', 0, 0.9], ['golpe', 0.7, 0.75]] },
-  { accion: 'Abrir con la llave', subtitulo: '[La llave gira, despacio]', duracion: 1.8, ruido: 0.35, sonidos: [['llave', 0, 0.9], ['cerradura', 1.1, 0.8]] },
+  {
+    accion: 'Quitar la cadena',
+    empieza: '[Forcejeas con la cadena]',
+    cede: '[La cadena cae al piso]',
+    suelta: 'Soltaste la cadena a medias.',
+    duracion: 3,
+    ruido: 0.45,
+    sonidoEmpieza: ['cadena', 0.55],
+    sonidoCede: [['cadena', 0, 1], ['candado', 0.25, 0.7]],
+  },
+  {
+    accion: 'Correr el cerrojo',
+    empieza: '[El cerrojo está duro, oxidado]',
+    cede: '[El cerrojo cede de golpe]',
+    suelta: 'Soltaste el cerrojo a medias.',
+    duracion: 2.5,
+    ruido: 0.5,
+    sonidoEmpieza: ['cerradura', 0.5],
+    sonidoCede: [['cerradura', 0, 0.9], ['golpe', 0.1, 0.75]],
+  },
+  {
+    accion: 'Abrir con la llave',
+    empieza: '[La llave entra, pero no quiere girar]',
+    cede: '[La llave da la vuelta]',
+    suelta: 'Sacaste la llave a medias.',
+    duracion: 3.5,
+    ruido: 0.35,
+    sonidoEmpieza: ['llave', 0.7],
+    sonidoCede: [['cerradura', 0, 0.85], ['llave', 0.15, 0.6]],
+  },
 ];
 const SIN_LLAVE = 'Falta la llave de esta cerradura.';
 
@@ -49,6 +89,8 @@ export class PuertaPrincipal implements Interactuable {
   private abiertas = 0;
   /** El momento de la cerradura que estoy abriendo: segundos que le quedan (≤ 0: ninguno). */
   private momento = 0;
+  /** Dónde estaba yo al empezarla (si me alejo, la suelto). */
+  private desde = { x: 0, z: 0 };
 
   constructor(def: DefInteractuable) {
     this.id = def.id;
@@ -105,6 +147,11 @@ export class PuertaPrincipal implements Interactuable {
     return this.esLaDeLlave() && !this.tengoLaLlave(ctx) ? 'Cerrada con llave' : c.accion;
   }
 
+  /** ¿Estoy girando una cerradura ahora? */
+  get girando(): boolean {
+    return this.momento > 0;
+  }
+
   interactuar(ctx: ContextoJuego): void {
     const c = CERRADURAS[this.abiertas];
     if (!c || this.momento > 0) return;
@@ -112,30 +159,52 @@ export class PuertaPrincipal implements Interactuable {
     if (this.esLaDeLlave() && !this.tengoLaLlave(ctx)) {
       ctx.audio.reproducir('cerradura', { posicion: { x: p.x, y: 1, z: p.z }, volumen: 0.7 });
       ctx.bus.emit('subtitulo', { texto: SIN_LLAVE, duracion: 2.5 });
-      ctx.bus.emit('ruido', { x: p.x, z: p.z, intensidad: 0.2, origen: 'puerta', causa: 'puerta' });
+      this.sonar(ctx, RUIDO_EMPEZAR);
       return;
     }
     this.momento = c.duracion;
-    for (const [id, cuando, volumen] of c.sonidos) {
-      ctx.audio.reproducir(id, { posicion: { x: p.x, y: 1.2, z: p.z }, volumen, retraso: cuando });
-    }
-    ctx.bus.emit('ruido', { x: p.x, z: p.z, intensidad: c.ruido, origen: 'puerta', causa: 'puerta' });
-    ctx.bus.emit('subtitulo', { texto: c.subtitulo, duracion: 2.5, tipo: 'efecto' });
+    this.desde = { x: ctx.jugador.posicion.x, z: ctx.jugador.posicion.z };
+    const [id, volumen] = c.sonidoEmpieza;
+    ctx.audio.reproducir(id, { posicion: { x: p.x, y: 1.2, z: p.z }, volumen, tono: 0.9 });
+    this.sonar(ctx, RUIDO_EMPEZAR);
+    ctx.bus.emit('cerradura', { accion: 'empieza', numero: this.abiertas + 1 });
+    ctx.bus.emit('subtitulo', { texto: c.empieza, duracion: Math.min(2.5, c.duracion), tipo: 'efecto' });
   }
 
-  /** Cada fotograma: si estoy en el momento de una cerradura, cuando termina queda abierta (y lo anoto). */
+  /** Cada fotograma: si estoy en el momento de una cerradura, la suelto si me alejé o, cuando cede, queda abierta. */
   actualizar(dt: number, ctx: ContextoJuego): void {
     if (this.momento <= 0) return;
+    const c = CERRADURAS[this.abiertas];
+    const j = ctx.jugador.posicion;
+    if (Math.hypot(j.x - this.desde.x, j.z - this.desde.z) > ALEJARSE_LA_SUELTA) {
+      // Me alejé: la suelto a medias. No cede, no suena su final y hay que empezarla otra vez.
+      this.momento = 0;
+      ctx.bus.emit('subtitulo', { texto: c.suelta, duracion: 2.5 });
+      ctx.bus.emit('cerradura', { accion: 'suelta', numero: this.abiertas + 1 });
+      return;
+    }
     this.momento -= dt;
     if (this.momento > 0) return;
+    const p = this.objeto.position;
+    for (const [id, cuando, volumen] of c.sonidoCede) {
+      ctx.audio.reproducir(id, { posicion: { x: p.x, y: 1.2, z: p.z }, volumen, retraso: cuando });
+    }
+    this.sonar(ctx, c.ruido);
+    ctx.bus.emit('cerradura', { accion: 'cede', numero: this.abiertas + 1 });
+    ctx.bus.emit('subtitulo', { texto: c.cede, duracion: 2.5, tipo: 'efecto' });
     this.abiertas++;
     this.posar();
     ctx.progreso.marcar(banderaCerradura(this.abiertas));
     if (this.abiertas === CERRADURAS.length) {
-      const p = this.objeto.position;
       ctx.audio.reproducir('puerta_crujido', { posicion: { x: p.x, y: 1.2, z: p.z }, volumen: 1, tono: 0.7 });
       ctx.progreso.marcar(this.bandera);
     }
+  }
+
+  /** Un ruido mío en la puerta (estoy frente a ella): causa 'cerradura'. */
+  private sonar(ctx: ContextoJuego, intensidad: number): void {
+    const p = this.objeto.position;
+    ctx.bus.emit('ruido', { x: p.x, z: p.z, intensidad, origen: 'jugador', causa: 'cerradura' });
   }
 
   /** Al cargar o armar el piso: abiertas las que diga el progreso. */

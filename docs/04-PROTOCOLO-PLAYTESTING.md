@@ -40,6 +40,17 @@ principal con `?telemetria=1`. **No se fusiona nada a `main` mientras dure la ro
 | H15 | La cabina detenida se supera quieto y aguantando el aire, y morir ahí se entiende | Eventos `encuentro` (inicio, superado, fallido) en el Piso 2; muertes con su `motivo`; bandera `cabina:superada` y cuántos intentos | La mayoría muere 3 veces o más en la cabina, o alguien nunca aguanta el aire ahí |
 | H16 | El Piso 2 se termina sin trabarse | Banderas `leyo:libro_quejas`, `medido:202`, `cinta:202`, `objeto:llave_servicio`, `cabina:superada` y el tiempo entre ellas | Alguien pasa más de 10 min sin cambiar de objetivo y sin saber qué hacer |
 
+**Ronda 4 (el Piso 1, cuando esté en el enlace; preparada el 2026-10-17): además**, la planta baja y el final del
+juego. El final ya se midió con un robot ([informe](pruebas/cerraduras-robot-2026-10-15.md)): esta ronda dice si
+para una persona es "muy difícil pero justo".
+
+| # | Hipótesis | Cómo la medimos | Se cae si… |
+|---|---|---|---|
+| H17 | El citófono se entiende como un señuelo: timbrar lejos la aleja de la puerta | Eventos `citofono` (`timbre`, con el estado del peligro); pista `citofono`; qué pasa en la puerta después de cada timbre; entrevista (22) | Nadie lo usa, o lo usan y ella sigue junto a la puerta cuando abren |
+| H18 | La puerta es muy difícil pero justa: se sale alejándola antes de cada cerradura, y morir ahí se entiende | Eventos `cerradura` (`empieza`, `suelta`, `cede`); muertes con `motivo: "cerradura"`; intentos y tiempo desde las llaves hasta salir; entrevista (24) | Alguien abandona frustrado o muere 5 veces o más sin entender por qué; o sale sin usar el citófono en menos de un minuto (sería fácil) |
+| H19 | Su llamada por el citófono asusta, y contestar se entiende como un riesgo | Eventos `citofono` (`llamada`, `contestada`, `ignorada`, `colgada`) y los `encuentro` de esa llamada; entrevista (23) | Nadie nota la llamada, o alguien muere después de contestar sin entender por qué |
+| H20 | El final ("Sobreviviste", la ventana del 401 y los créditos) se siente como el final del juego | Bandera `puerta:abierta` y la pantalla final; entrevista (25) | La mayoría no entiende que terminó, o lo siente abrupto |
+
 ---
 
 ## 2. Preparación
@@ -198,6 +209,14 @@ Nivel 2 o 3 = pulsar **F9** (en PC). En celular, anotar la hora del reloj en la 
 | 27 | Grabó el cuarto sordo, oyó la cinta y encontró la llave en el rincón | H16 | sí / no | | | ¿fue al rincón por lo que sonó en la cinta? |
 | 28 | La cabina se detuvo con ella encima | H15 | sí / no · intentos: | | | ¿aguantó el aire cuando se quedó quieta? ¿miró la trampilla? ¿murió? ¿entendió por qué? |
 | 29 | Terminó el Piso 2 y vio la pantalla final | — | sí / no | | | |
+| **Ronda 4** | | | | | | |
+| 30 | Llegó al Piso 1 y el ascensor se quedó sin corriente | — | sí / no | | | ¿intentó subir? |
+| 31 | Leyó el libro de minuta (con el "truco de portero") | H17 | sí / no | | | |
+| 32 | Usó el citófono para alejarla | H17 | sí / no · veces: | | | ¿qué timbre? ¿esperó a oírla lejos antes de ir a la puerta? |
+| 33 | El citófono sonó solo (su llamada) | H19 | sí / no | | | ¿contestó? ¿aguantó el aire? ¿murió? |
+| 34 | Tomó las llaves en el cuarto de don Aurelio | — | sí / no | | | ¿vio el charco? ¿leyó la nota? |
+| 35 | Abrió las cerraduras | H18 | sí / no · muertes en la puerta: | | | ¿una por vez o seguidas? ¿soltó alguna? ¿la oyó venir? |
+| 36 | Salió: "Sobreviviste" | H20 | sí / no | | | ¿qué dijo al verlo? |
 
 ### 4.5 Conducta observada (sí / no / no aplica)
 
@@ -306,6 +325,14 @@ Hacerla **justo al terminar**, con las luces aún bajas. Preguntas abiertas, en 
 20. En el ascensor detenido, ¿qué pensaste que tenías que hacer? Si moriste ahí, ¿entendiste por qué? *(H15)*
 21. ¿Hubo un momento en el Piso 2 en que no supiste qué hacer? ¿Qué te sacó de ahí? *(H16)*
 
+**Ronda 4 (el Piso 1):**
+
+22. ¿Para qué te sirvió el citófono? ¿Cómo lo descubriste? *(H17)*
+23. Cuando el citófono sonó solo, ¿qué pensaste? ¿Contestaste? ¿Por qué? *(H19)*
+24. En la puerta principal, ¿qué entendiste que tenías que hacer? Si moriste ahí, ¿entendiste por qué? ¿Se sintió
+    difícil y justo, o injusto? *(H18)*
+25. Al salir, ¿qué sentiste? ¿Qué crees que era la luz en la ventana del 401? *(H20)*
+
 ---
 
 ## 6. Exportar y nombrar los datos
@@ -352,6 +379,15 @@ Cada sesión trae un bloque `resumen`. Lo primero que hay que mirar:
 | `ascensor-llamado` | `piso`, `respuesta` (`muerto`, `viene`, `abre`, `nada`) y el estado del peligro: cuarto, batería, estado de ella y distancia si tenía cuerpo | H12: ¿lo llamó con ella cerca? |
 | `muerte` con `motivo: "maquina"` | Lo atrapó por el ruido del ascensor (motor o campanilla) | H12, H5 |
 | `piso-completado` | `piso`, `tiempo` (solo el de ese piso) y `muertes` | Tiempo por piso |
+
+**Ronda 4: eventos nuevos** (el Piso 1):
+
+| Evento | Qué trae | Para qué |
+|---|---|---|
+| `citofono` | `accion` (`timbre`, `ocupado`, `llamada`, `contestada`, `ignorada`, `colgada`), `timbre` (cuál) y el estado del peligro | H17, H19 |
+| `cerradura` | `accion` (`empieza`, `suelta`, `cede`), `numero` (1 cadena, 2 cerrojo, 3 llave) y el estado del peligro | H18: ¿abrió con ella cerca? ¿soltó al oírla venir? |
+| `muerte` con `motivo: "cerradura"` o `"citofono"` | La delató una cerradura, o el botón del citófono | H18, H17 |
+| `rastro-visto` | Los tres del Piso 1: `conteo_citofono`, `frase_puerta`, `charco_101` | Si se miran |
 
 Cruzar siempre con las marcas F9 (`marca-observador`): una marca sin evento del juego cerca
 significa que el miedo vino de algo que el sistema no registra (¿la imaginación? ¡bien!).
