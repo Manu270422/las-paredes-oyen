@@ -1,7 +1,8 @@
 # C3 — Salir a la calle: un tramo corto antes de "Sobreviviste" (solo documento)
 
-> **Sin programar.** Pedido por el creador el 2026-10-17. Costos en días de una persona, con pruebas caminando.
-> La calle completa (barrio y más presencias) es para la **1.1**: mi recomendación está al final.
+> **Sin programar, a la espera de A4.** Pedido por el creador el 2026-10-17, que ya decidió las preguntas (al final).
+> Costos en días de una persona, con pruebas caminando. La calle completa (barrio y más presencias) es para la
+> **1.1**: mi recomendación está al final.
 
 ## La idea (para la 1.0)
 
@@ -51,9 +52,9 @@ diluye eso: sin muros, nada lleva el sonido, y más amenazas lo vuelven otro jue
    también es lo que lo hace posible en un celular.
 4. **Después de la 1.0 y de A4:** lo exterior es lo más caro de hacer bien (arte, luz y rendimiento).
 
-## Preguntas para el creador
+## Decisiones del creador (2026-10-17)
 
-1. Afuera, ¿un respiro sin peligro, o una última amenaza? Recomiendo el respiro; si acaso, un golpe en el vidrio de la
-   puerta, desde adentro, mientras te alejas.
-2. En la ventana del 401, ¿solo luz, o una silueta? (Una silueta abre una pregunta: ¿quién es?)
-3. ¿Medimos A4 antes de hacer la calle? Recomiendo que sí.
+1. **Afuera, un respiro**, con un golpe en el vidrio de la puerta, desde adentro, mientras te alejas.
+2. **La ventana del 401, solo con luz.** La silueta queda para la 1.1.
+3. **Primero A4**: no se programa la calle hasta tener los números de un celular real
+   ([guía de la medición](../pruebas/guia-a4-celular.md)).
