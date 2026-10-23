@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Política de privacidad · Las Paredes Oyen</title>
+  <style>
+    :root {
+      --negro:    #0b0908;
+      --pared:    #2a2522;
+      --rojo:     #9b1c1c;
+      --arena:    #d9cfc8;
+      --gris:     #8a7e78;
+      --fondo:    #0f0d0c;
+      --borde:    #1e1a18;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--negro);
+      color: var(--arena);
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 16px;
+      line-height: 1.75;
+      min-height: 100vh;
+    }
+
+    .cabecera {
+      background-color: var(--fondo);
+      border-bottom: 1px solid var(--borde);
+      padding: 2rem 1.5rem 1.5rem;
+      text-align: center;
+    }
+
+    .cabecera__estudio {
+      font-family: sans-serif;
+      font-size: 11px;
+      letter-spacing: .18em;
+      color: var(--gris);
+      text-transform: uppercase;
+      margin-bottom: .6rem;
+    }
+
+    .cabecera__titulo {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      font-weight: 700;
+      color: var(--arena);
+      letter-spacing: .04em;
+      line-height: 1.2;
+    }
+
+    .cabecera__subtitulo {
+      font-family: sans-serif;
+      font-size: 12px;
+      color: var(--gris);
+      margin-top: .5rem;
+      letter-spacing: .06em;
+    }
+
+    .grieta {
+      width: 1px;
+      height: 2rem;
+      background: linear-gradient(to bottom, var(--rojo), transparent);
+      margin: 0 auto;
+    }
+
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    .aviso-lectura {
+      background-color: var(--fondo);
+      border: 1px solid var(--borde);
+      border-left: 3px solid var(--rojo);
+      border-radius: 4px;
+      padding: 1rem 1.25rem;
+      font-family: sans-serif;
+      font-size: 13px;
+      color: var(--gris);
+      margin-bottom: 2.5rem;
+      line-height: 1.6;
+    }
+
+    .aviso-lectura strong {
+      color: var(--arena);
+      font-weight: 600;
+    }
+
+    section {
+      margin-bottom: 2.5rem;
+    }
+
+    h2 {
+      font-family: sans-serif;
+      font-size: 11px;
+      letter-spacing: .2em;
+      color: var(--rojo);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      padding-bottom: .4rem;
+      border-bottom: 1px solid var(--borde);
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--arena);
+    }
+
+    p:last-child { margin-bottom: 0; }
+
+    ul {
+      margin: .5rem 0 1rem 0;
+      padding-left: 1.25rem;
+    }
+
+    li {
+      margin-bottom: .4rem;
+      color: var(--arena);
+    }
+
+    .tabla-datos {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: sans-serif;
+      font-size: 13px;
+      margin: 1rem 0;
+    }
+
+    .tabla-datos th {
+      background-color: var(--fondo);
+      color: var(--gris);
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-align: left;
+      padding: .6rem .75rem;
+      border: 1px solid var(--borde);
+    }
+
+    .tabla-datos td {
+      color: var(--arena);
+      padding: .6rem .75rem;
+      border: 1px solid var(--borde);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+
+    .tabla-datos tr:nth-child(even) td {
+      background-color: #0d0b0a;
+    }
+
+    .pastilla {
+      display: inline-block;
+      font-family: sans-serif;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-weight: 600;
+      letter-spacing: .03em;
+    }
+
+    .pastilla--local   { background: #1a2a1a; color: #6fcf6f; border: 1px solid #2d4a2d; }
+    .pastilla--off     { background: #2a1a1a; color: #e07070; border: 1px solid #4a2d2d; }
+    .pastilla--manual  { background: #1a1f2a; color: #7090cf; border: 1px solid #2d3a4a; }
+
+    .bloque-tecnico {
+      background-color: var(--fondo);
+      border: 1px solid var(--borde);
+      border-radius: 4px;
+      padding: 1rem 1.25rem;
+      font-family: 'Courier New', monospace;
+      font-size: 12.5px;
+      color: #b0a8a2;
+      line-height: 1.6;
+      margin: .75rem 0;
+      overflow-x: auto;
+    }
+
+    a {
+      color: #c07070;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    a:hover { color: var(--arena); }
+
+    .pie {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--borde);
+      font-family: sans-serif;
+      font-size: 12px;
+      color: var(--gris);
+      line-height: 1.6;
+    }
+
+    .pie a { color: var(--gris); }
+
+    @media (max-width: 500px) {
+      .tabla-datos { font-size: 12px; }
+      .tabla-datos th, .tabla-datos td { padding: .5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="cabecera">
+  <p class="cabecera__estudio">El Mundo de Manu</p>
+  <h1 class="cabecera__titulo">Las Paredes Oyen</h1>
+  <p class="cabecera__subtitulo">Política de privacidad</p>
+</header>
+<div class="grieta"></div>
+
+<main>
+
+  <div class="aviso-lectura">
+    <strong>Versión 1.0 &mdash; 22 de octubre de 2026.</strong><br>
+    Esta política aplica a la aplicación <em>Las Paredes Oyen</em> disponible en Google Play Store
+    y a su versión web en <a href="https://almendros.elmundodemanu.com" target="_blank" rel="noopener">almendros.elmundodemanu.com</a>.
+    Se redacta en cumplimiento de los requisitos de Google Play Console para aplicaciones distribuidas
+    por desarrolladores individuales.
+  </div>
+
+  <!-- 1. RESPONSABLE -->
+  <section>
+    <h2>1. Responsable del tratamiento</h2>
+    <p>
+      <strong>Desarrollador:</strong> Carlos Manuel Turizo Hernández<br>
+      <strong>Marca:</strong> El Mundo de Manu<br>
+      <strong>País:</strong> Colombia<br>
+      <strong>Contacto:</strong> <a href="mailto:elmundodemanu2704@elmundodemanu.com">elmundodemanu2704@elmundodemanu.com</a>
+    </p>
+    <p>
+      <em>Las Paredes Oyen</em> es un videojuego de terror psicológico desarrollado de forma
+      independiente, sin respaldo de ninguna organización corporativa.
+    </p>
+  </section>
+
+  <!-- 2. RESUMEN EJECUTIVO -->
+  <section>
+    <h2>2. Resumen: qué hace y qué no hace esta aplicación</h2>
+    <p>
+      La aplicación <strong>no transmite ningún dato a servidores externos</strong>.
+      No tiene cuenta de usuario, no requiere registro, no contiene publicidad,
+      no integra redes sociales y no envía información a terceros.
+    </p>
+    <p>
+      Todo lo que la aplicación almacena &mdash; configuración, progreso y, opcionalmente,
+      registros de sesión de prueba &mdash; permanece en el propio dispositivo
+      hasta que el usuario lo borra o desinstala la aplicación.
+    </p>
+  </section>
+
+  <!-- 3. DATOS QUE SE PROCESAN -->
+  <section>
+    <h2>3. Datos que se procesan y su tratamiento</h2>
+
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>Categoría</th>
+          <th>Qué se guarda</th>
+          <th>Dónde</th>
+          <th>Sale del dispositivo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Configuración</strong></td>
+          <td>
+            Ajustes de video, audio, controles, accesibilidad y dificultad
+            elegidos por el jugador.
+          </td>
+          <td>Almacenamiento local del dispositivo<br>(localStorage / Capacitor Preferences)</td>
+          <td><span class="pastilla pastilla--local">No sale nunca</span></td>
+        </tr>
+        <tr>
+          <td><strong>Progreso</strong></td>
+          <td>
+            Estado del juego: habitaciones medidas, objetos encontrados, pisos desbloqueados.
+          </td>
+          <td>Almacenamiento local del dispositivo</td>
+          <td><span class="pastilla pastilla--local">No sale nunca</span></td>
+        </tr>
+        <tr>
+          <td><strong>Telemetría de pruebas</strong></td>
+          <td>
+            Registros de sesión para desarrollo: duración, eventos de juego,
+            curva de tensión, momentos de reacción del jugador.
+            <strong>No incluye nombre, correo ni ningún dato de identidad.</strong>
+          </td>
+          <td>Almacenamiento local del dispositivo<br>(máximo 12 sesiones)</td>
+          <td>
+            <span class="pastilla pastilla--manual">Solo si el jugador lo exporta</span><br>
+            <small style="color:var(--gris);font-size:11px">Mediante la función&nbsp;"Exportar&nbsp;registro"</small>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 style="margin-top:2rem">3.1 La telemetría de pruebas en detalle</h2>
+    <p>
+      La telemetría es un sistema diseñado exclusivamente para el <strong>desarrollo y mejora del juego</strong>.
+      Funciona de la siguiente manera:
+    </p>
+    <ul>
+      <li><strong>Desactivada por defecto.</strong> No se activa al instalar la aplicación.</li>
+      <li>
+        <strong>Activación manual explícita.</strong> Solo se enciende si el jugador
+        lo hace desde <em>Ajustes → Pruebas</em>, o si el desarrollador le pide al probador
+        que abra el juego con el parámetro <code style="font-size:12px">?telemetria=1</code>
+        en la versión web.
+      </li>
+      <li>
+        <strong>Sin transmisión de red.</strong> Los registros nunca se envían automáticamente
+        a ningún servidor. Solo salen del dispositivo si el jugador usa la función
+        <em>"Exportar registro"</em>, que abre el menú Compartir del sistema operativo para que
+        el jugador decida a dónde lo envía (por ejemplo, por WhatsApp o correo, directamente
+        al desarrollador).
+      </li>
+      <li>
+        <strong>Sin datos de identidad.</strong> Los registros contienen únicamente datos
+        de comportamiento en el juego: tiempos, eventos, métricas de tensión. No incluyen
+        nombre, dirección IP, correo electrónico, identificadores de dispositivo ni ningún
+        dato personal identificable.
+      </li>
+      <li>
+        <strong>Cuota máxima de almacenamiento.</strong> El sistema conserva como máximo
+        12 sesiones en el dispositivo. Las más antiguas se eliminan automáticamente al superar ese límite.
+      </li>
+      <li>
+        <strong>Borrado a pedido.</strong> Desde <em>Ajustes → Pruebas</em> el jugador
+        puede borrar todos los registros almacenados en cualquier momento.
+      </li>
+    </ul>
+  </section>
+
+  <!-- 4. VERSIÓN ANDROID Y CAPACITOR -->
+  <section>
+    <h2>4. Versión Android (Google Play) y Capacitor</h2>
+    <p>
+      La versión de Android está construida con <strong>Capacitor 8</strong>, que envuelve
+      el juego web en un WebView nativo. Los únicos complementos (plugins) de Capacitor
+      incluidos en esta compilación son:
+    </p>
+    <ul>
+      <li><strong>capacitor-filesystem:</strong> acceso al sistema de archivos del dispositivo,
+          usado exclusivamente para leer y escribir el almacenamiento local del juego.</li>
+      <li><strong>capacitor-share:</strong> abre el menú Compartir del sistema operativo
+          cuando el jugador exporta un registro de prueba. No transmite datos por su cuenta.</li>
+    </ul>
+    <p>
+      No se incluyen plugins de publicidad, análisis remoto, seguimiento de usuarios,
+      redes sociales ni servicios de crash reporting de terceros.
+    </p>
+    <p>
+      El juego <strong>funciona sin conexión a internet</strong>. Todo el contenido
+      (texturas, sonidos, lógica) se genera localmente al iniciar la partida.
+      La aplicación no realiza llamadas de red durante el juego.
+    </p>
+    <p style="font-family:sans-serif;font-size:12px;color:var(--gris);">
+      Nota técnica: el WebView de Android puede registrar errores internos en los
+      registros del sistema operativo (logcat), como hace cualquier aplicación Android.
+      Esos registros son locales al dispositivo y no son accesibles ni gestionados por
+      el desarrollador.
+    </p>
+  </section>
+
+  <!-- 5. BASES LEGALES -->
+  <section>
+    <h2>5. Base legal y finalidad del tratamiento</h2>
+    <table class="tabla-datos">
+      <thead>
+        <tr>
+          <th>Dato</th>
+          <th>Finalidad</th>
+          <th>Base legal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Configuración y progreso</td>
+          <td>Recordar las preferencias del jugador entre sesiones</td>
+          <td>Interés legítimo del funcionamiento básico de la aplicación</td>
+        </tr>
+        <tr>
+          <td>Telemetría de pruebas</td>
+          <td>Detectar fallos, mejorar el equilibrio del juego, entender el comportamiento del jugador</td>
+          <td>Consentimiento explícito del jugador al activarla</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 6. RETENCIÓN -->
+  <section>
+    <h2>6. Tiempo de conservación</h2>
+    <ul>
+      <li><strong>Configuración y progreso:</strong> se conservan en el dispositivo mientras la
+          aplicación esté instalada. Se eliminan al desinstalarla.</li>
+      <li><strong>Telemetría de pruebas:</strong> máximo 12 sesiones en el dispositivo. Las más
+          antiguas se sobreescriben automáticamente. Se eliminan al pulsar
+          <em>"Borrar todo"</em> en ajustes o al desinstalar la aplicación.</li>
+    </ul>
+  </section>
+
+  <!-- 7. TERCEROS -->
+  <section>
+    <h2>7. Compartición con terceros</h2>
+    <p>
+      <strong>La aplicación no comparte datos con terceros de forma automática.</strong>
+    </p>
+    <p>
+      El único supuesto en que datos salen del dispositivo es cuando el jugador usa
+      voluntariamente la función <em>"Exportar registro"</em> de telemetría y elige
+      un destinatario a través del menú Compartir de su sistema operativo.
+      En ese caso, el jugador decide a quién envía el archivo y la aplicación no
+      interviene en esa transmisión.
+    </p>
+    <p>
+      La versión web está alojada en <strong>Vercel</strong>. Vercel puede registrar
+      datos estándar del servidor (dirección IP, encabezados HTTP) como parte normal
+      de la infraestructura de hosting. Esta aplicación no controla ni accede a esos registros.
+      Para más información consulta la
+      <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">
+        política de privacidad de Vercel
+      </a>.
+    </p>
+  </section>
+
+  <!-- 8. DERECHOS -->
+  <section>
+    <h2>8. Derechos del usuario</h2>
+    <p>
+      Dado que la aplicación no recolecta ni almacena datos personales identificables
+      en servidores propios, el ejercicio de derechos de acceso, rectificación,
+      supresión, portabilidad u oposición se gestiona directamente en el dispositivo:
+    </p>
+    <ul>
+      <li><strong>Borrar configuración y progreso:</strong> desinstalar la aplicación.</li>
+      <li><strong>Borrar telemetría:</strong> <em>Ajustes → Pruebas → Borrar todo</em>.</li>
+    </ul>
+    <p>
+      Para cualquier consulta adicional puedes escribir a
+      <a href="mailto:elmundodemanu2704@elmundodemanu.com">elmundodemanu2704@elmundodemanu.com</a>.
+    </p>
+  </section>
+
+  <!-- 9. MENORES -->
+  <section>
+    <h2>9. Público objetivo</h2>
+    <p>
+      <em>Las Paredes Oyen</em> es un juego de terror psicológico <strong>no dirigido a menores de 13 años</strong>.
+      La aplicación no contiene mecanismos de recolección de datos orientados a menores.
+    </p>
+  </section>
+
+  <!-- 10. ACTUALIZACIONES -->
+  <section>
+    <h2>10. Cambios en esta política</h2>
+    <p>
+      Si en el futuro la aplicación incorpora funcionalidades que modifiquen el tratamiento
+      de datos (por ejemplo, tablas de clasificación en línea, cuentas de usuario o publicidad),
+      esta política se actualizará antes de publicar esa versión. La fecha de versión en el
+      encabezado indica cuándo fue modificada por última vez.
+    </p>
+    <p>
+      La versión vigente siempre estará disponible en
+      <a href="https://almendros.elmundodemanu.com/privacidad.html">
+        almendros.elmundodemanu.com/privacidad.html
+      </a>.
+    </p>
+  </section>
+
+  <div class="pie">
+    <p>
+      <strong>Las Paredes Oyen</strong> &mdash; un juego de
+      <a href="https://elmundodemanu.com" target="_blank" rel="noopener">El Mundo de Manu</a><br>
+      Carlos Manuel Turizo Hernández &mdash; Colombia &mdash; 2026<br>
+      <a href="mailto:elmundodemanu2704@elmundodemanu.com">elmundodemanu2704@elmundodemanu.com</a>
+    </p>
+    <p style="margin-top:.75rem">
+      <a href="https://almendros.elmundodemanu.com">← Volver al juego</a>
+    </p>
+  </div>
+
+</main>
+
+</body>
+</html>

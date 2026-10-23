@@ -1,4 +1,7 @@
-// Aquí están los créditos y la nota técnica del proyecto.
+
+/**
+ * Aquí están los créditos y la nota técnica del proyecto.
+ */
 import { CREDITOS, lineasDeAutoria } from '../../config/Creditos';
 import { crearBoton } from '../componentes/Boton';
 import { Pantalla } from './Pantalla';
@@ -6,25 +9,41 @@ import { Pantalla } from './Pantalla';
 export class PantallaCreditos extends Pantalla {
   constructor(alCerrar: () => void) {
     super('panel');
+
     const caja = document.createElement('div');
     caja.className = 'panel__caja';
+
     const cabecera = document.createElement('div');
     cabecera.className = 'panel__cabecera';
     cabecera.innerHTML = '<h2 class="panel__titulo">Créditos</h2>';
-    cabecera.appendChild(crearBoton('Cerrar', alCerrar, { icono: 'cerrar' }));
+    cabecera.appendChild(
+      crearBoton('Cerrar', alCerrar, { icono: 'cerrar' })
+    );
+
     const cuerpo = document.createElement('div');
     cuerpo.className = 'panel__cuerpo creditos__texto';
+
     cuerpo.innerHTML = `
       <h3>${CREDITOS.titulo}</h3>
       <p>Un juego de terror psicológico sobre lo que se oye y se calla.</p>
-      ${lineasDeAutoria().map((linea) => `<p class="creditos__autoria">${linea}</p>`).join('')}
+      ${lineasDeAutoria()
+        .map((linea) => `<p class="creditos__autoria">${linea}</p>`)
+        .join('')}
+
       <h3>Tecnología</h3>
       <p>Construido sin motor comercial: TypeScript, WebGL 2 (Three.js como librería de dibujo) y Web Audio API.</p>
       <p>${CREDITOS.ayudaIA}</p>
+
       <h3>Contenido procedural</h3>
       <p>Todas las texturas y todos los sonidos del vertical slice se generan por código al iniciar el juego.</p>
+
       <h3>Gracias</h3>
-      <p>A quien juega con audífonos, a oscuras y hasta el final.</p>`;
+      <p>A quien juega con audífonos, a oscuras y hasta el final.</p>
+
+      <h3>Privacidad</h3>
+      <p><a href="./privacidad.html" target="_blank" rel="noopener noreferrer" class="enlace-externo">Política de privacidad</a></p>
+    `;
+
     caja.append(cabecera, cuerpo);
     this.elemento.appendChild(caja);
     this.alVolver = alCerrar;
