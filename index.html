@@ -17,6 +17,42 @@
     <title>Las Paredes Oyen</title>
   </head>
   <body>
+    <!-- Pantalla de Carga Panorámica In-Game (Estilo Free Fire / Supercell) -->
+    <!-- Ubicada encima del <canvas> antes de que arranque el motor -->
+    <div id="pantalla-carga" style="
+      position: fixed; inset: 0; z-index: 9999;
+      background: #0b0908 url('/splash-bg.jpg') center center / cover no-repeat;
+      display: flex; flex-direction: column; justify-content: space-between;
+      align-items: center; padding: 32px; font-family: sans-serif; color: #e5e0d8;
+      transition: opacity 0.6s ease; box-sizing: border-box; user-select: none;
+    ">
+      <!-- Sello superior del estudio (estilo Supercell) -->
+      <div style="letter-spacing: 4px; font-size: 12px; opacity: 0.7; text-transform: uppercase;">
+        EL MUNDO DE MANU
+      </div>
+
+      <!-- Título y barra inferior (estilo Free Fire) -->
+      <div style="width: 100%; max-width: 540px; text-align: center;">
+        <h1 style="
+          margin: 0 0 8px 0; font-size: 36px; letter-spacing: 3px;
+          color: #d24a3c; text-shadow: 0 0 20px rgba(0,0,0,0.95);
+        ">LAS PAREDES OYEN</h1>
+
+        <p style="margin: 0 0 18px 0; font-size: 13px; color: #a8a29e; text-shadow: 0 1px 4px rgba(0,0,0,0.9);">
+          🎧 Usa audífonos · Lo que ocurre en el 402 sigue escuchando...
+        </p>
+
+        <!-- Barra de progreso -->
+        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.12); border-radius: 3px; overflow: hidden;">
+          <div id="barra-progreso" style="width: 10%; height: 100%; background: #d24a3c; transition: width 0.25s ease;"></div>
+        </div>
+
+        <div id="texto-estado" style="margin-top: 8px; font-size: 11px; letter-spacing: 1px; opacity: 0.75; text-shadow: 0 1px 3px rgba(0,0,0,0.9);">
+          CALIBRANDO AUDIO BINAURAL HRTF...
+        </div>
+      </div>
+    </div>
+
     <!-- Este es mi contenedor principal: el lienzo 3D abajo y la interfaz encima. -->
     <div id="juego">
       <canvas id="lienzo" aria-label="Vista del juego"></canvas>
