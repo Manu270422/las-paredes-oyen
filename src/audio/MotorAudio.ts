@@ -46,6 +46,10 @@ export class MotorAudio {
   private silencioAcolchado = 1;
   private temporizadorOclusion = 0;
   private readonly observadores = new Set<ObservadorSonido>();
+  private audioActivado = false;
+  private readonly reintentarActivarAudio = (evento: Event): void => {
+    if (evento.isTrusted) this.reanudar();
+  };
 
   constructor(private hrtf: boolean) {
     const Contexto = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -74,15 +78,30 @@ export class MotorAudio {
     await this.biblioteca.generar(this.contexto, alProgreso);
   }
 
-  /** El navegador exige un gesto del jugador para arrancar el audio. */
-  async reanudar(): Promise<void> {
-    if (this.contexto.state !== 'running') {
-      try {
-        await this.contexto.resume();
-      } catch {
-        // Si falla, se reintentará en el siguiente toque.
-      }
+  /** Solicito la reanudación. El navegador puede dejarla pendiente hasta recibir un gesto. */
+  reanudar(): void {
+    if (this.contexto.state === 'running' || this.contexto.state === 'closed') {
+      this.terminarActivacionAudio();
+      return;
     }
+
+    if (!this.audioActivado) {
+      window.addEventListener('pointerup', this.reintentarActivarAudio, true);
+      window.addEventListener('keydown', this.reintentarActivarAudio, true);
+    }
+    void this.contexto.resume().then(
+      () => this.terminarActivacionAudio(),
+      () => {
+        if (this.contexto.state === 'closed') this.terminarActivacionAudio();
+      },
+    );
+  }
+
+  private terminarActivacionAudio(): void {
+    if (this.audioActivado) return;
+    this.audioActivado = true;
+    window.removeEventListener('pointerup', this.reintentarActivarAudio, true);
+    window.removeEventListener('keydown', this.reintentarActivarAudio, true);
   }
 
   async suspender(): Promise<void> {

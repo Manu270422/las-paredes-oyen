@@ -16,6 +16,22 @@ export class PantallaInicio extends Pantalla {
       <div class="inicio__continuar"></div>`;
   }
 
+  protected override alMostrar(): void {
+    const carga = document.getElementById('pantalla-carga');
+    if (!carga) return;
+
+    const barra = document.getElementById('barra-progreso');
+    if (barra) barra.style.width = '100%';
+    const estado = document.getElementById('texto-estado');
+    if (estado) estado.textContent = 'LISTO';
+
+    // El toque debe llegar a esta pantalla desde que empieza el fundido.
+    carga.inert = true;
+    carga.style.pointerEvents = 'none';
+    carga.style.opacity = '0';
+    window.setTimeout(() => carga.remove(), 600);
+  }
+
   /** Espero el primer gesto del jugador (toque, clic, tecla o botón del mando). */
   esperarGesto(hayMando: () => boolean): Promise<void> {
     const aviso = this.elemento.querySelector('.inicio__continuar') as HTMLDivElement;
