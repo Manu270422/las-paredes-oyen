@@ -214,263 +214,137 @@
 <div class="grieta"></div>
 
 <main>
-
   <div class="aviso-lectura">
-    <strong>Versión 1.0 &mdash; 22 de octubre de 2026.</strong><br>
-    Esta política aplica a la aplicación <em>Las Paredes Oyen</em> disponible en Google Play Store
-    y a su versión web en <a href="https://almendros.elmundodemanu.com" target="_blank" rel="noopener">almendros.elmundodemanu.com</a>.
-    Se redacta en cumplimiento de los requisitos de Google Play Console para aplicaciones distribuidas
-    por desarrolladores individuales.
+    <strong>Versión 1.1 &mdash; 19 de noviembre de 2026</strong><br>
+    Esta política aplica a <em>Las Paredes Oyen</em> en Android y a su
+    <a href="https://almendros.elmundodemanu.com/">versión web</a>.
   </div>
 
-  <!-- 1. RESPONSABLE -->
   <section>
-    <h2>1. Responsable del tratamiento</h2>
+    <h2>1. Responsable y contacto</h2>
     <p>
-      <strong>Desarrollador:</strong> Carlos Manuel Turizo Hernández<br>
-      <strong>Marca:</strong> El Mundo de Manu<br>
-      <strong>País:</strong> Colombia<br>
-      <strong>Contacto:</strong> <a href="mailto:elmundodemanu2704@elmundodemanu.com">elmundodemanu2704@elmundodemanu.com</a>
-    </p>
-    <p>
-      <em>Las Paredes Oyen</em> es un videojuego de terror psicológico desarrollado de forma
-      independiente, sin respaldo de ninguna organización corporativa.
+      Carlos Manuel Turizo Hernández, desarrollador independiente de <strong>El Mundo de Manu</strong>,
+      Colombia. Para consultas de privacidad, escribe a
+      <a href="mailto:elmundodemanu2704@gmail.com">elmundodemanu2704@gmail.com</a>.
     </p>
   </section>
 
-  <!-- 2. RESUMEN EJECUTIVO -->
   <section>
-    <h2>2. Resumen: qué hace y qué no hace esta aplicación</h2>
+    <h2>2. Datos del juego</h2>
     <p>
-      La aplicación <strong>no transmite ningún dato a servidores externos</strong>.
-      No tiene cuenta de usuario, no requiere registro, no contiene publicidad,
-      no integra redes sociales y no envía información a terceros.
+      Puedes jugar sin crear una cuenta. El juego guarda tus ajustes, tu partida y tu progreso
+      en el almacenamiento local de la aplicación en Android o del navegador en la web.
+      El juego no incluye publicidad ni herramientas de seguimiento remoto. La grabadora
+      del juego es virtual y no usa el micrófono de tu dispositivo.
     </p>
-    <p>
-      Todo lo que la aplicación almacena &mdash; configuración, progreso y, opcionalmente,
-      registros de sesión de prueba &mdash; permanece en el propio dispositivo
-      hasta que el usuario lo borra o desinstala la aplicación.
-    </p>
-  </section>
-
-  <!-- 3. DATOS QUE SE PROCESAN -->
-  <section>
-    <h2>3. Datos que se procesan y su tratamiento</h2>
-
     <table class="tabla-datos">
       <thead>
         <tr>
-          <th>Categoría</th>
-          <th>Qué se guarda</th>
-          <th>Dónde</th>
-          <th>Sale del dispositivo</th>
+          <th scope="col">Datos</th>
+          <th scope="col">Para qué se usan</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><strong>Configuración</strong></td>
-          <td>
-            Ajustes de video, audio, controles, accesibilidad y dificultad
-            elegidos por el jugador.
-          </td>
-          <td>Almacenamiento local del dispositivo<br>(localStorage / Capacitor Preferences)</td>
-          <td><span class="pastilla pastilla--local">No sale nunca</span></td>
+          <td>Preferencias de sonido, gráficos, controles y accesibilidad</td>
+          <td>Recordar cómo configuraste el juego.</td>
         </tr>
         <tr>
-          <td><strong>Progreso</strong></td>
-          <td>
-            Estado del juego: habitaciones medidas, objetos encontrados, pisos desbloqueados.
-          </td>
-          <td>Almacenamiento local del dispositivo</td>
-          <td><span class="pastilla pastilla--local">No sale nunca</span></td>
+          <td>Partida, progreso y estadísticas de juego</td>
+          <td>Permitir que retomes la partida y mostrar tus resultados.</td>
         </tr>
         <tr>
-          <td><strong>Telemetría de pruebas</strong></td>
-          <td>
-            Registros de sesión para desarrollo: duración, eventos de juego,
-            curva de tensión, momentos de reacción del jugador.
-            <strong>No incluye nombre, correo ni ningún dato de identidad.</strong>
-          </td>
-          <td>Almacenamiento local del dispositivo<br>(máximo 12 sesiones)</td>
-          <td>
-            <span class="pastilla pastilla--manual">Solo si el jugador lo exporta</span><br>
-            <small style="color:var(--gris);font-size:11px">Mediante la función&nbsp;"Exportar&nbsp;registro"</small>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2 style="margin-top:2rem">3.1 La telemetría de pruebas en detalle</h2>
-    <p>
-      La telemetría es un sistema diseñado exclusivamente para el <strong>desarrollo y mejora del juego</strong>.
-      Funciona de la siguiente manera:
-    </p>
-    <ul>
-      <li><strong>Desactivada por defecto.</strong> No se activa al instalar la aplicación.</li>
-      <li>
-        <strong>Activación manual explícita.</strong> Solo se enciende si el jugador
-        lo hace desde <em>Ajustes → Pruebas</em>, o si el desarrollador le pide al probador
-        que abra el juego con el parámetro <code style="font-size:12px">?telemetria=1</code>
-        en la versión web.
-      </li>
-      <li>
-        <strong>Sin transmisión de red.</strong> Los registros nunca se envían automáticamente
-        a ningún servidor. Solo salen del dispositivo si el jugador usa la función
-        <em>"Exportar registro"</em>, que abre el menú Compartir del sistema operativo para que
-        el jugador decida a dónde lo envía (por ejemplo, por WhatsApp o correo, directamente
-        al desarrollador).
-      </li>
-      <li>
-        <strong>Sin datos de identidad.</strong> Los registros contienen únicamente datos
-        de comportamiento en el juego: tiempos, eventos, métricas de tensión. No incluyen
-        nombre, dirección IP, correo electrónico, identificadores de dispositivo ni ningún
-        dato personal identificable.
-      </li>
-      <li>
-        <strong>Cuota máxima de almacenamiento.</strong> El sistema conserva como máximo
-        12 sesiones en el dispositivo. Las más antiguas se eliminan automáticamente al superar ese límite.
-      </li>
-      <li>
-        <strong>Borrado a pedido.</strong> Desde <em>Ajustes → Pruebas</em> el jugador
-        puede borrar todos los registros almacenados en cualquier momento.
-      </li>
-    </ul>
-  </section>
-
-  <!-- 4. VERSIÓN ANDROID Y CAPACITOR -->
-  <section>
-    <h2>4. Versión Android (Google Play) y Capacitor</h2>
-    <p>
-      La versión de Android está construida con <strong>Capacitor 8</strong>, que envuelve
-      el juego web en un WebView nativo. Los únicos complementos (plugins) de Capacitor
-      incluidos en esta compilación son:
-    </p>
-    <ul>
-      <li><strong>capacitor-filesystem:</strong> acceso al sistema de archivos del dispositivo,
-          usado exclusivamente para leer y escribir el almacenamiento local del juego.</li>
-      <li><strong>capacitor-share:</strong> abre el menú Compartir del sistema operativo
-          cuando el jugador exporta un registro de prueba. No transmite datos por su cuenta.</li>
-    </ul>
-    <p>
-      No se incluyen plugins de publicidad, análisis remoto, seguimiento de usuarios,
-      redes sociales ni servicios de crash reporting de terceros.
-    </p>
-    <p>
-      El juego <strong>funciona sin conexión a internet</strong>. Todo el contenido
-      (texturas, sonidos, lógica) se genera localmente al iniciar la partida.
-      La aplicación no realiza llamadas de red durante el juego.
-    </p>
-    <p style="font-family:sans-serif;font-size:12px;color:var(--gris);">
-      Nota técnica: el WebView de Android puede registrar errores internos en los
-      registros del sistema operativo (logcat), como hace cualquier aplicación Android.
-      Esos registros son locales al dispositivo y no son accesibles ni gestionados por
-      el desarrollador.
-    </p>
-  </section>
-
-  <!-- 5. BASES LEGALES -->
-  <section>
-    <h2>5. Base legal y finalidad del tratamiento</h2>
-    <table class="tabla-datos">
-      <thead>
-        <tr>
-          <th>Dato</th>
-          <th>Finalidad</th>
-          <th>Base legal</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Configuración y progreso</td>
-          <td>Recordar las preferencias del jugador entre sesiones</td>
-          <td>Interés legítimo del funcionamiento básico de la aplicación</td>
-        </tr>
-        <tr>
-          <td>Telemetría de pruebas</td>
-          <td>Detectar fallos, mejorar el equilibrio del juego, entender el comportamiento del jugador</td>
-          <td>Consentimiento explícito del jugador al activarla</td>
+          <td>Registros opcionales de pruebas</td>
+          <td>Investigar fallos y mejorar el juego.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
-  <!-- 6. RETENCIÓN -->
   <section>
-    <h2>6. Tiempo de conservación</h2>
+    <h2>3. Registros opcionales de pruebas</h2>
+    <p>
+      El registro de pruebas viene apagado. Lo puedes activar o desactivar desde
+      <strong>Ajustes → Pruebas → Registrar sesiones de prueba</strong>. En la web, abrir
+      un enlace con <code>?telemetria=1</code> también lo activa y guarda esa preferencia.
+    </p>
+    <p>
+      Si está activado, el juego guarda la fecha y hora de inicio, un identificador generado para
+      cada sesión, la duración, los eventos y las métricas de la partida. También registra
+      datos técnicos como el rendimiento, el modo de control, la calidad gráfica, la dificultad
+      y la versión del juego. El archivo no incluye tu nombre, correo, dirección IP, ubicación
+      ni un identificador del dispositivo.
+    </p>
+    <p>
+      El juego no envía estos registros automáticamente. <strong>Exportar (.json)</strong>
+      descarga el archivo en la versión web. En Android se crea una copia en la caché de
+      la aplicación y se abre el menú <strong>Compartir</strong> de Android. Tú eliges
+      si lo envías, con qué aplicación y a quién. El servicio que elijas tratará el archivo
+      según su propia política.
+    </p>
+  </section>
+
+  <section>
+    <h2>4. Android, sitio web y servicios externos</h2>
+    <p>
+      Android incluye los archivos del juego en la app y permite jugar sin internet.
+      Android puede respaldar o restaurar datos de aplicaciones según la configuración
+      del dispositivo. Si descargas la app desde Google Play, Google procesa los datos de
+      ese servicio según su propia política.
+      <a href="https://policies.google.com/privacy?hl=es" target="_blank" rel="noopener noreferrer">Política de privacidad de Google</a>.
+    </p>
+    <p>
+      La versión web está alojada en Vercel. Al abrirla, el proveedor recibe solicitudes
+      para entregar la página y sus recursos, y puede procesar datos técnicos de conexión
+      como la dirección IP y los encabezados HTTP.
+      <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Política de privacidad de Vercel</a>.
+    </p>
+    <p>
+      Si nos escribes o nos envías un registro, recibimos el correo y el contenido que
+      decidas compartir. Los usamos para responderte o investigar el problema que reportes.
+    </p>
+  </section>
+
+  <section>
+    <h2>5. Conservación y eliminación</h2>
     <ul>
-      <li><strong>Configuración y progreso:</strong> se conservan en el dispositivo mientras la
-          aplicación esté instalada. Se eliminan al desinstalarla.</li>
-      <li><strong>Telemetría de pruebas:</strong> máximo 12 sesiones en el dispositivo. Las más
-          antiguas se sobreescriben automáticamente. Se eliminan al pulsar
-          <em>"Borrar todo"</em> en ajustes o al desinstalar la aplicación.</li>
-    </ul>
-  </section>
-
-  <!-- 7. TERCEROS -->
-  <section>
-    <h2>7. Compartición con terceros</h2>
-    <p>
-      <strong>La aplicación no comparte datos con terceros de forma automática.</strong>
-    </p>
-    <p>
-      El único supuesto en que datos salen del dispositivo es cuando el jugador usa
-      voluntariamente la función <em>"Exportar registro"</em> de telemetría y elige
-      un destinatario a través del menú Compartir de su sistema operativo.
-      En ese caso, el jugador decide a quién envía el archivo y la aplicación no
-      interviene en esa transmisión.
-    </p>
-    <p>
-      La versión web está alojada en <strong>Vercel</strong>. Vercel puede registrar
-      datos estándar del servidor (dirección IP, encabezados HTTP) como parte normal
-      de la infraestructura de hosting. Esta aplicación no controla ni accede a esos registros.
-      Para más información consulta la
-      <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">
-        política de privacidad de Vercel
-      </a>.
-    </p>
-  </section>
-
-  <!-- 8. DERECHOS -->
-  <section>
-    <h2>8. Derechos del usuario</h2>
-    <p>
-      Dado que la aplicación no recolecta ni almacena datos personales identificables
-      en servidores propios, el ejercicio de derechos de acceso, rectificación,
-      supresión, portabilidad u oposición se gestiona directamente en el dispositivo:
-    </p>
-    <ul>
-      <li><strong>Borrar configuración y progreso:</strong> desinstalar la aplicación.</li>
-      <li><strong>Borrar telemetría:</strong> <em>Ajustes → Pruebas → Borrar todo</em>.</li>
+      <li>
+        <strong>Ajustes, progreso y partida.</strong> Se conservan en el almacenamiento
+        del juego. En Android puedes borrarlos desde los ajustes del sistema, en el apartado
+        de almacenamiento de la aplicación. En la web puedes borrarlos eliminando los datos
+        de <em>almendros.elmundodemanu.com</em> en tu navegador.
+      </li>
+      <li>
+        <strong>Registros de prueba.</strong> El juego guarda hasta las 12 sesiones más
+        recientes. Para eliminarlas, usa <strong>Ajustes → Pruebas → Borrar</strong> y
+        confirma. Los archivos exportados se eliminan desde la app o ubicación donde
+        quedaron guardados.
+      </li>
+      <li>
+        <strong>Mensajes y registros que recibimos.</strong> Se conservan durante el tiempo
+        necesario para atender la consulta o investigar el fallo, y cuando sea necesario
+        para cumplir obligaciones legales. Puedes escribir al correo de contacto para
+        consultar, corregir o solicitar la eliminación de lo que nos enviaste.
+      </li>
     </ul>
     <p>
-      Para cualquier consulta adicional puedes escribir a
-      <a href="mailto:elmundodemanu2704@elmundodemanu.com">elmundodemanu2704@elmundodemanu.com</a>.
+      El acceso al almacenamiento local depende de los controles del dispositivo o del navegador.
+      Las copias de respaldo y los archivos que hayas compartido se administran desde el
+      servicio que los guarda.
     </p>
   </section>
 
-  <!-- 9. MENORES -->
   <section>
-    <h2>9. Público objetivo</h2>
-    <p>
-      <em>Las Paredes Oyen</em> es un juego de terror psicológico <strong>no dirigido a menores de 13 años</strong>.
-      La aplicación no contiene mecanismos de recolección de datos orientados a menores.
-    </p>
+    <h2>6. Público objetivo</h2>
+    <p><em>Las Paredes Oyen</em> es un juego de terror psicológico y no está dirigido a menores de 13 años.</p>
   </section>
 
-  <!-- 10. ACTUALIZACIONES -->
   <section>
-    <h2>10. Cambios en esta política</h2>
+    <h2>7. Cambios en esta política</h2>
     <p>
-      Si en el futuro la aplicación incorpora funcionalidades que modifiquen el tratamiento
-      de datos (por ejemplo, tablas de clasificación en línea, cuentas de usuario o publicidad),
-      esta política se actualizará antes de publicar esa versión. La fecha de versión en el
-      encabezado indica cuándo fue modificada por última vez.
-    </p>
-    <p>
-      La versión vigente siempre estará disponible en
-      <a href="https://almendros.elmundodemanu.com/privacidad.html">
-        almendros.elmundodemanu.com/privacidad.html
-      </a>.
+      Si cambia la forma en que el juego trata los datos, actualizaremos este documento.
+      La fecha del encabezado indica la última modificación. Puedes consultar la
+      <a href="https://almendros.elmundodemanu.com/privacidad.html">política vigente en la web del juego</a>.
     </p>
   </section>
 
@@ -479,13 +353,12 @@
       <strong>Las Paredes Oyen</strong> &mdash; un juego de
       <a href="https://elmundodemanu.com" target="_blank" rel="noopener">El Mundo de Manu</a><br>
       Carlos Manuel Turizo Hernández &mdash; Colombia &mdash; 2026<br>
-      <a href="mailto:elmundodemanu2704@elmundodemanu.com">elmundodemanu2704@elmundodemanu.com</a>
+      <a href="mailto:elmundodemanu2704@gmail.com">elmundodemanu2704@gmail.com</a>
     </p>
     <p style="margin-top:.75rem">
       <a href="https://almendros.elmundodemanu.com">← Volver al juego</a>
     </p>
   </div>
-
 </main>
 
 </body>
